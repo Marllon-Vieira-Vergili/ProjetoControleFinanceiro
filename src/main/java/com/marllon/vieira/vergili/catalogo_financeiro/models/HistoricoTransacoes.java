@@ -52,25 +52,83 @@ public class HistoricoTransacoes {
     //Relacionamentos
 
     //Vários históricos de transações, pode ter vários pagamentos relacionados
-    @ManyToMany(mappedBy = "pagamentosRelacionadosTransacoes",fetch = FetchType.LAZY)
-    private List<Pagamentos> transacoesRelacionadosPagamentos = new ArrayList<>();
+    @ManyToMany(mappedBy = "transacoesRelacionadas",fetch = FetchType.LAZY)
+    private List<Pagamentos> pagamentosRelacionados = new ArrayList<>();
 
     //vários históricos de transação, pode ter uma conta associada
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contas_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_contas_id_transacoes"))
-    private Contas transacoesRelacionadoConta;
+    private Contas contaRelacionada;
 
     //vários históricos de transação, pode ter um usuário associado
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuarios_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_usuarios_id_transacoes") )
-    private Usuarios transacoesRelacionadoUsuario;
+    private Usuarios usuarioRelacionado;
 
     //vários históricos de transação, pode ter vários tipos de categorias de contas relacionadas
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
             @JoinTable(name = "transacoes_e_categorias", joinColumns = @JoinColumn(name = "transacoes_categorias")
                     ,foreignKey = @ForeignKey(name = "fk_transacoes_categorias"),inverseJoinColumns =
             @JoinColumn(name = "categorias_transacoes"),inverseForeignKey = @ForeignKey(name = "fk_categorias_transacoes"))
-    private List<CategoriasContas> transacoesRelacionadasCategorias = new ArrayList<>();
+    private List<CategoriasContas> categoriasRelacionadas = new ArrayList<>();
 
     //ASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
+
+    //Associar Historico de transações com Pagamentos relacionados(Many to Many)
+    public void associarTransacaoComPagamento(Pagamentos pagamento){
+
+        //Instanciar primeiramente, um Array List vazio, caso pagamentoRelacionado seja nulo
+        if(this.pagamentosRelacionados == null){
+            this.pagamentosRelacionados = new ArrayList<>();
+        }
+        //Verificar se já possui algum pagamento associado a esse histórico de transação
+        if(this.pagamentosRelacionados.contains(pagamento)){
+            throw new IllegalArgumentException("Este pagamento ja está associado a esse histórico de transação!");
+        }
+        //Associar o histórico de transações, para o lado do pagamento
+            this.pagamentosRelacionados.add(pagamento);
+
+        //agora associando para o lado do pagamento também, bidirecionalmente, o histórico de transação
+        if(!pagamento.getTransacoesRelacionadas().contains(this)){
+            pagamento.getTransacoesRelacionadas().add(this);
+        }
+
+    }
+    //Associar Historico de transações com Conta relacionada(Many to One)
+    public void associarTransacaoComConta(Contas conta){
+
+        //Associando o histórico de transações, para o lado da conta
+        this.contaRelacionada = conta;
+        //Se a conta(do lado um) não possuir um histórico de transações(do lado muitos históricos de transações)
+        if(conta.getTransacoesRelacionadas() == null){
+            conta.setTransacoesRelacionadas(new ArrayList<>());
+        }
+        //Associar do lado conta a transação
+        if(!conta.getTransacoesRelacionadas().contains(this)){
+            conta.getTransacoesRelacionadas().add(this);
+            }
+        }
+
+
+    //Associar Historico de transações com Usuário relacionado(Many to One)
+    public void associarTransacaoComUsuario(Usuarios usuario){
+
+        //Associar a transação ao usuário
+        this.usuarioRelacionado = usuario;
+    }
+
+    //Associar Historico de transações com Categorias Relacioandas(Many to Many)
+
+
+
+    //DESASSOCIAÇÂO COM OUTRAS ENTIDADES BIDIRECIONALMENTE
+
+    //Desassociar Historico de transações com Pagamentos relacionados(Many to Many)
+
+    //Desassociar Historico de transações com Conta relacionada(Many to One)
+
+    //Desassociar Historico de transações com Usuário relacionado(Many to One)
+
+    //Desassociar Historico de transações com Categorias Relacioandas(Many to Many)
+
 }

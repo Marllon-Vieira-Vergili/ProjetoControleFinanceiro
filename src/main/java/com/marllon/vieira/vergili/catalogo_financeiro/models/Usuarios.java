@@ -51,20 +51,20 @@ public class Usuarios {
     //RELACIONAMENTOS
 
     //Um usuário pode ter vários pagamentos realizados
-    @OneToMany(mappedBy = "pagamentosRelacionadosUsuario",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Pagamentos> usuariorelacionadoPagamentos = new ArrayList<>();
+    @OneToMany(mappedBy = "usuarioRelacionado",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Pagamentos> pagamentosRelacionados = new ArrayList<>();
 
     //Um Usuário pode possuir vários históricos de transação(usuário pode possuir vários historicos, etc)
-    @OneToMany(mappedBy = "transacoesRelacionadoUsuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<HistoricoTransacoes> usuarioRelacionadoTransacoes = new ArrayList<>();
+    @OneToMany(mappedBy = "usuarioRelacionado", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<HistoricoTransacoes> transacoesRelacionadas = new ArrayList<>();
 
     //Um usuário pode possuir uma conta(uma conta para mostrar seus gastos, receitas, etc.)
-    @OneToOne(mappedBy = "contaRelacionadoUsuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Contas usuarioRelacionadoConta;
+    @OneToOne(mappedBy = "usuarioRelacionado", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Contas contaRelacionada;
 
     //Um usuário pode ter várias categorias de pagamentos relacionados(um usuário pode ter várias categorias de contas pagas
-    @OneToMany(mappedBy = "categoriaRelacionadoUsuario",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
-    private List<CategoriasContas> usuarioRelacionadoCategorias = new ArrayList<>();
+    @OneToMany(mappedBy = "usuarioRelacionado",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    private List<CategoriasContas> categoriasRelacionadas = new ArrayList<>();
 
 
     //ASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE

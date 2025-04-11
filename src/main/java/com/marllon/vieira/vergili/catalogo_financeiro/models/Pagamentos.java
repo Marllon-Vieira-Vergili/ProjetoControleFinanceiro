@@ -54,7 +54,7 @@ public class Pagamentos {
     //Um pagamento, pode ter um usuário(um pagamento pode vir de um usuário apenas)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", referencedColumnName = "id",foreignKey = @ForeignKey(name = "fk_usuarios_pagamentos"))
-    private Usuarios pagamentosRelacionadosUsuario;
+    private Usuarios usuarioRelacionado;
 
     //Vários pagamentos, pode ter vários históricos de transações(varios pagamentos diversos, pode ter varias transacoes)
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -62,12 +62,12 @@ public class Pagamentos {
             (name = "pagamentos_transacoes",foreignKey = @ForeignKey(name = "fk_pagamentos_transacoes")),
             inverseJoinColumns = @JoinColumn(name = "transacoes_pagamentos",foreignKey = @ForeignKey
                     (name = "fk_transacoes_pagamentos")))
-    private List<HistoricoTransacoes> pagamentosRelacionadosTransacoes = new ArrayList<>();
+    private List<HistoricoTransacoes> transacoesRelacionadas = new ArrayList<>();
 
     //vários pagamentos, podem sair de uma conta(um pagamento(ou vários) é feito por uma conta de um usuário)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "conta_id",referencedColumnName = "id",foreignKey = @ForeignKey(name = "fk_contas_pagamentos"))
-    private Contas pagamentoRelacionadoContas;
+    private Contas contaRelacionada;
 
     //Vários pagamentos, podem ter várias categorias de pagamentos(Vários pagamentos podem ter vários categorias e tipos
     //de pagamentos)
@@ -75,7 +75,7 @@ public class Pagamentos {
             @JoinTable(name = "pagamentos_e_categorias",joinColumns = @JoinColumn(name = "pagamento_categoria"),
                     foreignKey = @ForeignKey(name = "fk_pagamento_categoria"),inverseJoinColumns =
             @JoinColumn(name = "categoria_pagamento"), inverseForeignKey = @ForeignKey(name = "fk_categoria_pagamento"))
-    private List<CategoriasContas> pagamentosRelacionadosCategorias = new ArrayList<>();
+    private List<CategoriasContas> categoriasRelacionadas = new ArrayList<>();
 
 
     //ASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
