@@ -1,7 +1,8 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator;
-
 import lombok.AccessLevel;
 import lombok.Getter;
+
+import java.util.NoSuchElementException;
 
 @Getter(AccessLevel.PUBLIC)
 public enum Despesas {
@@ -32,6 +33,9 @@ public enum Despesas {
         for(Despesas despesasEncontradas: Despesas.values()){
             if(despesasEncontradas.getOpcao() == opcao){
                 return despesasEncontradas;
+            }else{
+                throw new NoSuchElementException("Nenhuma despesa encontrada com essa id!");
+
             }
         }
         return null;
