@@ -30,10 +30,11 @@ public class CategoriasContas {
 
     @NotNull(message = "O campo tipo de categoria não pode ser nulo")
     @Enumerated(EnumType.STRING)
-    @Column(name = "tiposCategorias", nullable = false)
+    @Column(name = "tipos_categorias", nullable = false)
     private TiposCategorias tiposCategorias;
 
 
+    /* parace desnecessário este método
     @Column(name = "descricao", nullable = false)
     @NotBlank(message = "O campo da descrição de uma categoria não pode ser vazio!")
     @Pattern(regexp = "^[a-zA-ZáàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ0-9 ,.]+$",
@@ -41,6 +42,8 @@ public class CategoriasContas {
     @Size(min = 5, message = "Descrição aceita de no mínimo 5 caracteres")
     private String descricao;
 
+
+     */
 
     //RELACIONAMENTOS:
 
