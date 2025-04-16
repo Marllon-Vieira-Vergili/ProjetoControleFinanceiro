@@ -1,6 +1,7 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -8,19 +9,20 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-//registros de despesas e contas a pagar e receber de alguém.. criará registro nessa entidade
+/**registros de despesas e contas a pagar e receber de alguém.. criará registro nessa entidade
+ */
 
 @Entity
 @Table(name = "pagamentos")
 @Getter(AccessLevel.PUBLIC)
 @Setter(AccessLevel.PUBLIC)
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
-@EqualsAndHashCode(of = "id")
-@ToString
+@AllArgsConstructor(access = AccessLevel.PUBLIC)
+@EqualsAndHashCode(of = {"valor", "data", "descricao", "categoria"})
+@ToString(of = {"id","valor", "data", "descricao", "categoria"})
 public class Pagamentos {
 
     @Id
@@ -43,47 +45,52 @@ public class Pagamentos {
     private String descricao;
 
     @Column(name = "categoria",nullable = false)
-    @NotBlank(message = "O campo da categoria não pode ser vazio!")
-    @Pattern(regexp = "^[a-zA-ZáàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ ]+$", message =
-            "A categoria só aceita caracteres! Ex: conta de energia, conta de água, fatura cartão de crédito, etc.")
-    private String categoria;
+    @NotNull(message = "O campo de categoria não pode ser null!")
+    @Enumerated(EnumType.STRING)
+    private TiposCategorias categoria;
 
 
 
     //RELACIONAMENTOS
 
-    //muitos pagamentos, pode ter um usuário(muitos pagamentos, pode vir de um usuário apenas)
+    /**muitos pagamentos, pode ter um usuário(muitos pagamentos, pode vir de um usuário apenas)
+     *
+     */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id", referencedColumnName = "id",foreignKey = @ForeignKey(name = "fk_usuarios_pagamentos"))
-    private Usuarios usuarioRelacionado;
+    @JoinColumn(name = "usuario_id", referencedColumnName = "id",foreignKey = @ForeignKey(name = "fk_pagamento_usuario"))
+    private Usuario usuarioRelacionado;
 
-    //Vários pagamentos, pode ter vários históricos de transações(varios pagamentos diversos, pode ter varias transacoes)
+    /**Vários pagamentos, pode ter vários históricos de transações(varios pagamentos diversos, pode ter varias transacoes)
+     */
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(name = "pagamentos_e_transacoes", joinColumns = @JoinColumn
-            (name = "pagamentos_transacoes",foreignKey = @ForeignKey(name = "fk_pagamentos_transacoes")),
-            inverseJoinColumns = @JoinColumn(name = "transacoes_pagamentos",foreignKey = @ForeignKey
-                    (name = "fk_transacoes_pagamentos")))
-    private List<HistoricoTransacoes> transacoesRelacionadas = new ArrayList<>();
+            (name = "pagamento_id",foreignKey = @ForeignKey(name = "pagamento_fk")),
+            inverseJoinColumns = @JoinColumn(name = "transacao_id",foreignKey = @ForeignKey
+                    (name = "transacao_fk")))
+    private List<HistoricoTransacao> transacoesRelacionadas = new ArrayList<>();
 
-    //vários pagamentos, podem sair de uma conta(um pagamento(ou vários) é feito por uma conta de um usuário)
+    /**vários pagamentos, podem sair de uma conta(um pagamento(ou vários) é feito por uma conta de um usuário)
+     */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "conta_id",referencedColumnName = "id",foreignKey = @ForeignKey(name = "fk_contas_pagamentos"))
-    private Contas contaRelacionada;
+    @JoinColumn(name = "conta_id",referencedColumnName = "id",foreignKey = @ForeignKey(name = "fk_pagamento_conta"))
+    private ContaUsuario contaRelacionada;
 
-    //Vários pagamentos, podem ter várias categorias de pagamentos(Vários pagamentos podem ter vários categorias e tipos
-    //de pagamentos)
+    /**Vários pagamentos, podem ter várias categorias de pagamentos(Vários pagamentos podem ter vários categorias e tipos
+    de pagamentos)
+     */
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-            @JoinTable(name = "pagamentos_e_categorias",joinColumns = @JoinColumn(name = "pagamento_categoria"),
-                    foreignKey = @ForeignKey(name = "fk_pagamento_categoria"),inverseJoinColumns =
-            @JoinColumn(name = "categoria_pagamento"), inverseForeignKey = @ForeignKey(name = "fk_categoria_pagamento"))
-    private List<CategoriasContas> categoriasRelacionadas = new ArrayList<>();
+            @JoinTable(name = "pagamentos_e_categorias",joinColumns = @JoinColumn(name = "pagamento_id"),
+                    foreignKey = @ForeignKey(name = "fk_pagamento"),inverseJoinColumns =
+            @JoinColumn(name = "categoria_id"), inverseForeignKey = @ForeignKey(name = "fk_categoria"))
+    private List<CategoriaFinanceira> categoriasRelacionadas = new ArrayList<>();
 
 
-    //ASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
+    /**MÈTODOS DE ASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
+     */
 
 
     //Associar Pagamentos com Usuário relacionado(Many to one)
-    public void associarPagamentoComUsuario(Usuarios usuario) {
+    public void associarPagamentoComUsuario(Usuario usuario) {
 
         //Se do lado do usuário, não existir um arrayList de pagamentos, instanciar
         if (usuario.getPagamentosRelacionados() == null) {
@@ -101,7 +108,7 @@ public class Pagamentos {
     }
 
     //Associar Pagamentos com Transações Relacionadas(Many to Many)
-    public void associarPagamentoATransacao(HistoricoTransacoes transacao){
+    public void associarPagamentoATransacao(HistoricoTransacao transacao){
 
         //Instanciar um novo arrayList de pagamentos, se do lado das transações não possuir
         if(transacao.getPagamentosRelacionados() == null){
@@ -123,7 +130,7 @@ public class Pagamentos {
     }
 
     //Associar Pagamentos com Conta relacionada(Many to one)
-    public void associarPagamentoComConta(Contas conta){
+    public void associarPagamentoComConta(ContaUsuario conta){
 
         //Se do meu lado da conta, que é uma conta para muitos pagamentos, não possuir um arrayList de pagamentos, criar
         if(conta.getPagamentosRelacionados() == null){
@@ -140,8 +147,8 @@ public class Pagamentos {
         }
     }
 
-    //Associar Pagamentos com Categoria de Contas relacionada(Many to Many)
-    public void associarPagamentoComCategoria(CategoriasContas categoria){
+    //Associar Pagamentos com Categoria de ContaUsuario relacionada(Many to Many)
+    public void associarPagamentoComCategoria(CategoriaFinanceira categoria){
 
         //Instanciar um novo arrayList, do pado pagamentos, se estiver nula
         if(this.categoriasRelacionadas == null){
@@ -163,10 +170,11 @@ public class Pagamentos {
         }
     }
 
-    //DESASSOCIAÇÔES COM OUTRAS ENTIDADES BIREDICIONALMENTE
+    /**MÈTODOS DE DESASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
+     */
 
     //Desassociar pagamento de Usuario(Many to one)
-    public void desassociarPagamentoUsuario(Usuarios usuario){
+    public void desassociarPagamentoUsuario(Usuario usuario){
 
         //Verificar, se existe algum usuário associado a esse pagamento
         if(this.usuarioRelacionado == null || this.usuarioRelacionado.getPagamentosRelacionados() == null ||
@@ -185,7 +193,7 @@ public class Pagamentos {
     }
 
     //Desassociar pagamento de Transação(Many to Many)
-    public void desassociarPagamentoDeTransacao(HistoricoTransacoes transacao){
+    public void desassociarPagamentoDeTransacao(HistoricoTransacao transacao){
 
         //Verificar, primeiramente, se existe algum pagamento associado a essa transação
         if(this.transacoesRelacionadas == null || !this.transacoesRelacionadas.contains(transacao)){
@@ -201,7 +209,7 @@ public class Pagamentos {
 
     }
     //Desassociar pagamento de Conta(Many to One)
-    public void desassociarPagamentoConta(Contas conta) {
+    public void desassociarPagamentoConta(ContaUsuario conta) {
 
         //Verificar, primeiramente, se existe algum pagamento associado a essa transação
         if (this.contaRelacionada.getPagamentosRelacionados() == null) {
@@ -219,7 +227,7 @@ public class Pagamentos {
 
 
     //Desassociar pagamento de Categoria(Many to Many)
-    public void desassociarPagamentoCategoria(CategoriasContas categoria){
+    public void desassociarPagamentoCategoria(CategoriaFinanceira categoria){
 
         //Verificar, primeiramente, se existe algum pagamento associado a essa categoria
         if (this.categoriasRelacionadas == null || !this.categoriasRelacionadas.contains(categoria)) {

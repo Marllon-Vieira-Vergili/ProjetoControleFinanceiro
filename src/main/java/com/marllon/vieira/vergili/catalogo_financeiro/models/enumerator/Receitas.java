@@ -1,8 +1,11 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator;
-
-
 import lombok.AccessLevel;
 import lombok.Getter;
+
+/**
+ * ENUMERATOR para mostrar opções de receitas ao relacionar com pagamentos recebidos, ou também no histórico de transação
+ *
+ * */
 
 @Getter(AccessLevel.PUBLIC)
 public enum Receitas {

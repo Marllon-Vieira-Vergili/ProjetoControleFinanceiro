@@ -1,24 +1,27 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
-import org.hibernate.validator.constraints.UniqueElements;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-//gerenciar perfis e permissoes
+/**Classe do usuário gerenciar perfis e permissoes, o usuário criará um nome, colocará seu email, senha, e telefone
+ * para criar uma "Conta" e logar nesta
+ *
+ */
 
 @Entity
-@Table(name = "usuarios")
+@Table(name = "usuarios",uniqueConstraints = {
+        @UniqueConstraint(name = "unique_usuario_email",columnNames = "email"),
+@UniqueConstraint(name = "unique_usuario_telefone", columnNames = "telefone")})
 @Getter(AccessLevel.PUBLIC)
 @Setter(AccessLevel.PUBLIC)
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
-@EqualsAndHashCode(of = "id")
-@ToString
-public class Usuarios {
+@AllArgsConstructor(access = AccessLevel.PUBLIC)
+@EqualsAndHashCode(of = {"nome", "email", "senha", "telefone"})
+@ToString(of = {"id", "nome", "telefone"})
+public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,7 +33,7 @@ public class Usuarios {
     @NotBlank(message = "Nome do usuário é obrigatório!")
     private String nome;
 
-    @Column(name = "email", length = 64,unique = true,nullable = false)
+    @Column(name = "email", length = 64,nullable = false)
     @Email(message = "o email deve conter o formato de um email. Exemplo:(nome@email.com)")
     @NotBlank(message = "Campo email é obrigatório!")
     private String email;
@@ -41,34 +44,43 @@ public class Usuarios {
     @Size(min = 6, message = "A senha necessita ter no mínimo 6 caracteres, incluindo letras, ou números!")
     private String senha;
 
-    @Column(name = "telefone",unique = true,nullable = false)
+    @Column(name = "telefone",nullable = false)
     @NotBlank(message = "Campo telefone é obrigatório!")
     @Size(min = 11, message = "Padrão de telefone aceito: (DDD)00000-0000")
-    @Pattern(regexp = "\\(\\d{2}\\)\\d{5}-\\d{4}", message = "O formato deve ser formato Brasil (DDD)00000-0000")
+    @Pattern(regexp = "\\(\\d{2}\\)\\d{5}-\\d{4}", message = "O formato deve ser formato Brasil (99)99999-9999")
     private String telefone;
 
 
 
     //RELACIONAMENTOS
 
-    //Um usuário pode ter vários pagamentos realizados
+    /**Um usuário pode ter vários pagamentos realizados
+     *
+     */
     @OneToMany(mappedBy = "usuarioRelacionado",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Pagamentos> pagamentosRelacionados = new ArrayList<>();
 
-    //Um Usuário pode possuir vários históricos de transação(usuário pode possuir vários historicos, etc)
+    /**Um Usuário pode possuir vários históricos de transação(usuário pode possuir vários historicos, etc)
+     *
+     */
     @OneToMany(mappedBy = "usuarioRelacionado", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<HistoricoTransacoes> transacoesRelacionadas = new ArrayList<>();
+    private List<HistoricoTransacao> transacoesRelacionadas = new ArrayList<>();
 
-    //Um usuário pode possuir uma conta(uma conta para mostrar seus gastos, receitas, etc.)
+    /**Um usuário pode possuir uma conta(uma conta para mostrar seus gastos, receitas, etc.)
+     *
+     */
     @OneToOne(mappedBy = "usuarioRelacionado", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Contas contaRelacionada;
+    private ContaUsuario contaRelacionada;
 
-    //Um usuário pode ter várias categorias de pagamentos relacionados(um usuário pode ter várias categorias de contas pagas
+    /**Um usuário pode ter várias categorias de pagamentos relacionados(um usuário pode ter várias categorias de contas pagas
+     *
+     */
     @OneToMany(mappedBy = "usuarioRelacionado",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
-    private List<CategoriasContas> categoriasRelacionadas = new ArrayList<>();
+    private List<CategoriaFinanceira> categoriasRelacionadas = new ArrayList<>();
 
 
-    //ASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
+    /**MÈTODOS DE ASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
+     */
 
     //Associar Usuario com Pagamentos Relacionados(One to Many)
     public void associarUsuarioComPagamento(Pagamentos pagamento){
@@ -87,7 +99,7 @@ public class Usuarios {
     }
 
     //Associar Usuario com Transações Relacionadas(One to Many)
-    public void associarUsuarioComTransacoes(HistoricoTransacoes transacao){
+    public void associarUsuarioComTransacoes(HistoricoTransacao transacao){
 
 
         //Verificar se a lista de transações com o usuário é nula
@@ -105,7 +117,7 @@ public class Usuarios {
 
     }
     //Associar usuario com Conta Relacionada(One to One)
-    public void associarUsuarioComConta(Contas conta){
+    public void associarUsuarioComConta(ContaUsuario conta){
 
         //Associar usuário com uma conta
         if(this.contaRelacionada == null || !this.contaRelacionada.equals(conta) ) {
@@ -115,7 +127,7 @@ public class Usuarios {
         conta.setUsuarioRelacionado(this);
     }
     //Associar usuário com Categorias de contas Relacionadas(One to Many)
-    public void associarUsuarioComCategoria(CategoriasContas categoria){
+    public void associarUsuarioComCategoria(CategoriaFinanceira categoria){
 
         //Instanciar uma nova arrayList de usuario para categorias relacionadas, se a mesma ainda nao estiver sido criada
         if(this.categoriasRelacionadas == null ){
@@ -132,8 +144,8 @@ public class Usuarios {
         }
     }
 
-    //DESASSOCIAÇÂO COM OUTRAS ENTIDADES BIDIRECIONALMENTE
-
+    /**MÈTODOS DE DESASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
+     */
 
     //Desassociar Usuario com Pagamentos Relacionados(One to Many)
     public void desassociarUsuarioComPagamento(Pagamentos pagamento){
@@ -152,7 +164,7 @@ public class Usuarios {
         }
     }
     //Desassociar Usuario com Transações Relacionadas(One to Many)
-    public void desassociarUsuarioComTransacao(HistoricoTransacoes transacao){
+    public void desassociarUsuarioComTransacao(HistoricoTransacao transacao){
 
         //Verificar se o usuário ja está associado a transação que será desassociado
         if(this.transacoesRelacionadas == null || !this.transacoesRelacionadas.contains(transacao)){
@@ -166,7 +178,7 @@ public class Usuarios {
         }
     }
     //Desassociar usuario com Conta Relacionada(One to One)
-    public void desassociarUsuarioComConta(Contas conta){
+    public void desassociarUsuarioComConta(ContaUsuario conta){
 
         //Verificar se o usuário ja está associado a uma conta
         if(this.contaRelacionada == null || !this.contaRelacionada.equals(conta)){
@@ -179,7 +191,7 @@ public class Usuarios {
 
     }
     //Desassociar usuário com Categorias de contas Relacionadas(One to Many)
-    public void desassociarUsuarioComCategoria(CategoriasContas categoria){
+    public void desassociarUsuarioComCategoria(CategoriaFinanceira categoria){
 
         //Verificar se o usuário possui alguma associação com essa categoria
         if(this.categoriasRelacionadas == null || !this.categoriasRelacionadas.contains(categoria)){

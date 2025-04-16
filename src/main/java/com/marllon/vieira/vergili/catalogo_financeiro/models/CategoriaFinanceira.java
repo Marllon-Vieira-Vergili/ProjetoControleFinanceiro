@@ -1,26 +1,28 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-//Classificar suas transações, por exemplo, categorias de alimentação, transporte, lazer, salário, investimentos,
-// moradia,etc..
-//orzanizando os gastos e receitas, pela categoria de gastos, pra ver onde cada dinheiro está indo.
+/**
+ * Classificar suas transações, por exemplo, categorias de alimentação, transporte, lazer, salário, investimentos,
+ *  moradia,etc..
+ * orzanizando os gastos e receitas, pela categoria de gastos, pra ver onde cada dinheiro está indo.
+ *
+ */
+
 @Entity
 @Table(name = "categoria_das_contas")
 @Getter(AccessLevel.PUBLIC)
 @Setter(AccessLevel.PUBLIC)
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
-@EqualsAndHashCode(of = "id")
-@ToString
-public class CategoriasContas {
+@AllArgsConstructor(access = AccessLevel.PUBLIC)
+@EqualsAndHashCode(of = "tiposCategorias")
+@ToString(of = {"id", "contaRelacionada"})
+public class CategoriaFinanceira {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,50 +36,49 @@ public class CategoriasContas {
     private TiposCategorias tiposCategorias;
 
 
-    /* parace desnecessário este método
-    @Column(name = "descricao", nullable = false)
-    @NotBlank(message = "O campo da descrição de uma categoria não pode ser vazio!")
-    @Pattern(regexp = "^[a-zA-ZáàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ0-9 ,.]+$",
-            message = "Descrição contém caracteres inválidos!")
-    @Size(min = 5, message = "Descrição aceita de no mínimo 5 caracteres")
-    private String descricao;
-
-
-     */
-
     //RELACIONAMENTOS:
 
-    //Várias categorias de contas, pode ter uma conta relacionadas(Uma categoria de despesa de conta, pode ter uma conta relacionada
-    //ex: uma categoria de conta de despesa(conta de luz) pode ser paga por qualquer conta(corrente, poupança, etc..)
+    /**Várias categorias de contas, pode ter uma conta relacionadas(Uma categoria de despesa de conta, pode
+     * ter uma conta relacionada ex: uma categoria de conta de despesa(conta de luz) pode ser paga por
+     * qualquer conta(corrente, poupança, etc..)
+     *
+     */
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH,
             CascadeType.PERSIST, CascadeType.DETACH, CascadeType.MERGE})
-    @JoinColumn(name = "contas_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_contas_id_categorias"))
+    @JoinColumn(name = "conta_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_categoria_conta"))
     //Categoria será associada a id da conta
-    private Contas contaRelacionada;
+    private ContaUsuario contaRelacionada;
 
-    //várias categorias diferentes, ex:Contas água, luz, etc.. pode  ter vários pagamentos relacionados
-    // (ex: pagamento agua, pagamento luz, etc.)
+    /**
+     * várias categorias diferentes, ex:ContaUsuario água, luz, etc.. pode  ter vários pagamentos relacionados
+     *   (ex: pagamento agua, pagamento luz, etc.)
+     */
     @ManyToMany(mappedBy = "categoriasRelacionadas", fetch = FetchType.LAZY)
     private List<Pagamentos> pagamentosRelacionados = new ArrayList<>();
 
-
-    //várias categorias pode ter várias transações. (Ex: Categoria despesa agua, internet, luz), pode estar associado a vários
-    //tipos de transações separadamente
+    /**
+     * várias categorias pode ter várias transações. (Ex: Categoria despesa agua, internet, luz),
+     * pode estar associado a vários
+     * tiipos de transações separadamente
+     */
     @ManyToMany(mappedBy = "categoriasRelacionadas", fetch = FetchType.LAZY)
-    private List<HistoricoTransacoes> transacoesRelacionadas = new ArrayList<>();
+    private List<HistoricoTransacao> transacoesRelacionadas = new ArrayList<>();
 
-    //muitas categorias de contas pode ter um usuário associado a essas categorias.ex: um usuário pode ter categoria
-    //de despesas, de receitas, e investimento, etc.
+    /**
+     * muitas categorias de contas pode ter um usuário associado a essas categorias.ex: um usuário pode ter categoria
+     *  de despesas, de receitas, e investimento, etc.
+     */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuarios_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_usuarios_id"))
+    @JoinColumn(name = "usuario_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_categoria_usuario"))
     //categoria será relacionado a id do usuário, coluna de junção
-    private Usuarios usuarioRelacionado;
+    private Usuario usuarioRelacionado;
 
 
-    //ASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
+    /**MÈTODOS DE ASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
+     */
 
     //Associar Categoria com contas(Many to One)
-    public void associarCategoriaComConta(Contas conta) {
+    public void associarCategoriaComConta(ContaUsuario conta) {
 
         //Verificar primeiramente, se essa conta passada como parametro, ja não existe na associação das duas entidades
         if (conta.getCategoriasRelacionadas() != null && conta.getCategoriasRelacionadas().contains(this)) {
@@ -125,7 +126,7 @@ public class CategoriasContas {
     }
 
     //Associar Categoria com Transações(Many to Many)
-    public void associarCategoriaComTransacoes(HistoricoTransacoes transacao) {
+    public void associarCategoriaComTransacoes(HistoricoTransacao transacao) {
 
         //Verificar se já existe algum histórico de transação já associado a essa categoria
         if (transacao.getCategoriasRelacionadas().contains(this)) {
@@ -152,7 +153,7 @@ public class CategoriasContas {
     }
 
     //Associar Categoria com Usuário(Many to one)
-    public void associarCategoriaComUsuario(Usuarios usuario) {
+    public void associarCategoriaComUsuario(Usuario usuario) {
 
         //Verificar se já existe algum usuario já associado a essa categoria
         if (usuario.getCategoriasRelacionadas().contains(this)) {
@@ -175,10 +176,11 @@ public class CategoriasContas {
 
 
 
-    //DESASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
+    /**MÈTODOS DE DESASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
+     */
 
     //Desassociar categoria de contas a uma conta específica (Many to one)
-    public void desassociarCategoriaAConta(Contas conta){
+    public void desassociarCategoriaAConta(ContaUsuario conta){
 
         //Se a conta passada não existir associação na categoria, retornar uma exception
         if(conta.getCategoriasRelacionadas() == null || !conta.getCategoriasRelacionadas().contains(this)){
@@ -208,7 +210,7 @@ public class CategoriasContas {
     }
 
     //Desassociar categoria de contas a uma transação específica (Many to Many)
-    public void desassociarCategoriaTransacao(HistoricoTransacoes transacao){
+    public void desassociarCategoriaTransacao(HistoricoTransacao transacao){
 
         //Se o histórico de transação não existir associação na categoria, retornar uma exception
         if(transacao.getCategoriasRelacionadas() == null || !transacao.getCategoriasRelacionadas().contains(this)) {
@@ -225,7 +227,7 @@ public class CategoriasContas {
     }
 
     //Desassociar categoria de contas a um usuário específico (Many to one)
-    public void desassociarCategoriaUsuario(Usuarios usuario) {
+    public void desassociarCategoriaUsuario(Usuario usuario) {
 
         //Se o usuario não existir associação na categoria, retornar uma exception
         if (usuario.getCategoriasRelacionadas() == null || !usuario.getCategoriasRelacionadas().contains(this)) {
@@ -236,4 +238,8 @@ public class CategoriasContas {
         //Remover a associação também do lado da categoria de contas relacionado a esse usuário
         this.usuarioRelacionado = null;
     }
+
+    /**
+     * ASsociar Enums com tipos
+     */
 }

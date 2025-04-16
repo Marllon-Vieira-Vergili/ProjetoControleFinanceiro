@@ -2,12 +2,19 @@ package com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator;
 import lombok.AccessLevel;
 import lombok.Getter;
 
+import java.util.List;
+import java.util.NoSuchElementException;
+
+/**
+ * ENUMERATOR para mostrar opções tipos de categorias, seja despesa, receita, etc.
+ *
+ * */
+
 @Getter(AccessLevel.PUBLIC)
 public enum TiposCategorias {
 
     DESPESA(1),
-    RECEITA(2),
-    INVESTIMENTO(3);
+    RECEITA(2);
 
 
     //Atributo para escolher a opção dos Enums
@@ -19,6 +26,7 @@ public enum TiposCategorias {
         this.valor = valor;
     }
 
+
     //Criando um método para buscar a categoria pelo numero dela(se necessário)
     public static TiposCategorias buscarCategoriasPeloNumero(int valor){
         for(TiposCategorias tipoCategoria: TiposCategorias.values()){
@@ -28,5 +36,45 @@ public enum TiposCategorias {
         }
         return null;
     }
-}
 
+    //Criando um método para buscar a categoria pelo nome dela(se necessario)
+    public static boolean buscarCategoriasPeloNome(String nome){
+        for(TiposCategorias tipoCategoria: TiposCategorias.values()){
+            if(tipoCategoria.name().equals(nome)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+
+
+
+    /**Criando um método para caso o usuário decida escolher o valor "DESPESA", será mostrado todos os outros
+    valores de despesa a ele
+     */
+    public static List<Despesas> mostrarTodasDespesas(){
+
+
+            for(Despesas despesas : Despesas.values()){
+                try{
+                    return List.of(despesas);
+                } catch (NoSuchElementException e) {
+                    throw new NoSuchElementException(e);
+                }
+            }
+            return null;
+    }
+
+    public static List<Receitas> mostrarTodasReceitas(){
+        for(Receitas receitas: Receitas.values()){
+            try{
+                return List.of(receitas);
+            }catch (NoSuchElementException e){
+                throw new NoSuchElementException(e);
+            }
+        }
+        return null;
+    }
+}

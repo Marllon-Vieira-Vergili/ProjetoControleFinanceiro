@@ -10,17 +10,21 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 
-//representar diferentes contas bancárias ou carteiras, como saldo, titulo, corrente, poupança, etc.
-//Controlar direitinho o que sai de cada conta, cada uma de cada usuário
+/**
+ * representar diferentes contas bancárias ou carteiras, como saldo, titulo, corrente, poupança, etc.
+ * Controlar direitinho o que sai de cada conta, cada uma de cada usuário
+ */
+
 @Entity
 @Table(name = "contas",uniqueConstraints = {
-        @UniqueConstraint(name = "fk_contas_id_usuarios", columnNames = "usuarios_id")})
+        @UniqueConstraint(name = "fk_conta_usuario", columnNames = "usuario_id")})
 @Getter(AccessLevel.PUBLIC)
 @Setter(AccessLevel.PUBLIC)
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
-@EqualsAndHashCode(of = "id")
-@ToString
-public class Contas {
+@AllArgsConstructor(access = AccessLevel.PUBLIC)
+@EqualsAndHashCode(of = {"nome", "tipoConta"})
+@ToString(of = {"id","nome", "saldo", "tipoConta"})
+public class ContaUsuario {
 
     @Id
     @Column(name = "id",nullable = false)
@@ -37,7 +41,7 @@ public class Contas {
     @NotNull(message = "O campo do saldo na conta não pode ser nulo!")
     private BigDecimal saldo;
 
-    @Column(name = "tipoConta",nullable = false)
+    @Column(name = "tipo_conta",nullable = false)
     @NotBlank(message = "O campo do tipo de conta não pode ficar vazio!")
     @Pattern(regexp = "^[a-zA-ZáàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ ]+$",
             message = "O tipo só pode conter caracteres alfabéticos e espaços! Ex: Conta Poupança, Conta Corrente, etc.")
@@ -46,31 +50,43 @@ public class Contas {
 
     //RELACIONAMENTOS
 
-    //uma conta pode ter várias categorias de recebimentos e gastos;(uma conta(poupança,corrente,etc..) pode ter várias
-    // categorias de pagamentos, seja despesa, receita, etc.
+    /**
+     *  uma conta pode ter várias categorias de recebimentos e gastos;(uma conta(poupança,corrente,etc..)
+     *  pode ter várias
+     *  categorias de pagamentos, seja despesa, receita, etc.
+     */
     @OneToMany(mappedBy = "contaRelacionada", fetch = FetchType.LAZY, cascade = {CascadeType.DETACH,
             CascadeType.MERGE, CascadeType.PERSIST,CascadeType.REFRESH})
-    private List<CategoriasContas> categoriasRelacionadas = new ArrayList<>();
+    private List<CategoriaFinanceira> categoriasRelacionadas = new ArrayList<>();
 
-    //Uma conta pode ter vários pagamentos relacionados(uma conta(poupança,corrente,etc..)pode ter vários pagamentos feitos
+
+    /**Uma conta pode ter vários pagamentos relacionados(uma conta(poupança,corrente,etc..)
+     * pode ter vários pagamentos feitos
+     */
     @OneToMany(mappedBy = "contaRelacionada",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Pagamentos> pagamentosRelacionados = new ArrayList<>();
 
-    //Uma conta pode ter várias transações relacionadas(uma conta (poupança,corrente,etc..) pode ter várias transações realizdas
+    /**
+     * Uma conta pode ter várias transações relacionadas(uma conta (poupança,corrente,etc..)
+     * pode ter várias transações realizdas
+     */
     @OneToMany(mappedBy = "contaRelacionada",fetch = FetchType.LAZY,cascade = CascadeType.ALL )
-    private List<HistoricoTransacoes> transacoesRelacionadas = new ArrayList<>();
+    private List<HistoricoTransacao> transacoesRelacionadas = new ArrayList<>();
 
-    //Uma conta pode ter um usuário relacionado(Uma conta de perfil financeiro somente)
+    /**Uma conta pode ter um usuário relacionado(Uma conta de perfil financeiro somente)
+     *
+     */
     @OneToOne(fetch = FetchType.LAZY,cascade = {CascadeType.DETACH,
             CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name = "usuarios_id",referencedColumnName = "id",foreignKey = @ForeignKey(name = "fk_contas_id_usuarios"))
-    private Usuarios usuarioRelacionado;
-
-    //ASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
+    @JoinColumn(name = "usuario_id",unique = true,referencedColumnName = "id",foreignKey = @ForeignKey(name = "fk_conta_usuario"))
+    private Usuario usuarioRelacionado;
 
 
+
+    /**MÈTODOS DE ASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
+     */
     //Associar Conta com Categoria de contas(One to Many)
-    public void associarContaComCategoria(CategoriasContas categoriaConta){
+    public void associarContaComCategoria(CategoriaFinanceira categoriaConta){
 
         //Inicializar a lista primeiramente, para evitar erros de NullPointerException
         if(this.categoriasRelacionadas == null){
@@ -105,7 +121,7 @@ public class Contas {
     }
 
     //Associar Conta com Historico de Transações (One to Many)
-    public void associarContaComTransacoes(HistoricoTransacoes transacao){
+    public void associarContaComTransacoes(HistoricoTransacao transacao){
 
         //Ja instanciar uma nova lista, para ter certeza que a mesma não será nula, evitando NullPointerException
         if(this.transacoesRelacionadas == null){
@@ -124,7 +140,7 @@ public class Contas {
     }
 
     //Associar Conta com Usuário (One to One)
-    public void associarContaComUsuario(Usuarios usuario) {
+    public void associarContaComUsuario(Usuario usuario) {
 
         //verificar se a conta ja não possui um usuário associado
         if (this.usuarioRelacionado != null) {
@@ -136,10 +152,11 @@ public class Contas {
         usuario.setContaRelacionada(this);
     }
 
-    //DESASSOCIACÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
+    /**MÈTODOS DE DESASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
+     */
 
     //Desassociar Conta com categoria de contas(One to Many)
-    public void desassociarContaDeCategorias(CategoriasContas categoriaConta){
+    public void desassociarContaDeCategorias(CategoriaFinanceira categoriaConta){
 
         //Verificar se existe alguma categoria associada a essa conta
         if(!this.categoriasRelacionadas.contains(categoriaConta)){
@@ -165,7 +182,7 @@ public class Contas {
     }
 
     //Desassociar Conta com Historico de Transações (One to Many)
-    public void desassociarContaDeHistoricoDeTransacao(HistoricoTransacoes transacao){
+    public void desassociarContaDeHistoricoDeTransacao(HistoricoTransacao transacao){
 
         //Verificar primeiramente, se existe o histórico de transação passado como parametro, vinculado a essa conta
         if(!this.transacoesRelacionadas.contains(transacao)){
@@ -178,7 +195,7 @@ public class Contas {
     }
 
     //Desassociar Conta com Usuário (One to One)
-    public void desassociarContaDeUsuario(Usuarios usuario){
+    public void desassociarContaDeUsuario(Usuario usuario){
 
         //Verificar primeiramente, se existe o usuário passado como parametro, vinculado a essa conta
         if(usuario.getContaRelacionada() != this){

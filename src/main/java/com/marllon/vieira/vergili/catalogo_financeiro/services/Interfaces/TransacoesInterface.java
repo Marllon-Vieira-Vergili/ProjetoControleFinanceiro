@@ -1,28 +1,33 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.services.Interfaces;
 
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.receive.entities.HistoricoTransacoesRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.HistoricoTransacaoRequest;
 
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.HistoricoTransacoesResponse;
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities.HistoricoTransacaoResponse;
 
 import java.util.List;
 
 public interface TransacoesInterface {
 
-    //Interface para criação dos Métodos CRUDS SEPARADAMENTE, um por entidade
+    /**Esta interface é para criação dos métodos CRUDS(CREATE, READ, UPDATE, DELETE) relacionado somente as
+     * transacoes.
+     *
+     * A maioria dos métodos, retorna o DTO(Data Transfer Object) no valor
+     *
+     */
 
 
     //Criar (nova transação)
-    HistoricoTransacoesResponse criarNovoHistoricoTransacao(HistoricoTransacoesRequest historicoTransacao);
+    HistoricoTransacaoResponse criarNovoHistoricoTransacao(HistoricoTransacaoRequest historicoTransacao);
 
     //Ler
-    HistoricoTransacoesResponse encontrarTransacaoPorId(Long id);
-    List<HistoricoTransacoesResponse> encontrarTodasTransacoes();
-    HistoricoTransacoesResponse encontrarTransacaoPorNome(String nome);
+    HistoricoTransacaoResponse encontrarTransacaoPorId(Long id);
+    List<HistoricoTransacaoResponse> encontrarTodasTransacoes();
+    HistoricoTransacaoResponse encontrarTransacaoPorNome(String nome);
 
     //Atualizar
-    //HistoricoTransacoesResponse atualizarHistoricoTransacao(Long id, HistoricoTransacoesRequest historicoTransacao);
+    //HistoricoTransacaoResponse atualizarHistoricoTransacao(Long id, HistoricoTransacaoRequest historicoTransacao);
 
     //Remover
-    HistoricoTransacoesResponse removerTransacaoPorId(Long id);
-   HistoricoTransacoesResponse removerTransacaoPorNome(String nome);
+    HistoricoTransacaoResponse removerTransacaoPorId(Long id);
+   HistoricoTransacaoResponse removerTransacaoPorNome(String nome);
 }

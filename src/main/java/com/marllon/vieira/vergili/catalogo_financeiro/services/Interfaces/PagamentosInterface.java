@@ -1,6 +1,6 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.services.Interfaces;
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.receive.entities.PagamentosRequest;
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.PagamentosResponse;
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.PagamentosRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities.PagamentosResponse;
 
 
 import java.util.List;
@@ -8,7 +8,12 @@ import java.util.List;
 public interface PagamentosInterface {
 
 
-    //Interface para criação dos Métodos CRUDS SEPARADAMENTE, um por entidade
+    /**Esta interface é para criação dos métodos CRUDS(CREATE, READ, UPDATE, DELETE) relacionado somente ao
+     * Pagamento.
+     *
+     * A maioria dos métodos, retorna o DTO(Data Transfer Object) no valor
+     *
+     */
 
     //Criar (novo pagamento)
 

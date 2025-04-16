@@ -1,8 +1,13 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator;
 import lombok.AccessLevel;
 import lombok.Getter;
-
 import java.util.NoSuchElementException;
+
+
+/**
+ * ENUMERATOR para mostrar opções de despesas ao relacionar com o pagamento feito, ou também no histórico de transação
+ *
+ * */
 
 @Getter(AccessLevel.PUBLIC)
 public enum Despesas {
