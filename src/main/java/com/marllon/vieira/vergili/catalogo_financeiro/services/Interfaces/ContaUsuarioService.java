@@ -3,7 +3,7 @@ import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.Conta
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities.ContaUsuarioResponse;
 import java.util.List;
 
-public interface ContaUsuarioInterface {
+public interface ContaUsuarioService {
 
     /**Esta interface é para criação dos métodos CRUDS(CREATE, READ, UPDATE, DELETE) relacionado somente as
      * ContaUsuario.
@@ -19,7 +19,6 @@ public interface ContaUsuarioInterface {
     //Ler
     ContaUsuarioResponse encontrarContaPorId(Long id);
     List<ContaUsuarioResponse> encontrarTodasContas();
-    ContaUsuarioResponse encontrarContaPorNome(String nome);
 
     //Atualizar
     ContaUsuarioResponse atualizarConta(Long id, ContaUsuarioRequest conta);

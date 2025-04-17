@@ -19,7 +19,9 @@ public enum Despesas {
     CONTA_TELEFONE(5),
     IMPOSTOS(6),
     LAZER(7),
-    EMPRESTIMOS(8);
+    COMBUSTIVEL(8),
+    ALIMENTACAO(9),
+    EMPRESTIMOS(10);
 
 
     //atributo para receber o valor dos enumerators

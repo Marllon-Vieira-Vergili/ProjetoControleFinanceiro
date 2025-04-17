@@ -8,5 +8,5 @@ import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCat
  * @param id
  * @param tipoCategoria
  */
-public record CategoriaFinanceiraResponse(Long id, TiposCategorias tipoCategoria) {
+public record CategoriaFinanceiraResponse(Long id, TiposCategorias tipoCategoria, String subTipo) {
 }

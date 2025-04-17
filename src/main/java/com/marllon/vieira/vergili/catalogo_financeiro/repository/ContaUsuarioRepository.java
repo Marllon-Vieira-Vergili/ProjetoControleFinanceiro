@@ -13,10 +13,8 @@ public interface ContaUsuarioRepository extends JpaRepository<ContaUsuario, Long
     //Metodos customizados do repositório de ContaUsuario
 
 
-    //Método para verificar se nome e tipoConta são iguais(Comparação)
-    boolean existsByNomeIgnoreCaseAndTipoContaIgnoreCase(String nome, String tipoConta);
-
-
+    //Método para comparação, verificar se nome, saldo  são iguais
+    boolean existsByNomeAndSaldo(String nome, BigDecimal saldo);
 
 
     //Método para procurar a conta pelo nome da mesma
@@ -28,7 +26,10 @@ public interface ContaUsuarioRepository extends JpaRepository<ContaUsuario, Long
     @Query("SELECT c FROM ContaUsuario c WHERE c.saldo =: saldo")
     ContaUsuario encontrarContaPeloSaldo(@Param("saldo") BigDecimal saldo);
 
+    /*
     //Método para procurar a conta pelo tipo de conta
     @Query("SELECT c FROM ContaUsuario c WHERE c.tipoConta =: tipo")
     ContaUsuario encontrarpeloTipoDeConta(@Param("tipo") String tipoConta);
+
+     */
 }

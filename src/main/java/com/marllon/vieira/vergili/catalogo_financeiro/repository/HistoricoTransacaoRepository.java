@@ -14,6 +14,9 @@ public interface HistoricoTransacaoRepository extends JpaRepository<HistoricoTra
 
     //Metodos customizados do repositório de Transações
 
+    //Método customizado para comparação de valores(para não salvar o mesmo valor no banco de dados
+    boolean existsByDataAndDescricao(LocalDate dataPagamento,String descricao);
+
     //Método para procurar a transação pela data da mesma
     @Query("SELECT t FROM HistoricoTransacao t WHERE t.data =: data")
     HistoricoTransacao encontrarTransacaoPelaData(@Param("data") LocalDate data);

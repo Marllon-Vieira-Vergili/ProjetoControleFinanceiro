@@ -4,6 +4,8 @@ import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCat
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -38,6 +40,7 @@ public class HistoricoTransacao {
     @NotNull(message = "O campo de data está nulo! Necessita de um dado")
     @Column(name = "data", nullable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    @DateTimeFormat(pattern = "dd/MM/yyyy")
     private LocalDate data;
 
     @NotBlank(message = "O campo de descrição está vazio!")

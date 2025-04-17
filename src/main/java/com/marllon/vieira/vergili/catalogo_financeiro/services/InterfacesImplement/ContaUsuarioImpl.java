@@ -4,16 +4,17 @@ import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.Conta
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities.ContaUsuarioResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.ContaUsuario;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.ContaUsuarioRepository;
-import com.marllon.vieira.vergili.catalogo_financeiro.services.Interfaces.ContaUsuarioInterface;
+import com.marllon.vieira.vergili.catalogo_financeiro.services.Interfaces.ContaUsuarioService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.NoSuchElementException;
 
 
 @Service
-public class ContaUsuarioImpl implements ContaUsuarioInterface {
+public class ContaUsuarioImpl implements ContaUsuarioService {
 
     @Autowired
     private ContaUsuarioRepository contaUsuarioRepository;
@@ -25,21 +26,18 @@ public class ContaUsuarioImpl implements ContaUsuarioInterface {
         //Criar uma nova conta
         ContaUsuario novaConta = new ContaUsuario();
         novaConta.setNome(conta.nome().toUpperCase());
-        novaConta.setTipoConta(conta.tipoConta().toUpperCase());
         novaConta.setSaldo(conta.saldo());
 
-        //Verificar se esse nome e tipo de conta passado do parâmetro já não existe no banco um igual
-        boolean contaExistente = contaUsuarioRepository.existsByNomeIgnoreCaseAndTipoContaIgnoreCase(novaConta.getNome(), novaConta.getTipoConta());
-        if(contaExistente){
-            throw new IllegalArgumentException("Essa conta já existe no banco de dados!");
-        }
 
+        //Verificar se esse nome, e saldo conta passado do parâmetro já não existe no banco um igual
+            if(contaUsuarioRepository.existsByNomeAndSaldo(novaConta.getNome(), novaConta.getSaldo())){
+                    throw new IllegalArgumentException("Já existe uma conta com esse nome e saldo criados");
+        }
         //Salvar a novaConta, se estiver tudo certo
         contaUsuarioRepository.save(novaConta);
 
         //Retornar a resposta
-        return new ContaUsuarioResponse(novaConta.getId(), novaConta.getNome(), novaConta.getSaldo(),
-                novaConta.getTipoConta());
+        return new ContaUsuarioResponse(novaConta.getId(), novaConta.getNome(), novaConta.getSaldo());
     }
 
     @Override
@@ -55,7 +53,7 @@ public class ContaUsuarioImpl implements ContaUsuarioInterface {
         }
         //Retornar os dados da id encontrada
         return new ContaUsuarioResponse(contaEncontrada.getId(), contaEncontrada.getNome(),
-                contaEncontrada.getSaldo(), contaEncontrada.getTipoConta());
+                contaEncontrada.getSaldo());
     }
 
     @Override
@@ -71,27 +69,9 @@ public class ContaUsuarioImpl implements ContaUsuarioInterface {
 
         //Retornar a lista de todas as contas encontradas
         return todasContasEncontradas.stream().map(contaUsuario ->
-                new ContaUsuarioResponse(contaUsuario.getId(), contaUsuario.getNome(), contaUsuario.getSaldo(),
-                        contaUsuario.getTipoConta())).toList();
+                new ContaUsuarioResponse(contaUsuario.getId(), contaUsuario.getNome(), contaUsuario.getSaldo())).toList();
     }
 
-    @Override
-    public ContaUsuarioResponse encontrarContaPorNome(String nome) {
-
-        //Encontrar a conta pelo nome
-        ContaUsuario contaEncontrada = contaUsuarioRepository.encontrarContaPeloNome(nome);
-
-        //Se não tiver nenhuma conta no banco de dados
-        if(contaEncontrada == null){
-            throw  new NoSuchElementException("Essa conta não foi encontrada no banco de dados");
-        }
-
-        //Retornar os dados da conta pelo nome encontrado
-        return new ContaUsuarioResponse(contaEncontrada.getId(), contaEncontrada.getNome(),
-                contaEncontrada.getSaldo(), contaEncontrada.getTipoConta());
-
-
-    }
 
     @Override
     @Transactional
@@ -104,25 +84,27 @@ public class ContaUsuarioImpl implements ContaUsuarioInterface {
         //Se achar.. vamos atualizar os dados da conta
         contaUsuario.setNome(conta.nome().toUpperCase());
         contaUsuario.setSaldo(conta.saldo());
-        contaUsuario.setTipoConta(conta.tipoConta().toUpperCase());
+
+        //Verificar se esse nome, e saldo conta passado do parâmetro já não existe no banco um igual
+        if(contaUsuarioRepository.existsByNomeAndSaldo(contaUsuario.getNome(), contaUsuario.getSaldo())){
+            throw new IllegalArgumentException("Já existe uma conta com esse nome e saldo criados");
+        }
 
         //Salvar os dados atualizados da conta do usuário
         contaUsuarioRepository.save(contaUsuario);
+
+        //Retornar os dados atualizados
         return new ContaUsuarioResponse(contaUsuario.getId(), contaUsuario.getNome(),
-                contaUsuario.getSaldo(), contaUsuario.getTipoConta());
+                contaUsuario.getSaldo());
     }
 
     @Override
     @Transactional
     public boolean removerContaPorId(Long id) {
-
-        //Deletar a conta com a id informada
-        try{
+        if(contaUsuarioRepository.findById(id).isPresent()){
             contaUsuarioRepository.deleteById(id);
-        } catch (Exception e) {
-            throw new NoSuchElementException("Nenhuma conta com essa id foi localizada para ser deletada");
+            return true;
         }
-        return true;
+        return false;
     }
-
 }

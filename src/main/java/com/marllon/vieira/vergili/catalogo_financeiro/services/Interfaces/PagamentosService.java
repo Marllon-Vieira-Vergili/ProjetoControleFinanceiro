@@ -5,7 +5,7 @@ import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities.Paga
 
 import java.util.List;
 
-public interface PagamentosInterface {
+public interface PagamentosService {
 
 
     /**Esta interface é para criação dos métodos CRUDS(CREATE, READ, UPDATE, DELETE) relacionado somente ao
@@ -22,12 +22,10 @@ public interface PagamentosInterface {
     //Ler
     PagamentosResponse encontrarPagamentoPorId(Long id);
     List<PagamentosResponse> encontrarTodosPagamentos();
-    PagamentosResponse encontrarPagamentoPorDescricao(String descricao);
 
     //Atualizar
-    //PagamentosResponse atualizarPagamento(Long id, PagamentosRequest pagamento);
+    PagamentosResponse atualizarPagamento(Long id, PagamentosRequest pagamento);
 
     //Remover
     PagamentosResponse removerPagamentoPorId(Long id);
-    PagamentosResponse removerPagamentoPorDescricao(String descricao);
 }

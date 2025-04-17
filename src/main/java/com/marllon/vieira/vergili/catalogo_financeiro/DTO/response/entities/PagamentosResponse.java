@@ -11,5 +11,5 @@ import java.time.LocalDate;
  * @param descricao
  * @param categoria
  */
-public record PagamentosResponse(Long id, BigDecimal valor, LocalDate data, String descricao, String categoria) {
+public record PagamentosResponse(Long id, BigDecimal valor, LocalDate data, String descricao, com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.@jakarta.validation.constraints.NotNull(message = "O campo de categoria não pode ser null!") TiposCategorias categoria) {
 }

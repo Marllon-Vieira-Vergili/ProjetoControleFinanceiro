@@ -1,14 +1,14 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator;
 import lombok.AccessLevel;
 import lombok.Getter;
-
+import java.util.Arrays;
 import java.util.List;
-import java.util.NoSuchElementException;
+
 
 /**
  * ENUMERATOR para mostrar opções tipos de categorias, seja despesa, receita, etc.
- *
  * */
+
 
 @Getter(AccessLevel.PUBLIC)
 public enum TiposCategorias {
@@ -54,27 +54,12 @@ public enum TiposCategorias {
     /**Criando um método para caso o usuário decida escolher o valor "DESPESA", será mostrado todos os outros
     valores de despesa a ele
      */
-    public static List<Despesas> mostrarTodasDespesas(){
-
-
-            for(Despesas despesas : Despesas.values()){
-                try{
-                    return List.of(despesas);
-                } catch (NoSuchElementException e) {
-                    throw new NoSuchElementException(e);
-                }
-            }
-            return null;
+    public static List<Despesas> mostrarTodasDespesas() {
+        return Arrays.asList(Despesas.values());
     }
 
-    public static List<Receitas> mostrarTodasReceitas(){
-        for(Receitas receitas: Receitas.values()){
-            try{
-                return List.of(receitas);
-            }catch (NoSuchElementException e){
-                throw new NoSuchElementException(e);
-            }
+    public static List<Receitas> mostrarTodasReceitas() {
+        return Arrays.asList(Receitas.values());
         }
-        return null;
     }
-}
+

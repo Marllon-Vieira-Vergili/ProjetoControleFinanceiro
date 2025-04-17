@@ -5,6 +5,7 @@ import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCat
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -38,6 +39,7 @@ public class Pagamentos {
     @Column(name = "data",nullable = false)
     @NotNull(message = "O campo da data não pode ficar vazio!")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    @DateTimeFormat(pattern = "dd/MM/yyyy")
     private LocalDate data;
 
     @Column(name = "descricao", length = 255,nullable = false)
@@ -240,4 +242,6 @@ public class Pagamentos {
             categoria.getPagamentosRelacionados().remove(this);
         }
     }
+
+
 }

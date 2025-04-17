@@ -6,9 +6,8 @@ package com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities;
  * @param id
  * @param nome
  * @param email
- * @param senha
  * @param telefone
  */
 
-public record UsuarioResponse(Long id, String nome, String email, String senha, String telefone) {
+public record UsuarioResponse(Long id, String nome, String email, String telefone) {
 }

@@ -1,4 +1,5 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -45,8 +46,9 @@ public class Usuario {
     private String senha;
 
     @Column(name = "telefone",nullable = false)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = ("99)99999-9999"))
     @NotBlank(message = "Campo telefone é obrigatório!")
-    @Size(min = 11, message = "Padrão de telefone aceito: (DDD)00000-0000")
+    @Size(min = 14,max = 14, message = "Padrão de telefone aceito: (DDD)00000-0000")
     @Pattern(regexp = "\\(\\d{2}\\)\\d{5}-\\d{4}", message = "O formato deve ser formato Brasil (99)99999-9999")
     private String telefone;
 

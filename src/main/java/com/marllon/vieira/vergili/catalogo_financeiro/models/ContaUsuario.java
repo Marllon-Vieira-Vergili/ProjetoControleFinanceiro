@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 
 /**
@@ -41,11 +42,14 @@ public class ContaUsuario {
     @NotNull(message = "O campo do saldo na conta não pode ser nulo!")
     private BigDecimal saldo;
 
+    /*
     @Column(name = "tipo_conta",nullable = false)
     @NotBlank(message = "O campo do tipo de conta não pode ficar vazio!")
     @Pattern(regexp = "^[a-zA-ZáàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ ]+$",
             message = "O tipo só pode conter caracteres alfabéticos e espaços! Ex: Conta Poupança, Conta Corrente, etc.")
     private String tipoConta;
+
+     */
 
 
     //RELACIONAMENTOS
@@ -206,4 +210,5 @@ public class ContaUsuario {
         //Desassociar também do lado do usuário, a conta dele
         usuario.setContaRelacionada(null);
     }
+
 }

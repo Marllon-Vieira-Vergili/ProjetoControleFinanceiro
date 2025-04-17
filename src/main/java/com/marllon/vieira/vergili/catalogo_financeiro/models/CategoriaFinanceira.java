@@ -36,6 +36,9 @@ public class CategoriaFinanceira {
     private TiposCategorias tiposCategorias;
 
 
+    private String subTipo;
+
+
     //RELACIONAMENTOS:
 
     /**Várias categorias de contas, pode ter uma conta relacionadas(Uma categoria de despesa de conta, pode

@@ -3,7 +3,7 @@ import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.Usuar
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities.UsuarioResponse;
 import java.util.List;
 
-public interface UsuarioInterface {
+public interface UsuarioService {
 
     /**Esta interface é para criação dos métodos CRUDS(CREATE, READ, UPDATE, DELETE) relacionado somente a
      * Usuario.
@@ -18,12 +18,11 @@ public interface UsuarioInterface {
     //Ler
     UsuarioResponse encontrarUsuarioPorId(Long id);
     List<UsuarioResponse> encontrarTodosUsuarios();
-    UsuarioResponse encontrarUsuarioPorNome(String nome);
 
     //Atualizar
     UsuarioResponse atualizarDadosUsuario(Long id, UsuarioRequest usuario);
 
     //Remover
     UsuarioResponse removerUsuarioPorId(Long id);
-    UsuarioResponse removerUsuarioPorNome(String nome);
+
 }

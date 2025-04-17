@@ -6,5 +6,5 @@ import java.math.BigDecimal;
 Irá solicitar que ele coloque o nome da conta, o saldo da conta e o tipo da conta.
 (Somente para envio de dados pela Entidade)
  */
-public record ContaUsuarioRequest(String nome, BigDecimal saldo, String tipoConta) {
+public record ContaUsuarioRequest(String nome, BigDecimal saldo) {
 }

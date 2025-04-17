@@ -6,7 +6,7 @@ import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities.Hist
 
 import java.util.List;
 
-public interface TransacoesInterface {
+public interface TransacoesService {
 
     /**Esta interface é para criação dos métodos CRUDS(CREATE, READ, UPDATE, DELETE) relacionado somente as
      * transacoes.
@@ -22,12 +22,12 @@ public interface TransacoesInterface {
     //Ler
     HistoricoTransacaoResponse encontrarTransacaoPorId(Long id);
     List<HistoricoTransacaoResponse> encontrarTodasTransacoes();
-    HistoricoTransacaoResponse encontrarTransacaoPorNome(String nome);
+
 
     //Atualizar
-    //HistoricoTransacaoResponse atualizarHistoricoTransacao(Long id, HistoricoTransacaoRequest historicoTransacao);
+    HistoricoTransacaoResponse atualizarHistoricoTransacao(Long id, HistoricoTransacaoRequest historicoTransacao);
 
     //Remover
     HistoricoTransacaoResponse removerTransacaoPorId(Long id);
-   HistoricoTransacaoResponse removerTransacaoPorNome(String nome);
+
 }
