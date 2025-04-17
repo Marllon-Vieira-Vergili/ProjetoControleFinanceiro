@@ -157,23 +157,44 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
 
     @Override
     public List<CategoriaFinanceiraResponse> encontrarCategoriasPorTipo(TiposCategorias tipo) {
+        // Encontrar todas as categorias pelo tipo
+        List<CategoriaFinanceira> todasCategorias = categoriaFinanceiraRepository.encontrarPorTipoCategoria(tipo);
 
-        //Encontrar todas as categorias
-        List<CategoriaFinanceira> todasCategorias = Collections.singletonList
-                (categoriaFinanceiraRepository.encontrarPorTipoCategoria(tipo));
-
-        //Dependendo da categoria que o usuário escolher, verificar a categoria e subcategorias
-        List<CategoriaFinanceira> categoriasFiltradas = todasCategorias.stream().filter(
-                categoriaFinanceira -> categoriaFinanceira.getTiposCategorias().equals(tipo)).toList();
-
-        if(categoriasFiltradas.isEmpty()){
-            throw new NoSuchElementException("Não há nenhuma categoria dessa no banco de dados");
+        // Validar se existem categorias com o tipo fornecido
+        if (todasCategorias.isEmpty()) {
+            throw new NoSuchElementException("Não há nenhuma categoria desse tipo no banco de dados!");
         }
 
-        //Mapear as categorias encontrada
-        return categoriasFiltradas.stream().map(categoriaFinanceira ->
-                new CategoriaFinanceiraResponse(categoriaFinanceira.getId(),
-                        categoriaFinanceira.getTiposCategorias(), categoriaFinanceira.getSubTipo())).toList();
+        // Verificar o tipo e validar os subtipos
+        if (tipo.equals(TiposCategorias.RECEITA)) {
+            boolean receitaValida = todasCategorias.stream()
+                    .map(CategoriaFinanceira::getSubTipo)
+                    .anyMatch(subtipo -> Arrays.stream(Receitas.values())
+                            .map(Enum::name)
+                            .anyMatch(valor -> valor.equalsIgnoreCase(subtipo)));
+            if (!receitaValida) {
+                throw new NoSuchElementException("Nenhum subtipo válido de receita encontrado!");
+            }
+        } else if (tipo.equals(TiposCategorias.DESPESA)) {
+            boolean despesaValida = todasCategorias.stream()
+                    .map(CategoriaFinanceira::getSubTipo)
+                    .anyMatch(subtipo -> Arrays.stream(Despesas.values())
+                            .map(Enum::name)
+                            .anyMatch(valor -> valor.equalsIgnoreCase(subtipo)));
+            if (!despesaValida) {
+                throw new NoSuchElementException("Nenhum subtipo válido de despesa encontrado!");
+            }
+        } else {
+            throw new IllegalArgumentException("Tipo de categoria inválido. Use apenas RECEITA ou DESPESA.");
+        }
+
+        // Mapear as categorias encontradas para a resposta
+        return todasCategorias.stream()
+                .map(categoriaFinanceira -> new CategoriaFinanceiraResponse(
+                        categoriaFinanceira.getId(),
+                        categoriaFinanceira.getTiposCategorias(),
+                        categoriaFinanceira.getSubTipo()))
+                .toList();
     }
 
 }

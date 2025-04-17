@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface CategoriaFinanceiraRepository extends JpaRepository<CategoriaFinanceira,Long> {
 
 
@@ -12,8 +14,8 @@ public interface CategoriaFinanceiraRepository extends JpaRepository<CategoriaFi
 
 
     //Método para procurar a categoria de contas pelo tipo de Conta
-    @Query(value = "SELECT c FROM CategoriaFinanceira c WHERE c.tiposCategorias =: tipos_categorias")
-    CategoriaFinanceira encontrarPorTipoCategoria(@Param(value = "tipos_categorias") TiposCategorias tipoCategoria);
+    @Query(value = "SELECT c FROM CategoriaFinanceira c WHERE c.tiposCategorias = :tipos_categorias")
+    List<CategoriaFinanceira> encontrarPorTipoCategoria(@Param(value = "tipos_categorias") TiposCategorias tipoCategoria);
 
 
 }
