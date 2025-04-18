@@ -9,6 +9,6 @@ import java.math.BigDecimal;
  * e seus respectivos relacionamentos
  */
 
-public record CategoriaAssociationRequest(CategoriaFinanceiraRequest categoriaESubtipo, String nomeUsuario, String nomeConta,
-                                          BigDecimal valorPagamento, BigDecimal valorTransacao) {
+public record CategoriaFinanceiraAssociationRequest(CategoriaFinanceiraRequest categoria, String nomeUsuario, String nomeConta,
+                                                    BigDecimal valorPagamento, BigDecimal valorTransacao) {
 }

@@ -1,5 +1,7 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities;
 
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -11,5 +13,5 @@ import java.time.LocalDate;
  * @param descricao
  * @param categoria
  */
-public record PagamentosResponse(Long id, BigDecimal valor, LocalDate data, String descricao, com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.@jakarta.validation.constraints.NotNull(message = "O campo de categoria não pode ser null!") TiposCategorias categoria) {
+public record PagamentosResponse(Long id, BigDecimal valor, LocalDate data, String descricao, TiposCategorias categoria) {
 }

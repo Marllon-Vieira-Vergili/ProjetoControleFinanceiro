@@ -1,5 +1,6 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models;
 
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposContas;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -43,14 +44,12 @@ public class ContaUsuario {
     @NotNull(message = "O campo do saldo na conta não pode ser nulo!")
     private BigDecimal saldo;
 
-    /*
+
     @Column(name = "tipo_conta",nullable = false)
     @NotBlank(message = "O campo do tipo de conta não pode ficar vazio!")
     @Pattern(regexp = "^[a-zA-ZáàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ ]+$",
             message = "O tipo só pode conter caracteres alfabéticos e espaços! Ex: Conta Poupança, Conta Corrente, etc.")
-    private String tipoConta;
-
-     */
+    private TiposContas tipoConta;
 
 
     //RELACIONAMENTOS

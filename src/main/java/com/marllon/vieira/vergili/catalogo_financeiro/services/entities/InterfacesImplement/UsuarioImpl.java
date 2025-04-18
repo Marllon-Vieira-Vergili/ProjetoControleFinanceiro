@@ -122,7 +122,6 @@ public class UsuarioImpl implements UsuarioService {
 
         for (Usuario usuariosPercorridos : usuariosEncontrados) {
             if (usuariosPercorridos.getNome().equalsIgnoreCase(nome)) {
-
                 return usuariosPercorridos;
             }
         }

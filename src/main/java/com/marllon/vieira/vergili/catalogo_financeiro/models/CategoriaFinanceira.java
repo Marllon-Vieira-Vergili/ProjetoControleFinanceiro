@@ -1,5 +1,6 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models;
 
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.SubTipoCategoria;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -37,8 +38,9 @@ public class CategoriaFinanceira {
     @Column(name = "tipos_categorias", nullable = false)
     private TiposCategorias tiposCategorias;
 
-
-    private String subTipo;
+    @NotNull(message = "O campo SubtTipo não pode ser nulo")
+    @Column(name = "subtipo_categoria",nullable = false)
+    private SubTipoCategoria subTipo;
 
 
     //RELACIONAMENTOS:

@@ -1,8 +1,11 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator;
+
 import lombok.AccessLevel;
 import lombok.Getter;
+
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -28,23 +31,23 @@ public enum TiposCategorias {
 
 
     //Criando um método para buscar a categoria pelo numero dela(se necessário)
-    public static TiposCategorias buscarCategoriasPeloNumero(int valor){
+    public static Optional<TiposCategorias> buscarCategoriasPeloNumero(int valor){
         for(TiposCategorias tipoCategoria: TiposCategorias.values()){
             if(tipoCategoria.getValor() == valor){
-                return tipoCategoria;
+                return Optional.of(tipoCategoria);
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     //Criando um método para buscar a categoria pelo nome dela(se necessario)
-    public static boolean buscarCategoriasPeloNome(String nome){
+    public static Optional<TiposCategorias> buscarCategoriasPeloNome(String nome){
         for(TiposCategorias tipoCategoria: TiposCategorias.values()){
-            if(tipoCategoria.name().equals(nome)){
-                return true;
+            if(tipoCategoria.name().equalsIgnoreCase(nome)){
+                return Optional.of(tipoCategoria);
             }
         }
-        return false;
+        return Optional.empty();
     }
 
 
@@ -54,12 +57,18 @@ public enum TiposCategorias {
     /**Criando um método para caso o usuário decida escolher o valor "DESPESA", será mostrado todos os outros
     valores de despesa a ele
      */
-    public static List<Despesas> mostrarTodasDespesas() {
-        return Arrays.asList(Despesas.values());
+    public static List<SubTipoCategoria> mostrarTodasDespesas() {
+
+        return (Arrays.stream(SubTipoCategoria.values()).filter(
+                subTipoCategoria ->
+                        subTipoCategoria.tiposCategorias.name().contains(TiposCategorias.DESPESA.name())).
+                toList());
     }
 
-    public static List<Receitas> mostrarTodasReceitas() {
-        return Arrays.asList(Receitas.values());
+    public static List<SubTipoCategoria> mostrarTodasReceitas() {
+        return (Arrays.stream(SubTipoCategoria.values()).filter(
+                subTipoCategoria -> subTipoCategoria.tiposCategorias.name().contains
+                        (RECEITA.name())).toList());
         }
     }
 

@@ -1,6 +1,6 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.services.associations.Interfaces;
 
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.associations.CategoriaAssociationRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.associations.CategoriaFinanceiraAssociationRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.CategoriaFinanceiraRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.associations.CategoriaFinanceiraAssociationResponse;
 
@@ -17,7 +17,7 @@ import java.util.List;
 public interface ICategoria {
 
     //Criar
-    CategoriaFinanceiraAssociationResponse criarEAssociarCategoria(CategoriaAssociationRequest novaCategoria);
+    CategoriaFinanceiraAssociationResponse criarEAssociarCategoria(CategoriaFinanceiraAssociationRequest novaCategoria);
 
     //Ler
     CategoriaFinanceiraAssociationResponse encontrarCategoriaAssociadaPorId(Long id);

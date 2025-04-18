@@ -18,6 +18,7 @@ e a o tipo de categoria que esse pagamento foi feito.(comida, conta de agua, luz
 (Somente para envio de dados pela Entidade)
  */
 public record PagamentosRequest(BigDecimal valor,
-                                LocalDate data, String descricao,
+                                LocalDate data,
+                                String descricao,
                                 TiposCategorias categoria) {
 }

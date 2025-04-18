@@ -1,8 +1,5 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.associations;
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities.CategoriaFinanceiraResponse;
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities.HistoricoTransacaoResponse;
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities.PagamentosResponse;
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities.UsuarioResponse;
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities.*;
 
 import java.util.List;
 
@@ -13,6 +10,6 @@ import java.util.List;
 public record CategoriaFinanceiraAssociationResponse(List<CategoriaFinanceiraResponse> categoriasRelacionadas,
                                                      List<PagamentosResponse> pagamentosRelacionados,
                                                      List<HistoricoTransacaoResponse> historicoTransacoesRelacionados,
-                                                     ContaUsuarioAssociationResponse contaRelacionada,
+                                                     ContaUsuarioResponse contaRelacionada,
                                                      UsuarioResponse usuarioRelacionado) {
 }
