@@ -1,14 +1,15 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 
 
 /**
@@ -23,8 +24,8 @@ import java.util.Objects;
 @Setter(AccessLevel.PUBLIC)
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 @AllArgsConstructor(access = AccessLevel.PUBLIC)
-@EqualsAndHashCode(of = {"nome", "tipoConta"})
-@ToString(of = {"id","nome", "saldo", "tipoConta"})
+@EqualsAndHashCode(of = {"nome", "saldo"})
+@ToString(of = {"id","nome", "saldo"})
 public class ContaUsuario {
 
     @Id

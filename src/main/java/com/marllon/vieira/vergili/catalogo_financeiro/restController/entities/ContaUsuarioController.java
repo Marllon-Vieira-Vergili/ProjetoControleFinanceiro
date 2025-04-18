@@ -1,10 +1,12 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.restController.entities;
+
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.ContaUsuarioRequest;
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities.ContaUsuarioResponse;
-import com.marllon.vieira.vergili.catalogo_financeiro.services.Interfaces.ContaUsuarioService;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.ContaUsuario;
+import com.marllon.vieira.vergili.catalogo_financeiro.services.entities.Interfaces.ContaUsuarioService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -19,22 +21,27 @@ public class ContaUsuarioController {
 
 
         @GetMapping(value = "/encontrarContaPorId/{id}")
-        public ContaUsuarioResponse encontrarContaPorId(@PathVariable Long id){
+        public ContaUsuario encontrarContaPorId(@PathVariable Long id){
             return contaUsuarioService.encontrarContaPorId(id);
         }
 
+    @GetMapping(value = "/encontrarContaPorNome/{nome}")
+    public ContaUsuario encontrarContaPorNome(@PathVariable String nome){
+        return contaUsuarioService.encontrarContaPorNome(nome);
+    }
+
         @GetMapping(value = "/obterTodasContas")
-        public List<ContaUsuarioResponse> obterTodasContas(){
+        public List<ContaUsuario> obterTodasContas(){
             return contaUsuarioService.encontrarTodasContas();
         }
 
         @PostMapping(value = "/adicionarConta")
-        public ContaUsuarioResponse adicionarConta(@RequestBody ContaUsuarioRequest conta){
+        public ContaUsuario adicionarConta(@RequestBody ContaUsuarioRequest conta){
             return contaUsuarioService.criarNovaConta(conta);
         }
 
         @PutMapping(value = "/atualizarConta/{id}")
-        public ContaUsuarioResponse atualizarConta(@PathVariable Long id, @RequestBody ContaUsuarioRequest conta){
+        public ContaUsuario atualizarConta(@PathVariable Long id, @RequestBody ContaUsuarioRequest conta){
             return contaUsuarioService.atualizarConta(id,conta);
         }
 

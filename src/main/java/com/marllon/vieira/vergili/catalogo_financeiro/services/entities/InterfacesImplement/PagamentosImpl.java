@@ -1,15 +1,16 @@
-package com.marllon.vieira.vergili.catalogo_financeiro.services.InterfacesImplement;
+package com.marllon.vieira.vergili.catalogo_financeiro.services.entities.InterfacesImplement;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.PagamentosRequest;
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities.PagamentosResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.Pagamentos;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.PagamentosRepository;
-import com.marllon.vieira.vergili.catalogo_financeiro.services.Interfaces.PagamentosService;
+import com.marllon.vieira.vergili.catalogo_financeiro.services.entities.Interfaces.PagamentosService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 import static com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias.DESPESA;
 import static com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias.RECEITA;
@@ -23,7 +24,7 @@ public class PagamentosImpl implements PagamentosService {
 
 
     @Override
-    public PagamentosResponse criarNovoPagamento(PagamentosRequest pagamento) {
+    public Pagamentos criarNovoPagamento(PagamentosRequest pagamento) {
 
         //Criar novo pagamento
         Pagamentos novoPagamento = new Pagamentos();
@@ -52,24 +53,19 @@ public class PagamentosImpl implements PagamentosService {
         pagamentosRepository.save(novoPagamento);
 
         //Retornar o novo pagamento criado
-        return new PagamentosResponse(novoPagamento.getId(), novoPagamento.getValor(),novoPagamento.getData(),
-                novoPagamento.getDescricao(), novoPagamento.getCategoria());
+        return novoPagamento;
     }
 
     @Override
-    public PagamentosResponse encontrarPagamentoPorId(Long id) {
-
-        //Encontrar o pagamento pela id, e retornar excecao se não encontrar
-        Pagamentos pagamentoEncontrado = pagamentosRepository.findById(id).orElseThrow(() ->
-                new NoSuchElementException("Nenhum pagamento encontrado com essa id informada"));
+    public Pagamentos encontrarPagamentoPorId(Long id) {
 
         //Se encontrar, retornar os dados do pagamento encontrado
-        return new PagamentosResponse(pagamentoEncontrado.getId(), pagamentoEncontrado.getValor(),
-                pagamentoEncontrado.getData(), pagamentoEncontrado.getDescricao(), pagamentoEncontrado.getCategoria());
+        return pagamentosRepository.findById(id).orElseThrow(() ->
+                new NoSuchElementException("Nenhum pagamento encontrado com essa id informada"));
     }
 
     @Override
-    public List<PagamentosResponse> encontrarTodosPagamentos() {
+    public List<Pagamentos> encontrarTodosPagamentos() {
         //Encontrar todos os pagamentos
         List<Pagamentos> todosPagamentos = pagamentosRepository.findAll();
 
@@ -79,13 +75,11 @@ public class PagamentosImpl implements PagamentosService {
         }
 
         //senao retornar a lista de todos eles
-        return todosPagamentos.stream().map(pagamentos ->
-                new PagamentosResponse(pagamentos.getId(), pagamentos.getValor(),pagamentos.getData(),
-                        pagamentos.getDescricao(), pagamentos.getCategoria())).toList();
+        return todosPagamentos;
     }
 
     @Override
-    public PagamentosResponse atualizarPagamento(Long id, PagamentosRequest pagamento) {
+    public Pagamentos atualizarPagamento(Long id, PagamentosRequest pagamento) {
 
         //Verificar se a id do pagamento já existe no banco de dados
         Pagamentos pagamentoEncontrado = pagamentosRepository.findById(id).orElseThrow(() ->
@@ -112,24 +106,35 @@ public class PagamentosImpl implements PagamentosService {
         pagamentosRepository.save(pagamentoEncontrado);
 
         //Retornar os dados do novo pagamento
-        return new PagamentosResponse(pagamentoEncontrado.getId(), pagamentoEncontrado.getValor(),
-                pagamentoEncontrado.getData(),pagamentoEncontrado.getDescricao(), pagamentoEncontrado.getCategoria());
+        return pagamentoEncontrado;
     }
 
 
     @Override
-    public PagamentosResponse removerPagamentoPorId(Long id) {
+    public Pagamentos removerPagamentoPorId(Long id) {
 
         //encontrar o pagamento pela id
         Pagamentos pagamentoEncontrado = pagamentosRepository.findById(id).orElseThrow(() -> new
                 NoSuchElementException("Nenhum pagamento foi encontrado com esta id informada"));
-
         //Remover o pagamento encontrado
         pagamentosRepository.delete(pagamentoEncontrado);
-
         //Retornar o valor do pagamento que foi deletado
-        return new PagamentosResponse(pagamentoEncontrado.getId(), pagamentoEncontrado.getValor(),
-                pagamentoEncontrado.getData(), pagamentoEncontrado.getDescricao(), pagamentoEncontrado.getCategoria());
+        return pagamentoEncontrado;
     }
 
-}
+    @Override
+    public List<Pagamentos> encontrarPagamentoPorValor(BigDecimal valor) {
+
+        //Encontrar todos os pagamentos
+        List<Pagamentos> pagamentosEncontrados = pagamentosRepository.findAll();
+
+        //Se não encontrar nenhum pagamento.. retornar exceção
+        if(pagamentosEncontrados.isEmpty()){
+            throw new NoSuchElementException("Não há nenhum valor no banco de dados");
+        }
+
+        //Se encontrar pagamentos, verificar quanto ao valor deles
+            return pagamentosRepository.encontrarPagamentoPelaValor(valor);
+        }
+    }
+

@@ -1,11 +1,12 @@
-package com.marllon.vieira.vergili.catalogo_financeiro.services.InterfacesImplement;
+package com.marllon.vieira.vergili.catalogo_financeiro.services.entities.InterfacesImplement;
+
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.UsuarioRequest;
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities.UsuarioResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.Usuario;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.UsuarioRepository;
-import com.marllon.vieira.vergili.catalogo_financeiro.services.Interfaces.UsuarioService;
+import com.marllon.vieira.vergili.catalogo_financeiro.services.entities.Interfaces.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -18,7 +19,7 @@ public class UsuarioImpl implements UsuarioService {
 
 
     @Override
-    public UsuarioResponse criarNovoUsuario(UsuarioRequest usuario) {
+    public Usuario criarNovoUsuario(UsuarioRequest usuario) {
 
         //Criar um novo usuário
         Usuario novoUsuario = new Usuario();
@@ -37,13 +38,12 @@ public class UsuarioImpl implements UsuarioService {
         usuarioRepository.save(novoUsuario);
 
         //Retornar a resposta
-        return new UsuarioResponse(novoUsuario.getId(), novoUsuario.getNome(), novoUsuario.getEmail(),
-                novoUsuario.getTelefone());
+        return novoUsuario;
 
     }
 
     @Override
-    public UsuarioResponse encontrarUsuarioPorId(Long id) {
+    public Usuario encontrarUsuarioPorId(Long id) {
 
         //Encontrar o usuário pela id
         Usuario usuarioEncontrado = usuarioRepository.findById(id).orElseThrow(() ->
@@ -54,12 +54,11 @@ public class UsuarioImpl implements UsuarioService {
             throw  new NullPointerException("Não há nenhum usuário no banco de dados, ele está vazio");
         }
         //Retornar os dados da id encontrada
-        return new UsuarioResponse(usuarioEncontrado.getId(), usuarioEncontrado.getNome(), usuarioEncontrado.getEmail()
-                ,usuarioEncontrado.getTelefone());
+        return usuarioEncontrado;
     }
 
     @Override
-    public List<UsuarioResponse> encontrarTodosUsuarios() {
+    public List<Usuario> encontrarTodosUsuarios() {
 
         //Encontrando todas as contas
         List<Usuario> todosUsuariosEncontrados = usuarioRepository.findAll();
@@ -70,15 +69,13 @@ public class UsuarioImpl implements UsuarioService {
         }
 
         //Retornar a lista de todas as contas encontradas
-        return todosUsuariosEncontrados.stream().map(usuario ->
-                new UsuarioResponse(usuario.getId(), usuario.getNome(), usuario.getEmail(),
-                        usuario.getTelefone())).toList();
+        return todosUsuariosEncontrados;
 
     }
 
 
     @Override
-    public UsuarioResponse atualizarDadosUsuario(Long id, UsuarioRequest usuario) {
+    public Usuario atualizarDadosUsuario(Long id, UsuarioRequest usuario) {
 
         //Encontrando o usuario que quero atualizar, pela sua id
         Usuario usuarioEncontrado = usuarioRepository.findById(id).orElseThrow(() ->
@@ -94,12 +91,11 @@ public class UsuarioImpl implements UsuarioService {
         usuarioRepository.save(usuarioEncontrado);
 
         //Retornar os dados atualizados
-        return new UsuarioResponse(usuarioEncontrado.getId(), usuarioEncontrado.getNome(), usuarioEncontrado.getEmail()
-                ,usuarioEncontrado.getTelefone());
+        return usuarioEncontrado;
     }
 
     @Override
-    public UsuarioResponse removerUsuarioPorId(Long id) {
+    public Usuario removerUsuarioPorId(Long id) {
 
         //encontrar o usuario pela id
         Usuario usuarioEncontrado = usuarioRepository.findById(id).orElseThrow(() -> new
@@ -109,8 +105,28 @@ public class UsuarioImpl implements UsuarioService {
         usuarioRepository.delete(usuarioEncontrado);
 
         //Retornar o valor do usuario que foi deletado
-        return new UsuarioResponse(usuarioEncontrado.getId(), usuarioEncontrado.getNome(), usuarioEncontrado.getEmail()
-                ,usuarioEncontrado.getTelefone());
+        return usuarioEncontrado;
+    }
+
+    @Override
+    public Usuario encontrarUsuarioPorNome(String nome) {
+
+
+        //Encontrar a conta pela id
+        List<Usuario> usuariosEncontrados = usuarioRepository.findAll();
+
+        //Se não tiver nenhuma conta no banco de dados
+        if (usuarioRepository.findAll().isEmpty()) {
+            throw new NullPointerException("Não há nenhum usuário no banco de dados, ele está vazio");
+        }
+
+        for (Usuario usuariosPercorridos : usuariosEncontrados) {
+            if (usuariosPercorridos.getNome().equalsIgnoreCase(nome)) {
+
+                return usuariosPercorridos;
+            }
+        }
+        throw new IllegalArgumentException("Nenhum usuário encontrado com o nome: " + nome);
     }
 
 

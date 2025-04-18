@@ -1,10 +1,9 @@
-package com.marllon.vieira.vergili.catalogo_financeiro.services.InterfacesImplement;
+package com.marllon.vieira.vergili.catalogo_financeiro.services.entities.InterfacesImplement;
 
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.ContaUsuarioRequest;
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities.ContaUsuarioResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.ContaUsuario;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.ContaUsuarioRepository;
-import com.marllon.vieira.vergili.catalogo_financeiro.services.Interfaces.ContaUsuarioService;
+import com.marllon.vieira.vergili.catalogo_financeiro.services.entities.Interfaces.ContaUsuarioService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,7 +20,7 @@ public class ContaUsuarioImpl implements ContaUsuarioService {
 
     @Override
     @Transactional
-    public ContaUsuarioResponse criarNovaConta(ContaUsuarioRequest conta) {
+    public ContaUsuario criarNovaConta(ContaUsuarioRequest conta) {
 
         //Criar uma nova conta
         ContaUsuario novaConta = new ContaUsuario();
@@ -37,11 +36,11 @@ public class ContaUsuarioImpl implements ContaUsuarioService {
         contaUsuarioRepository.save(novaConta);
 
         //Retornar a resposta
-        return new ContaUsuarioResponse(novaConta.getId(), novaConta.getNome(), novaConta.getSaldo());
+        return novaConta;
     }
 
     @Override
-    public ContaUsuarioResponse encontrarContaPorId(Long id) {
+    public ContaUsuario encontrarContaPorId(Long id) {
 
         //Encontrar a conta pela id
         ContaUsuario contaEncontrada = contaUsuarioRepository.findById(id).orElseThrow(() ->
@@ -52,12 +51,32 @@ public class ContaUsuarioImpl implements ContaUsuarioService {
             throw  new NullPointerException("Não há nenhuma conta no banco de dados, ele está vazio");
         }
         //Retornar os dados da id encontrada
-        return new ContaUsuarioResponse(contaEncontrada.getId(), contaEncontrada.getNome(),
-                contaEncontrada.getSaldo());
+        return contaEncontrada;
     }
 
     @Override
-    public List<ContaUsuarioResponse> encontrarTodasContas() {
+    public ContaUsuario encontrarContaPorNome(String nome) {
+
+
+        //Encontrar a conta pela id
+        List<ContaUsuario> contasEncontradas = contaUsuarioRepository.findAll();
+
+        //Se não tiver nenhuma conta no banco de dados
+        if (contaUsuarioRepository.findAll().isEmpty()) {
+            throw new NullPointerException("Não há nenhuma conta no banco de dados, ele está vazio");
+        }
+
+        for (ContaUsuario contasPercorridas : contasEncontradas) {
+            if (contasPercorridas.getNome().equalsIgnoreCase(nome)) {
+
+                return contasPercorridas;
+            }
+        }
+        throw new IllegalArgumentException("Nenhuma conta encontrada com o nome: " + nome);
+    }
+
+    @Override
+    public List<ContaUsuario> encontrarTodasContas() {
 
         //Encontrando todas as contas
         List<ContaUsuario> todasContasEncontradas = contaUsuarioRepository.findAll();
@@ -68,14 +87,13 @@ public class ContaUsuarioImpl implements ContaUsuarioService {
         }
 
         //Retornar a lista de todas as contas encontradas
-        return todasContasEncontradas.stream().map(contaUsuario ->
-                new ContaUsuarioResponse(contaUsuario.getId(), contaUsuario.getNome(), contaUsuario.getSaldo())).toList();
+        return todasContasEncontradas;
     }
 
 
     @Override
     @Transactional
-    public ContaUsuarioResponse atualizarConta(Long id, ContaUsuarioRequest conta) {
+    public ContaUsuario atualizarConta(Long id, ContaUsuarioRequest conta) {
 
         //Encontrando a conta que quero atualizar, pela sua id
         ContaUsuario contaUsuario = contaUsuarioRepository.findById(id).orElseThrow(() ->
@@ -94,8 +112,7 @@ public class ContaUsuarioImpl implements ContaUsuarioService {
         contaUsuarioRepository.save(contaUsuario);
 
         //Retornar os dados atualizados
-        return new ContaUsuarioResponse(contaUsuario.getId(), contaUsuario.getNome(),
-                contaUsuario.getSaldo());
+        return contaUsuario;
     }
 
     @Override

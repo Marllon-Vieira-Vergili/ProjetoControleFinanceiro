@@ -14,15 +14,15 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     boolean existsByNomeAndEmailAndTelefone(String nome, String email, String telefone);
 
     //Encontrar o usuário pelo Nome dele
-    @Query("SELECT u FROM Usuario u WHERE u.nome =: nomeUsuario")
+    @Query("SELECT u FROM Usuario u WHERE u.nome =:nomeUsuario")
     Usuario encontrarUsuarioPorNome(@Param("nomeUsuario") String nomeUsuario);
 
     //Encontrar o usuário pelo Email dele
-    @Query("SELECT u FROM Usuario u WHERE u.email =: emailUsuario")
+    @Query("SELECT u FROM Usuario u WHERE u.email =:emailUsuario")
     Usuario encontrarUsuarioPeloEmail(@Param("emailUsuario") String emailUsuario);
 
     //Encontrar o usuário pelo telefone dele
-    @Query("SELECT u FROM Usuario u WHERE u.telefone =: telefoneUsuario")
+    @Query("SELECT u FROM Usuario u WHERE u.telefone =:telefoneUsuario")
     Usuario encontrarUsuarioPeloTelefone(@Param("telefoneUsuario") String telefoneUsuario);
 
 }

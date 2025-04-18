@@ -1,18 +1,18 @@
-package com.marllon.vieira.vergili.catalogo_financeiro.services.InterfacesImplement;
+package com.marllon.vieira.vergili.catalogo_financeiro.services.entities.InterfacesImplement;
+
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.CategoriaFinanceiraRequest;
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities.CategoriaFinanceiraResponse;
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities.HistoricoTransacaoResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.HistoricoTransacao;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.Despesas;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.Receitas;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.CategoriaFinanceiraRepository;
-import com.marllon.vieira.vergili.catalogo_financeiro.services.Interfaces.CategoriaFinanceiraService;
+import com.marllon.vieira.vergili.catalogo_financeiro.services.entities.Interfaces.CategoriaFinanceiraService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 import static com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias.DESPESA;
 import static com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias.RECEITA;
@@ -30,7 +30,7 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
     private CategoriaFinanceiraRepository categoriaFinanceiraRepository;
 
     @Override
-    public CategoriaFinanceiraResponse criarCategoria(CategoriaFinanceiraRequest categoria) {
+    public CategoriaFinanceira criarCategoria(CategoriaFinanceiraRequest categoria) {
         // Instanciar uma nova categoria
         CategoriaFinanceira novaCategoria = new CategoriaFinanceira();
         novaCategoria.setTiposCategorias(categoria.tipoCategoria());
@@ -63,26 +63,19 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
         categoriaFinanceiraRepository.save(novaCategoria);
 
         // Retornar a resposta ao usuário
-        return new CategoriaFinanceiraResponse(
-                novaCategoria.getId(),
-                novaCategoria.getTiposCategorias(),
-                novaCategoria.getSubTipo());
+        return novaCategoria;
     }
 
     @Override
-    public CategoriaFinanceiraResponse encontrarCategoriaPorId(Long id) {
-
-        //Verificar se existe uma categoria de conta com o id informado, senao retornar exceção
-        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraRepository.findById(id).orElseThrow(() ->
-                new NoSuchElementException("Nenhuma categoria foi encontrada com essa id!"));
+    public CategoriaFinanceira encontrarCategoriaPorId(Long id) {
 
         //Retornar a categoria, se encontrada
-        return new CategoriaFinanceiraResponse(categoriaEncontrada.getId(),
-                categoriaEncontrada.getTiposCategorias(), categoriaEncontrada.getSubTipo());
+        return categoriaFinanceiraRepository.findById(id).orElseThrow(() ->
+                new NoSuchElementException("Nenhuma categoria foi encontrada com essa id!"));
     }
 
     @Override
-    public List<CategoriaFinanceiraResponse> encontrarTodasCategorias() {
+    public List<CategoriaFinanceira> encontrarTodasCategorias() {
 
         //Encontrar todas as categorias ou retornar uma exceção se não forem encontradas
         List<CategoriaFinanceira> todasCategorias = categoriaFinanceiraRepository.findAll();
@@ -91,13 +84,11 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
             throw new NoSuchElementException("não há nenhuma categoria financeira na lista");
         }
         //Retornar todas as categorias financeiras
-        return todasCategorias.stream().map(categoriaFinanceira ->
-                new CategoriaFinanceiraResponse(categoriaFinanceira.getId(),
-                        categoriaFinanceira.getTiposCategorias(), categoriaFinanceira.getSubTipo())).toList();
+        return todasCategorias;
     }
 
     @Override
-    public CategoriaFinanceiraResponse atualizarCategoria(Long id, CategoriaFinanceiraRequest categoria) {
+    public CategoriaFinanceira atualizarCategoria(Long id, CategoriaFinanceiraRequest categoria) {
 
         //Encontrar a id da categoria que será atualizada
         CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraRepository.findById(id).orElseThrow(() ->
@@ -135,12 +126,11 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
         categoriaFinanceiraRepository.save(categoriaEncontrada);
 
         //retornar ao usuário
-        return new CategoriaFinanceiraResponse(categoriaEncontrada.getId(), categoriaEncontrada.getTiposCategorias(),
-                categoriaEncontrada.getSubTipo());
+        return categoriaEncontrada;
     }
 
     @Override
-    public CategoriaFinanceiraResponse removerCategoria(Long id) {
+    public CategoriaFinanceira removerCategoria(Long id) {
 
         //encontrar a categoria pela id
         CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraRepository.findById(id).orElseThrow(() -> new
@@ -150,13 +140,14 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
         categoriaFinanceiraRepository.delete(categoriaEncontrada);
 
         //Retornar o valor do pagamento que foi deletado
-        return new CategoriaFinanceiraResponse(categoriaEncontrada.getId(), categoriaEncontrada.getTiposCategorias(),
-                categoriaEncontrada.getSubTipo());
+        return categoriaEncontrada;
     }
 
 
+
+
     @Override
-    public List<CategoriaFinanceiraResponse> encontrarCategoriasPorTipo(TiposCategorias tipo) {
+    public List<CategoriaFinanceira> encontrarCategoriasPorTipo(TiposCategorias tipo) {
         // Encontrar todas as categorias pelo tipo
         List<CategoriaFinanceira> todasCategorias = categoriaFinanceiraRepository.encontrarPorTipoCategoria(tipo);
 
@@ -187,14 +178,8 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
         } else {
             throw new IllegalArgumentException("Tipo de categoria inválido. Use apenas RECEITA ou DESPESA.");
         }
-
         // Mapear as categorias encontradas para a resposta
-        return todasCategorias.stream()
-                .map(categoriaFinanceira -> new CategoriaFinanceiraResponse(
-                        categoriaFinanceira.getId(),
-                        categoriaFinanceira.getTiposCategorias(),
-                        categoriaFinanceira.getSubTipo()))
-                .toList();
+        return todasCategorias;
     }
 
 }

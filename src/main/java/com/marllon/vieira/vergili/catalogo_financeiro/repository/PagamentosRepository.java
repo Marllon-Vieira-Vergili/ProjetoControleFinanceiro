@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 public interface PagamentosRepository extends JpaRepository<Pagamentos, Long> {
 
@@ -18,15 +19,15 @@ public interface PagamentosRepository extends JpaRepository<Pagamentos, Long> {
     boolean existsByDataAndDescricao(LocalDate dataPagamento,String descricao);
 
     //Método para encontrar o pagamento pelo nome
-    @Query("SELECT p FROM Pagamentos p WHERE p.data =: dataPagamento")
-    Pagamentos encontrarPagamentoPelaData(@Param("dataPagamento") LocalDate dataPagamento);
+    @Query("SELECT p FROM Pagamentos p WHERE p.data =:dataPagamento")
+    List<Pagamentos> encontrarPagamentoPelaData(@Param("dataPagamento") LocalDate dataPagamento);
 
     //Método para encontrar o pagamento pelo valor
-    @Query("SELECT p FROM Pagamentos p WHERE p.valor =: valorPagamento")
-    Pagamentos encontrarPagamentoPelaValor(@Param("valorPagamento") BigDecimal valorPagamento);
+    @Query("SELECT p FROM Pagamentos p WHERE p.valor =:valorPagamento")
+    List<Pagamentos> encontrarPagamentoPelaValor(@Param("valorPagamento") BigDecimal valorPagamento);
 
     //Método para encontrar o pagamento pela descrição
-    @Query("SELECT p FROM Pagamentos p WHERE p.descricao =: descricaoPagamento")
+    @Query("SELECT p FROM Pagamentos p WHERE p.descricao =:descricaoPagamento")
     Pagamentos encontrarPagamentoPelaDescricao(@Param("descricaoPagamento")String descricaoPagamento);
 
 

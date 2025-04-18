@@ -1,8 +1,10 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models;
+
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -242,7 +244,5 @@ public class CategoriaFinanceira {
         this.usuarioRelacionado = null;
     }
 
-    /**
-     * ASsociar Enums com tipos
-     */
+
 }

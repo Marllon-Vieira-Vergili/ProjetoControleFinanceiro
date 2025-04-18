@@ -18,18 +18,17 @@ public interface ContaUsuarioRepository extends JpaRepository<ContaUsuario, Long
 
 
     //Método para procurar a conta pelo nome da mesma
-    @Query("SELECT c FROM ContaUsuario c WHERE c.nome =: nome")
+    @Query("SELECT c FROM ContaUsuario c WHERE c.nome =:nome")
     ContaUsuario encontrarContaPeloNome(@Param("nome") String nome);
 
 
     //Método para procurar a conta pelo nome saldo da mesma
-    @Query("SELECT c FROM ContaUsuario c WHERE c.saldo =: saldo")
+    @Query("SELECT c FROM ContaUsuario c WHERE c.saldo =:saldo")
     ContaUsuario encontrarContaPeloSaldo(@Param("saldo") BigDecimal saldo);
 
-    /*
+/*NÂO INSTANCIAR ESSE MÈTODO! EU DECIDI TIRAR ELE POR ENQUANTO, NÂO VEJO NECESSICADE
     //Método para procurar a conta pelo tipo de conta
-    @Query("SELECT c FROM ContaUsuario c WHERE c.tipoConta =: tipo")
+    @Query("SELECT c FROM ContaUsuario c WHERE c.tipoConta =:tipo")
     ContaUsuario encontrarpeloTipoDeConta(@Param("tipo") String tipoConta);
-
-     */
+ */
 }

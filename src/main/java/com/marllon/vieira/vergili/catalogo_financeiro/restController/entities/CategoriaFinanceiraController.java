@@ -1,8 +1,9 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.restController.entities;
+
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.CategoriaFinanceiraRequest;
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities.CategoriaFinanceiraResponse;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias;
-import com.marllon.vieira.vergili.catalogo_financeiro.services.Interfaces.CategoriaFinanceiraService;
+import com.marllon.vieira.vergili.catalogo_financeiro.services.entities.Interfaces.CategoriaFinanceiraService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -20,33 +21,34 @@ public class CategoriaFinanceiraController {
 
 
     @GetMapping(value = "/obterCategoriaId/{id}")
-    public CategoriaFinanceiraResponse encontrarCategoriaPorId(@PathVariable Long id){
+    public CategoriaFinanceira encontrarCategoriaPorId(@PathVariable Long id){
         return categoriaFinanceiraService.encontrarCategoriaPorId(id);
     }
 
+
     @GetMapping(value = "/obterTodasCategorias")
-    public List<CategoriaFinanceiraResponse> obterTodasCategorias(){
+    public List<CategoriaFinanceira> obterTodasCategorias(){
         return categoriaFinanceiraService.encontrarTodasCategorias();
     }
 
     @GetMapping(value = "/obterCategoria/{tipo}")
-    public List<CategoriaFinanceiraResponse> encontrarCategoriaPorTipo(@PathVariable TiposCategorias tipo){
+    public List<CategoriaFinanceira> encontrarCategoriaPorTipo(@PathVariable TiposCategorias tipo){
         return categoriaFinanceiraService.encontrarCategoriasPorTipo(tipo);
     }
 
     @PostMapping(value = "/adicionarCategoria/{id}")
-    public CategoriaFinanceiraResponse adicionarCategoria(@RequestBody CategoriaFinanceiraRequest categoria){
+    public CategoriaFinanceira adicionarCategoria(@RequestBody CategoriaFinanceiraRequest categoria){
         return categoriaFinanceiraService.criarCategoria(categoria);
     }
 
     @PutMapping(value = "/atualizarCategoria/{id}")
-    public CategoriaFinanceiraResponse atualizarCategoria(@PathVariable Long id, @RequestBody CategoriaFinanceiraRequest categoria){
+    public CategoriaFinanceira atualizarCategoria(@PathVariable Long id, @RequestBody CategoriaFinanceiraRequest categoria){
         return categoriaFinanceiraService.atualizarCategoria(id, categoria);
     }
 
 
     @DeleteMapping(value = "/removerCategoriaPorId/{id}")
-    public CategoriaFinanceiraResponse removerCategoriaPorId(@PathVariable Long id){
+    public CategoriaFinanceira removerCategoriaPorId(@PathVariable Long id){
         return categoriaFinanceiraService.removerCategoria(id);
     }
 }

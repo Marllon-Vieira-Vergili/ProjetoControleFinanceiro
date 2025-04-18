@@ -1,11 +1,13 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.restController.entities;
+
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.HistoricoTransacaoRequest;
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities.HistoricoTransacaoResponse;
-import com.marllon.vieira.vergili.catalogo_financeiro.services.Interfaces.TransacoesService;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.HistoricoTransacao;
+import com.marllon.vieira.vergili.catalogo_financeiro.services.entities.Interfaces.TransacoesService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 
@@ -22,31 +24,36 @@ public class TransacaoController {
 
 
     @GetMapping(value = "/encontrarTransacaoPorId/{id}")
-    public HistoricoTransacaoResponse encontrarTransacaoPorId(@PathVariable Long id){
+    public HistoricoTransacao encontrarTransacaoPorId(@PathVariable Long id){
         return transacoesService.encontrarTransacaoPorId(id);
     }
 
+    @GetMapping(value = "/encontrarTransacaoPorValor/{valor}")
+    public List<HistoricoTransacao> encontrarTransacaoPeloValor(@PathVariable BigDecimal valor){
+        return transacoesService.encontrarTransacaoPorValor(valor);
+    }
+
     @GetMapping(value = "/obterTodosHistoricosTransacoes")
-    public List<HistoricoTransacaoResponse> obterTodosHistoricoTransacao(){
+    public List<HistoricoTransacao> obterTodosHistoricoTransacao(){
         return transacoesService.encontrarTodasTransacoes();
     }
 
 
 
     @PostMapping(value = "/criarTransacao")
-    public HistoricoTransacaoResponse criarNovaTransacao(@RequestBody HistoricoTransacaoRequest historicoTransacao){
+    public HistoricoTransacao criarNovaTransacao(@RequestBody HistoricoTransacaoRequest historicoTransacao){
         return transacoesService.criarNovoHistoricoTransacao(historicoTransacao);
     }
 
 
     @PutMapping(value = "/atualizarTransacao/{id}")
-    public HistoricoTransacaoResponse atualizarTransacao(@PathVariable Long id, @RequestBody HistoricoTransacaoRequest historicoTransacao){
+    public HistoricoTransacao atualizarTransacao(@PathVariable Long id, @RequestBody HistoricoTransacaoRequest historicoTransacao){
         return transacoesService.atualizarHistoricoTransacao(id, historicoTransacao);
     }
 
 
     @DeleteMapping(value = "/removerTransacao/{id}")
-    public HistoricoTransacaoResponse removerHistoricoTransacaoPorId(@PathVariable Long id){
+    public HistoricoTransacao removerHistoricoTransacaoPorId(@PathVariable Long id){
         return transacoesService.removerTransacaoPorId(id);
     }
 

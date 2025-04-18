@@ -1,15 +1,18 @@
-package com.marllon.vieira.vergili.catalogo_financeiro.services.InterfacesImplement;
+package com.marllon.vieira.vergili.catalogo_financeiro.services.entities.InterfacesImplement;
+
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.HistoricoTransacaoRequest;
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities.HistoricoTransacaoResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.HistoricoTransacao;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.Pagamentos;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.HistoricoTransacaoRepository;
-import com.marllon.vieira.vergili.catalogo_financeiro.services.Interfaces.TransacoesService;
+import com.marllon.vieira.vergili.catalogo_financeiro.services.entities.Interfaces.TransacoesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
+
 import static com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias.DESPESA;
 import static com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias.RECEITA;
 
@@ -22,7 +25,7 @@ public class HistoricoTransacaoImpl implements TransacoesService {
     private HistoricoTransacaoRepository historicoTransacaoRepository;
 
     @Override
-    public HistoricoTransacaoResponse criarNovoHistoricoTransacao(HistoricoTransacaoRequest historicoTransacao){
+    public HistoricoTransacao criarNovoHistoricoTransacao(HistoricoTransacaoRequest historicoTransacao){
 
         //Instanciar um novo histórico de transacao
         HistoricoTransacao novoHistorico = new HistoricoTransacao();
@@ -52,12 +55,11 @@ public class HistoricoTransacaoImpl implements TransacoesService {
         historicoTransacaoRepository.save(novoHistorico);
 
         //Retornar o histórico de transação criado
-        return new HistoricoTransacaoResponse(novoHistorico.getId(), novoHistorico.getValor(),novoHistorico.getData(),
-                novoHistorico.getDescricao(), novoHistorico.getCategorias());
+        return novoHistorico;
     }
 
     @Override
-    public HistoricoTransacaoResponse encontrarTransacaoPorId(Long id) {
+    public HistoricoTransacao encontrarTransacaoPorId(Long id) {
         //Encontrar a transacao pela id
         HistoricoTransacao transacaoEncontrada = historicoTransacaoRepository.findById(id).orElseThrow(() ->
                 new NoSuchElementException("Nenhuma transacao encontrada com a ID informada"));
@@ -67,13 +69,12 @@ public class HistoricoTransacaoImpl implements TransacoesService {
             throw  new NullPointerException("Não há nenhuma transacao no banco de dados, ele está vazio");
         }
         //Retornar os dados da id encontrada
-        return new HistoricoTransacaoResponse(transacaoEncontrada.getId(),transacaoEncontrada.getValor(), transacaoEncontrada.getData(),
-                transacaoEncontrada.getDescricao(),transacaoEncontrada.getCategorias());
+        return transacaoEncontrada;
 
     }
 
     @Override
-    public List<HistoricoTransacaoResponse> encontrarTodasTransacoes() {
+    public List<HistoricoTransacao> encontrarTodasTransacoes() {
 
         //Encontrar todas as transacoes
         List<HistoricoTransacao> todasTransacoes = historicoTransacaoRepository.findAll();
@@ -84,18 +85,41 @@ public class HistoricoTransacaoImpl implements TransacoesService {
         }
 
         //senao retornar a lista de todos eles
-        return todasTransacoes.stream()
-                .map(historicoTransacao -> new HistoricoTransacaoResponse(
-                        historicoTransacao.getId(),
-                        historicoTransacao.getValor(),
-                        historicoTransacao.getData(),
-                        historicoTransacao.getDescricao(),
-                        historicoTransacao.getCategorias()))
-                .toList();
+        return todasTransacoes;
     }
 
     @Override
-    public HistoricoTransacaoResponse atualizarHistoricoTransacao(Long id, HistoricoTransacaoRequest historicoTransacao) {
+    public List<HistoricoTransacao> encontrarTransacaoPorValor(BigDecimal valor) {
+
+        //Encontrar todos as transações
+        List<HistoricoTransacao> transacoesEncontradas = historicoTransacaoRepository.findAll();
+
+        //Se não encontrar nenhum pagamento.. retornar exceção
+        if (transacoesEncontradas.isEmpty()) {
+            throw new NoSuchElementException("Não existe nenhum valor no banco de dados");
+
+        }
+        //Se encontrar transacoes, verificar quanto ao valor deles
+        return historicoTransacaoRepository.encontrarTransacoesPeloValor(valor);
+    }
+
+    @Override
+    public List<HistoricoTransacao> encontrarTransacaoPorData(LocalDate data) {
+
+        //Encontrar todos as transações
+        List<HistoricoTransacao> transacoesEncontradas = historicoTransacaoRepository.findAll();
+
+        //Se não encontrar nenhuma transacao.. retornar exceção
+        if(transacoesEncontradas.isEmpty()){
+            throw new NoSuchElementException("Não existe nenhum valor no banco de dados");
+
+        }
+        //Se encontrar transacoes, verificar quanto ao valor deles
+            return historicoTransacaoRepository.encontrarTransacoesPelaData(data);
+    }
+
+    @Override
+    public HistoricoTransacao atualizarHistoricoTransacao(Long id, HistoricoTransacaoRequest historicoTransacao) {
 
         //Verificar se a id do historico de transacao já existe no banco de dados
         HistoricoTransacao transacaoEncontrada = historicoTransacaoRepository.findById(id).orElseThrow(() ->
@@ -122,12 +146,11 @@ public class HistoricoTransacaoImpl implements TransacoesService {
         historicoTransacaoRepository.save(transacaoEncontrada);
 
         //Retornar os dados do novo historico transacao
-        return new HistoricoTransacaoResponse(transacaoEncontrada.getId(),transacaoEncontrada.getValor(), transacaoEncontrada.getData(),
-                transacaoEncontrada.getDescricao(),transacaoEncontrada.getCategorias());
+        return transacaoEncontrada;
     }
 
     @Override
-    public HistoricoTransacaoResponse removerTransacaoPorId(Long id) {
+    public HistoricoTransacao removerTransacaoPorId(Long id) {
 
         //encontrar o pagamento pela id
         HistoricoTransacao transacaoEncontrada = historicoTransacaoRepository.findById(id).orElseThrow(() -> new
@@ -137,7 +160,6 @@ public class HistoricoTransacaoImpl implements TransacoesService {
         historicoTransacaoRepository.delete(transacaoEncontrada);
 
         //Retornar o valor do pagamento que foi deletado
-        return new HistoricoTransacaoResponse(transacaoEncontrada.getId(),transacaoEncontrada.getValor(), transacaoEncontrada.getData(),
-                transacaoEncontrada.getDescricao(),transacaoEncontrada.getCategorias());
+        return transacaoEncontrada;
     }
 }

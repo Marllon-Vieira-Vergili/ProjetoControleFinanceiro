@@ -1,8 +1,8 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.restController.entities;
 
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.UsuarioRequest;
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities.UsuarioResponse;
-import com.marllon.vieira.vergili.catalogo_financeiro.services.Interfaces.UsuarioService;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.Usuario;
+import com.marllon.vieira.vergili.catalogo_financeiro.services.entities.Interfaces.UsuarioService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -22,35 +22,38 @@ public class UsuarioController {
 
 
     @GetMapping(value = "/encontrarUsuarioPorId/{id}")
-    public UsuarioResponse encontrarUsuarioPorId(@PathVariable Long id){
+    public Usuario encontrarUsuarioPorId(@PathVariable Long id){
         return usuarioService.encontrarUsuarioPorId(id);
 
     }
 
-
+    @GetMapping(value = "/encontrarUsuarioPorNome/{nome}")
+    public Usuario encontrarUsuarioPorNome(@PathVariable String nome){
+        return usuarioService.encontrarUsuarioPorNome(nome);
+    }
 
 
     @GetMapping(value = "/obterTodosUsuarios")
-    public List<UsuarioResponse> obterTodosUsuarios(){
+    public List<Usuario> obterTodosUsuarios(){
         return usuarioService.encontrarTodosUsuarios();
     }
 
 
 
     @PostMapping(value = "/criarUsuario")
-    public UsuarioResponse criarNovoUsuario(@RequestBody UsuarioRequest usuario){
+    public Usuario criarNovoUsuario(@RequestBody UsuarioRequest usuario){
         return usuarioService.criarNovoUsuario(usuario);
     }
 
 
     @PutMapping(value = "/atualizarUsuario/{id}")
-    public UsuarioResponse atualizarUsuario(@PathVariable Long id, @RequestBody UsuarioRequest usuario){
+    public Usuario atualizarUsuario(@PathVariable Long id, @RequestBody UsuarioRequest usuario){
         return usuarioService.atualizarDadosUsuario(id, usuario);
     }
 
 
     @DeleteMapping(value = "/removerUsuarioPorId/{id}")
-    public UsuarioResponse removerUsuarioPelaId(@PathVariable Long id){
+    public Usuario removerUsuarioPelaId(@PathVariable Long id){
         return usuarioService.removerUsuarioPorId(id);
     }
 

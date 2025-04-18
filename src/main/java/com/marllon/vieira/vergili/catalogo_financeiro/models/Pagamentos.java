@@ -3,7 +3,9 @@ package com.marllon.vieira.vergili.catalogo_financeiro.models;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -24,7 +26,7 @@ import java.util.NoSuchElementException;
 @AllArgsConstructor(access = AccessLevel.PUBLIC)
 @EqualsAndHashCode(of = {"valor", "data", "descricao", "categoria"})
 @ToString(of = {"id","valor", "data", "descricao", "categoria"})
-public class Pagamentos {
+public class Pagamentos{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

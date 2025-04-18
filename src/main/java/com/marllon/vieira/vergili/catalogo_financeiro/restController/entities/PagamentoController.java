@@ -1,10 +1,13 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.restController.entities;
+
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.PagamentosRequest;
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities.PagamentosResponse;
-import com.marllon.vieira.vergili.catalogo_financeiro.services.Interfaces.PagamentosService;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.Pagamentos;
+import com.marllon.vieira.vergili.catalogo_financeiro.services.entities.Interfaces.PagamentosService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -20,31 +23,36 @@ public class PagamentoController {
 
 
     @GetMapping(value = "/encontrarPagamentoPorId/{id}")
-    public PagamentosResponse encontrarPagamentoPorId(@PathVariable Long id){
+    public Pagamentos encontrarPagamentoPorId(@PathVariable Long id){
         return pagamentosService.encontrarPagamentoPorId(id);
     }
 
+    @GetMapping(value = "/encontrarPagamentoPorValor/{valor}")
+    public List<Pagamentos> encontrarPagamentoPorId(@PathVariable BigDecimal valor){
+        return pagamentosService.encontrarPagamentoPorValor(valor);
+    }
+
     @GetMapping(value = "/obterTodosPagamentos")
-    public List<PagamentosResponse> obterTodosPagamentos(){
+    public List<Pagamentos> obterTodosPagamentos(){
         return pagamentosService.encontrarTodosPagamentos();
     }
 
 
 
     @PostMapping(value = "/adicionarPagamento")
-    public PagamentosResponse adicionarPagamento(@RequestBody PagamentosRequest pagamento){
+    public Pagamentos adicionarPagamento(@RequestBody PagamentosRequest pagamento){
         return pagamentosService.criarNovoPagamento(pagamento);
     }
 
 
     @PutMapping(value = "/atualizarPagamento/{id}")
-    public PagamentosResponse atualizarPagamento(@PathVariable Long id, @RequestBody PagamentosRequest pagamento){
+    public Pagamentos atualizarPagamento(@PathVariable Long id, @RequestBody PagamentosRequest pagamento){
         return pagamentosService.atualizarPagamento(id,pagamento);
     }
 
 
     @DeleteMapping(value = "/removerPagamento/{id}")
-    public PagamentosResponse removerPagamentoPorId(@PathVariable Long id){
+    public Pagamentos removerPagamentoPorId(@PathVariable Long id){
         return pagamentosService.removerPagamentoPorId(id);
     }
 
