@@ -4,8 +4,7 @@ import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.associations.P
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.associations.PagamentoAssociationResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.Despesas;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.Receitas;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.SubTipoCategoria;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.associations.Interfaces.IPagamentos;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.entities.Interfaces.*;
@@ -51,7 +50,7 @@ public class IPagamentosImplement implements IPagamentos {
 
             //Associar esse novo pagamento a uma categoria específica, se será de DESPESA ou RECEITA
             if(novoPagamentoCriado.getCategoria().name().isEmpty()) {
-                List<CategoriaFinanceira> categoriasEncontradas = categoriaService.encontrarCategoriasPorTipo
+                List<SubTipoCategoria> categoriasEncontradas = categoriaService.encontrarCategoriasPorTipo
                         (novoPagamento.tiposCategoria().tipoCategoria());
                 if (novoPagamento.tiposCategoria().tipoCategoria().equals(RECEITA)) {
                     novoPagamentoCriado.associarPagamentoComCategoria(categoriasEncontradas.get(RECEITA.getValor()));

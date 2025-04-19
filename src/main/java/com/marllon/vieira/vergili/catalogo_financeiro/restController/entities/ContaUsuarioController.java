@@ -47,7 +47,7 @@ public class ContaUsuarioController {
 
 
         @DeleteMapping(value = "/removerConta/{id}")
-    public boolean removerContaPorId(@PathVariable Long id){
+    public ContaUsuario removerContaPorId(@PathVariable Long id){
             return contaUsuarioService.removerContaPorId(id);
         }
 }

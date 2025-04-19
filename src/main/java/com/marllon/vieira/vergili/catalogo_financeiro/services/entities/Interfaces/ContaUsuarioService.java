@@ -25,5 +25,5 @@ public interface ContaUsuarioService {
     ContaUsuario atualizarConta(Long id, ContaUsuarioRequest conta);
 
     //Remover
-    boolean removerContaPorId(Long id);
+    ContaUsuario removerContaPorId(Long id);
 }

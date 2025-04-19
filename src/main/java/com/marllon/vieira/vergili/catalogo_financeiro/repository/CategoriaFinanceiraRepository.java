@@ -1,5 +1,6 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.repository;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.SubTipoCategoria;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,5 +18,9 @@ public interface CategoriaFinanceiraRepository extends JpaRepository<CategoriaFi
     @Query(value = "SELECT c FROM CategoriaFinanceira c WHERE c.tiposCategorias = :tipos_categorias")
     List<CategoriaFinanceira> encontrarPorTipoCategoria(@Param(value = "tipos_categorias") TiposCategorias tipoCategoria);
 
+
+    //Método para procurar a categoria de contas pelo Subtipo da Conta
+    @Query(value = "SELECT c FROM CategoriaFinanceira c WHERE c.subTipo = :subtipo_categoria")
+    List<CategoriaFinanceira> encontrarPorSubtipoCategoria(@Param(value = "subtipo_categoria") TiposCategorias subtipoCategoria);
 
 }

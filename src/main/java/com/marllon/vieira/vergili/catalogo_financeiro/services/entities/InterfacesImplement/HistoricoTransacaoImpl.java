@@ -34,6 +34,12 @@ public class HistoricoTransacaoImpl implements TransacoesService {
         novoHistorico.setDescricao(historicoTransacao.descricao());
         novoHistorico.setCategorias(historicoTransacao.categoria());
 
+        //Verificar se o  usuário não digitou  valores nulos ou vazios
+        if(novoHistorico.getValor() == null || novoHistorico.getValor().compareTo(BigDecimal.ZERO) <= 0 ||
+                novoHistorico.getDescricao() == null || novoHistorico.getDescricao().isEmpty()){
+            throw new IllegalArgumentException("Por favor, preencha todos os campos obrigatórios");
+        }
+
         //Se o novo histórico de transacao for diferente o tipo de categoria que deve ser informado
         if(novoHistorico.getCategorias()!= DESPESA && novoHistorico.getCategorias() != RECEITA) {
             throw new IllegalArgumentException("Por favor, digite aqui: (DESPESA ou RECEITA)");
@@ -130,6 +136,12 @@ public class HistoricoTransacaoImpl implements TransacoesService {
         transacaoEncontrada.setData(historicoTransacao.data());
         transacaoEncontrada.setDescricao(historicoTransacao.descricao());
         transacaoEncontrada.setCategorias(historicoTransacao.categoria());
+
+        //Verificar se o  usuário não digitou  valores nulos ou vazios
+        if(transacaoEncontrada.getValor() == null || transacaoEncontrada.getValor().compareTo(BigDecimal.ZERO) <= 0 ||
+                transacaoEncontrada.getDescricao() == null || transacaoEncontrada.getDescricao().isEmpty()){
+            throw new IllegalArgumentException("Por favor, preencha todos os campos obrigatórios");
+        }
 
         //verificar se esse historico de transacao já não existe, comparando  data e descricao
         if(historicoTransacaoRepository.existsByDataAndDescricao(transacaoEncontrada.getData(),

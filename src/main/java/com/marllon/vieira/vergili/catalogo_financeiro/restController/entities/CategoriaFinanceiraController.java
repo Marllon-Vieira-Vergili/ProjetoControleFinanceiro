@@ -2,6 +2,7 @@ package com.marllon.vieira.vergili.catalogo_financeiro.restController.entities;
 
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.CategoriaFinanceiraRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.SubTipoCategoria;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.entities.Interfaces.CategoriaFinanceiraService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,7 +33,7 @@ public class CategoriaFinanceiraController {
     }
 
     @GetMapping(value = "/obterCategoria/{tipo}")
-    public List<CategoriaFinanceira> encontrarCategoriaPorTipo(@PathVariable TiposCategorias tipo){
+    public List<SubTipoCategoria> encontrarCategoriaPorTipo(@PathVariable TiposCategorias tipo){
         return categoriaFinanceiraService.encontrarCategoriasPorTipo(tipo);
     }
 

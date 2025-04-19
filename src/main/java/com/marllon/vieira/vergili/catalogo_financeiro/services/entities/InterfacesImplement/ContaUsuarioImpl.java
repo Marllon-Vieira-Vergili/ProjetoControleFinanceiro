@@ -1,6 +1,7 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.services.entities.InterfacesImplement;
 
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.ContaUsuarioRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.ContaUsuario;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.ContaUsuarioRepository;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.entities.Interfaces.ContaUsuarioService;
@@ -8,6 +9,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -27,10 +29,15 @@ public class ContaUsuarioImpl implements ContaUsuarioService {
         novaConta.setNome(conta.nome().toUpperCase());
         novaConta.setSaldo(conta.saldo());
 
+        //Verificar se o usuário não digitou valores nulos ou vazios
+        if (novaConta.getNome() == null || novaConta.getNome().isEmpty() ||
+                novaConta.getSaldo() == null || novaConta.getSaldo().compareTo(BigDecimal.valueOf(0.0)) <= 0) {
+            throw new IllegalArgumentException("Por favor, preencha todos os campos obrigatórios");
+        }
 
         //Verificar se esse nome, e saldo conta passado do parâmetro já não existe no banco um igual
-            if(contaUsuarioRepository.existsByNomeAndSaldo(novaConta.getNome(), novaConta.getSaldo())){
-                    throw new IllegalArgumentException("Já existe uma conta com esse nome e saldo criados");
+        if (contaUsuarioRepository.existsByNomeAndSaldo(novaConta.getNome(), novaConta.getSaldo())) {
+            throw new IllegalArgumentException("Já existe uma conta com esse nome e saldo criados");
         }
         //Salvar a novaConta, se estiver tudo certo
         contaUsuarioRepository.save(novaConta);
@@ -47,8 +54,8 @@ public class ContaUsuarioImpl implements ContaUsuarioService {
                 new NoSuchElementException("Nenhuma conta encontrada com a ID informada"));
 
         //Se não tiver nenhuma conta no banco de dados
-        if(contaUsuarioRepository.findAll().isEmpty()){
-            throw  new NullPointerException("Não há nenhuma conta no banco de dados, ele está vazio");
+        if (contaUsuarioRepository.findAll().isEmpty()) {
+            throw new NullPointerException("Não há nenhuma conta no banco de dados, ele está vazio");
         }
         //Retornar os dados da id encontrada
         return contaEncontrada;
@@ -82,7 +89,7 @@ public class ContaUsuarioImpl implements ContaUsuarioService {
         List<ContaUsuario> todasContasEncontradas = contaUsuarioRepository.findAll();
 
         //Se não tiver nenhuma conta encontrada, retornar Exception
-        if(todasContasEncontradas.isEmpty()){
+        if (todasContasEncontradas.isEmpty()) {
             throw new NullPointerException("Não há nenhuma conta no banco de dados, ele está vazio");
         }
 
@@ -103,8 +110,14 @@ public class ContaUsuarioImpl implements ContaUsuarioService {
         contaUsuario.setNome(conta.nome().toUpperCase());
         contaUsuario.setSaldo(conta.saldo());
 
+        //Verificar se o usuário não digitou valores nulos ou vazios
+        if (contaUsuario.getNome() == null || contaUsuario.getNome().isEmpty() ||
+                contaUsuario.getSaldo() == null || contaUsuario.getSaldo().compareTo(BigDecimal.valueOf(0.0)) <= 0) {
+            throw new IllegalArgumentException("Por favor, preencha todos os campos obrigatórios");
+        }
+
         //Verificar se esse nome, e saldo conta passado do parâmetro já não existe no banco um igual
-        if(contaUsuarioRepository.existsByNomeAndSaldo(contaUsuario.getNome(), contaUsuario.getSaldo())){
+        if (contaUsuarioRepository.existsByNomeAndSaldo(contaUsuario.getNome(), contaUsuario.getSaldo())) {
             throw new IllegalArgumentException("Já existe uma conta com esse nome e saldo criados");
         }
 
@@ -117,11 +130,15 @@ public class ContaUsuarioImpl implements ContaUsuarioService {
 
     @Override
     @Transactional
-    public boolean removerContaPorId(Long id) {
-        if(contaUsuarioRepository.findById(id).isPresent()){
-            contaUsuarioRepository.deleteById(id);
-            return true;
-        }
-        return false;
+    public ContaUsuario removerContaPorId(Long id) {
+        //encontrar a categoria pela id
+        ContaUsuario contaEncontrada = contaUsuarioRepository.findById(id).orElseThrow(() -> new
+                NoSuchElementException("Nenhuma conta de usuário foi encontrado com esta id informada"));
+
+
+        contaUsuarioRepository.delete(contaEncontrada);
+
+        //Retornar o valor do pagamento que foi deletado
+        return contaEncontrada;
     }
 }

@@ -28,6 +28,13 @@ public class UsuarioImpl implements UsuarioService {
         novoUsuario.setSenha(usuario.senha());
         novoUsuario.setTelefone(usuario.telefone());
 
+        //Verificar se o usuário não digitou valores nulos ou vazios
+        if(novoUsuario.getNome() == null || novoUsuario.getNome().isEmpty() ||
+                novoUsuario.getEmail() == null || novoUsuario.getEmail().isEmpty() ||
+                novoUsuario.getSenha() == null || novoUsuario.getSenha().isEmpty() ||
+                novoUsuario.getTelefone() == null || novoUsuario.getTelefone().isEmpty()){
+            throw new IllegalArgumentException("Por favor, preencha todos os campos obrigatórios");
+        }
 
         //Verificar se esse nome, email e telefone passado do parâmetro já não existe no banco um igual
         if(usuarioRepository.existsByNomeAndEmailAndTelefone(novoUsuario.getNome(),
@@ -86,6 +93,14 @@ public class UsuarioImpl implements UsuarioService {
         usuarioEncontrado.setEmail(usuario.email());
         usuarioEncontrado.setSenha(usuario.senha());
         usuarioEncontrado.setTelefone(usuario.telefone());
+
+        //Verificar se o usuário não digitou valores nulos ou vazios
+        if(usuarioEncontrado.getNome() == null || usuarioEncontrado.getNome().isEmpty() ||
+                usuarioEncontrado.getEmail() == null || usuarioEncontrado.getEmail().isEmpty() ||
+                usuarioEncontrado.getSenha() == null || usuarioEncontrado.getSenha().isEmpty() ||
+                usuarioEncontrado.getTelefone() == null || usuarioEncontrado.getTelefone().isEmpty()){
+            throw new IllegalArgumentException("Por favor, preencha todos os campos obrigatórios");
+        }
 
         //Salvar os dados atualizados do usuário
         usuarioRepository.save(usuarioEncontrado);

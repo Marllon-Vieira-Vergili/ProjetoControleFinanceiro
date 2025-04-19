@@ -33,6 +33,12 @@ public class PagamentosImpl implements PagamentosService {
         novoPagamento.setDescricao(pagamento.descricao());
         novoPagamento.setCategoria(pagamento.categoria());
 
+        //Verificar se o  usuário não digitou  valores nulos ou vazios
+        if(novoPagamento.getValor() == null || novoPagamento.getValor().compareTo(BigDecimal.ZERO) <= 0 ||
+                novoPagamento.getDescricao() == null || novoPagamento.getDescricao().isEmpty()){
+            throw new IllegalArgumentException("Por favor, preencha todos os campos obrigatórios");
+        }
+
         //Se o novo pagamento for diferente o tipo de categoria que deve ser informado
         if(novoPagamento.getCategoria()!= DESPESA && novoPagamento.getCategoria() != RECEITA) {
                 throw new IllegalArgumentException("Por favor, digite aqui: (DESPESA ou RECEITA)");
@@ -90,6 +96,12 @@ public class PagamentosImpl implements PagamentosService {
         pagamentoEncontrado.setData(pagamento.data());
         pagamentoEncontrado.setDescricao(pagamento.descricao());
         pagamentoEncontrado.setCategoria(pagamento.categoria());
+
+        //Verificar se o  usuário não digitou  valores nulos ou vazios
+        if(pagamentoEncontrado.getValor() == null || pagamentoEncontrado.getValor().compareTo(BigDecimal.ZERO) <= 0 ||
+                pagamentoEncontrado.getDescricao() == null || pagamentoEncontrado.getDescricao().isEmpty()){
+            throw new IllegalArgumentException("Por favor, preencha todos os campos obrigatórios");
+        }
 
         //Verificar, se a data passada do historico de transacao, não for de datas passadas a partir do dia de hoje
         if(pagamentoEncontrado.getData().isBefore(LocalDate.now())){

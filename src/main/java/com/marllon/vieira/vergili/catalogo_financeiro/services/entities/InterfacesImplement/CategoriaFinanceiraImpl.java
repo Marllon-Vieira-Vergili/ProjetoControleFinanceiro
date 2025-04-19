@@ -1,9 +1,7 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.services.entities.InterfacesImplement;
-
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.CategoriaFinanceiraRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.Despesas;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.Receitas;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.SubTipoCategoria;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.CategoriaFinanceiraRepository;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.entities.Interfaces.CategoriaFinanceiraService;
@@ -37,27 +35,27 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
 
         // Validar o subtipo dependendo do tipo de categoria
         if (novaCategoria.getTiposCategorias().equals(RECEITA)) {
-            boolean valido = Arrays.stream(Receitas.values())
+            boolean valido = Arrays.stream(SubTipoCategoria.values())
                     .map(Enum::name)
-                    .anyMatch(valor -> valor.equalsIgnoreCase(categoria.subtipo()));
+                    .anyMatch(valor -> valor.equalsIgnoreCase(String.valueOf(categoria.subtipo())));
             if (!valido) {
                 throw new IllegalArgumentException("Subtipo inválido para RECEITA. Valores permitidos: " +
-                        Arrays.toString(Receitas.values()));
+                        Arrays.toString(TiposCategorias.mostrarTodasReceitas().toArray()));
             }
         } else if (novaCategoria.getTiposCategorias().equals(DESPESA)) {
-            boolean valido = Arrays.stream(Despesas.values())
+            boolean valido = Arrays.stream(SubTipoCategoria.values())
                     .map(Enum::name)
-                    .anyMatch(valor -> valor.equalsIgnoreCase(categoria.subtipo()));
+                    .anyMatch(valor -> valor.equalsIgnoreCase(String.valueOf(categoria.subtipo())));
             if (!valido) {
                 throw new IllegalArgumentException("Subtipo inválido para DESPESA. Valores permitidos: " +
-                        Arrays.toString(Despesas.values()));
+                        Arrays.toString(TiposCategorias.mostrarTodasDespesas().toArray()));
             }
         } else {
             throw new IllegalArgumentException("Tipo de categoria inválido. Use apenas RECEITA ou DESPESA.");
         }
 
         // Atualizar o subtipo após validação
-        novaCategoria.setSubTipo(categoria.subtipo().toUpperCase());
+        novaCategoria.setSubTipo(categoria.subtipo());
 
         // Salvar a nova categoria no banco de dados
         categoriaFinanceiraRepository.save(novaCategoria);
@@ -80,7 +78,7 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
         //Encontrar todas as categorias ou retornar uma exceção se não forem encontradas
         List<CategoriaFinanceira> todasCategorias = categoriaFinanceiraRepository.findAll();
 
-        if(todasCategorias.isEmpty()){
+        if (todasCategorias.isEmpty()) {
             throw new NoSuchElementException("não há nenhuma categoria financeira na lista");
         }
         //Retornar todas as categorias financeiras
@@ -97,31 +95,32 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
         //Se a categoria for encontrada.. instanciar os novos valores
         categoriaEncontrada.setTiposCategorias(categoria.tipoCategoria());
 
+
         //Dependendo da categoria que o usuário escolher, verificar o subtipo deste valor e associar
         // Validar o subtipo dependendo do tipo de categoria
         if (categoriaEncontrada.getTiposCategorias().equals(RECEITA)) {
-            boolean valido = Arrays.stream(Receitas.values())
+            boolean valido = Arrays.stream(SubTipoCategoria.values())
                     .map(Enum::name)
-                    .anyMatch(valor -> valor.equalsIgnoreCase(categoria.subtipo()));
+                    .anyMatch(valor -> valor.equalsIgnoreCase(String.valueOf(categoria.subtipo())));
 
             if (!valido) {
                 throw new IllegalArgumentException("Subtipo inválido para RECEITA. Valores permitidos: " +
-                        Arrays.toString(Receitas.values()));
+                        Arrays.toString(TiposCategorias.mostrarTodasReceitas().toArray()));
             }
         } else if (categoriaEncontrada.getTiposCategorias().equals(DESPESA)) {
-            boolean valido = Arrays.stream(Despesas.values())
+            boolean valido = Arrays.stream(SubTipoCategoria.values())
                     .map(Enum::name)
-                    .anyMatch(valor -> valor.equalsIgnoreCase(categoria.subtipo()));
+                    .anyMatch(valor -> valor.equalsIgnoreCase(String.valueOf(categoria.subtipo())));
             if (!valido) {
                 throw new IllegalArgumentException("Subtipo inválido para DESPESA. Valores permitidos: " +
-                        Arrays.toString(Despesas.values()));
+                        Arrays.toString(TiposCategorias.mostrarTodasDespesas().toArray()));
             }
 
         } else {
             throw new IllegalArgumentException("Tipo de categoria inválido. Use apenas RECEITA ou DESPESA.");
         }
 
-        categoriaEncontrada.setSubTipo(categoria.subtipo().toUpperCase());
+        categoriaEncontrada.setSubTipo(categoria.subtipo());
         //Salvar os novos valores
         categoriaFinanceiraRepository.save(categoriaEncontrada);
 
@@ -144,10 +143,8 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
     }
 
 
-
-
     @Override
-    public List<CategoriaFinanceira> encontrarCategoriasPorTipo(TiposCategorias tipo) {
+    public List<SubTipoCategoria> encontrarCategoriasPorTipo(TiposCategorias tipo) {
         // Encontrar todas as categorias pelo tipo
         List<CategoriaFinanceira> todasCategorias = categoriaFinanceiraRepository.encontrarPorTipoCategoria(tipo);
 
@@ -158,30 +155,17 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
 
         // Verificar o tipo e validar os subtipos
         if (tipo.equals(TiposCategorias.RECEITA)) {
-            boolean receitaValida = todasCategorias.stream()
-                    .map(CategoriaFinanceira::getSubTipo)
-                    .anyMatch(subtipo -> Arrays.stream(Receitas.values())
-                            .map(Enum::name)
-                            .anyMatch(valor -> valor.equalsIgnoreCase(subtipo)));
-            if (!receitaValida) {
-                throw new NoSuchElementException("Nenhum subtipo válido de receita encontrado!");
-            }
+            return TiposCategorias.mostrarTodasReceitas();
+            // Mapear as categorias encontradas para a resposta
+
         } else if (tipo.equals(TiposCategorias.DESPESA)) {
-            boolean despesaValida = todasCategorias.stream()
-                    .map(CategoriaFinanceira::getSubTipo)
-                    .anyMatch(subtipo -> Arrays.stream(Despesas.values())
-                            .map(Enum::name)
-                            .anyMatch(valor -> valor.equalsIgnoreCase(subtipo)));
-            if (!despesaValida) {
-                throw new NoSuchElementException("Nenhum subtipo válido de despesa encontrado!");
-            }
+            // Mapear as categorias encontradas para a resposta
+            return TiposCategorias.mostrarTodasDespesas();
         } else {
             throw new IllegalArgumentException("Tipo de categoria inválido. Use apenas RECEITA ou DESPESA.");
-        }
-        // Mapear as categorias encontradas para a resposta
-        return todasCategorias;
-    }
 
+        }
+    }
 }
 
 

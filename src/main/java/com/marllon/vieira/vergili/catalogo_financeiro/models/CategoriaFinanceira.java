@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -181,6 +182,37 @@ public class CategoriaFinanceira {
     }
 
 
+    //Método para associar o enum do tipo de categoria na subcategoria solicitada
+    public void associarSubTipoCategoriaComDespesa(SubTipoCategoria subTipo) {
+        //Verificar se o tipo de categoria é despesa
+        if (this.tiposCategorias.equals(TiposCategorias.DESPESA)) {
+            List<SubTipoCategoria> subtiposDespesas = TiposCategorias.mostrarTodasDespesas();
+            if(subtiposDespesas == null || !subtiposDespesas.contains(subTipo)) {
+                throw new IllegalArgumentException("Não existe esse subtipo de categoria para associar a essa categoria," +
+                        " os tipos disponíveis são: " + subtiposDespesas);
+            }
+            //Associar o subtipo a categoria
+            this.subTipo = subTipo;
+        } else {
+            throw new IllegalArgumentException("Não é possível associar um subtipo a uma categoria que não seja despesa");
+        }
+    }
+
+    public void associarSubTipoCategoriaComReceita(SubTipoCategoria subTipo) {
+        //Verificar se o tipo de categoria é receita
+        if (this.tiposCategorias.equals(TiposCategorias.RECEITA)) {
+            List<SubTipoCategoria> subtiposReceitas = TiposCategorias.mostrarTodasReceitas();
+            if(subtiposReceitas == null || !subtiposReceitas.contains(subTipo)) {
+                throw new IllegalArgumentException("Não existe esse subtipo de categoria para associar a essa categoria," +
+                        " os tipos disponíveis são: " + subtiposReceitas);
+            }
+            //Associar o subtipo a categoria
+            this.subTipo = subTipo;
+        } else {
+            throw new IllegalArgumentException("Não é possível associar um subtipo a uma categoria que não seja receita");
+        }
+    }
+
 
 
     /**MÈTODOS DE DESASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
@@ -246,5 +278,33 @@ public class CategoriaFinanceira {
         this.usuarioRelacionado = null;
     }
 
+
+    //Método para associar o enum do tipo de categoria na subcategoria solicitada
+    public void desassociarSubTipoCategoriaComDespesa(SubTipoCategoria subTipo) {
+        //Verificar se o tipo de categoria é despesa
+        if (this.tiposCategorias.equals(TiposCategorias.DESPESA)) {
+            if(this.subTipo == null || !this.subTipo.equals(subTipo)) {
+                throw new IllegalArgumentException("Não há um subtipo associado para remoção");
+            }
+
+            //Desassociar do subtipo
+            this.subTipo = null;
+        }else{
+            throw new IllegalArgumentException("Não é possível remover um subtipo de uma categoria que não seja da despesa");
+        }
+    }
+
+    public void desassociarTipoCategoriaComReceita(SubTipoCategoria subTipo) {
+        //Verificar se o tipo de categoria é receita
+        if (this.tiposCategorias.equals(TiposCategorias.RECEITA)) {
+            if(this.subTipo == null || !this.subTipo.equals(subTipo)) {
+                throw new IllegalArgumentException("Não há um subtipo associado para remoção");
+            }
+            //Desassociar do subtipo
+            this.subTipo = null;
+        } else {
+            throw new IllegalArgumentException("Não é possível remover um subtipo de uma categoria que não seja receita");
+        }
+    }
 
 }

@@ -2,6 +2,7 @@ package com.marllon.vieira.vergili.catalogo_financeiro.services.entities.Interfa
 
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.CategoriaFinanceiraRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.SubTipoCategoria;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias;
 
 import java.util.List;
@@ -20,7 +21,7 @@ public interface CategoriaFinanceiraService {
     // Ler
     CategoriaFinanceira encontrarCategoriaPorId(Long id);
     List<CategoriaFinanceira> encontrarTodasCategorias();
-    List<CategoriaFinanceira> encontrarCategoriasPorTipo(TiposCategorias tipo);
+    List<SubTipoCategoria> encontrarCategoriasPorTipo(TiposCategorias tipo);
 
     // Atualizar
     CategoriaFinanceira atualizarCategoria(Long id, CategoriaFinanceiraRequest categoria);

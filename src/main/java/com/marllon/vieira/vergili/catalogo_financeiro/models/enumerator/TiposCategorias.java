@@ -70,5 +70,8 @@ public enum TiposCategorias {
                 subTipoCategoria -> subTipoCategoria.tiposCategorias.name().contains
                         (RECEITA.name())).toList());
         }
+
+
+
     }
 
