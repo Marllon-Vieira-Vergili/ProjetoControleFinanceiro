@@ -1,5 +1,6 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator;
 
+import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
 import lombok.AccessLevel;
 import lombok.Getter;
 
@@ -71,7 +72,16 @@ public enum TiposCategorias {
                         (RECEITA.name())).toList());
         }
 
+        public static TiposCategorias associarTipoCategoriaASubcategoriaPretendida
+                (TiposCategorias categoria, SubTipoCategoria subTipoCategoria){
 
-
+        if(categoria == TiposCategorias.RECEITA && subTipoCategoria.getTiposCategorias() == (TiposCategorias.RECEITA)){
+            return new CategoriaFinanceira(categoria, subTipoCategoria).getTiposCategorias();
+            } else if (categoria == TiposCategorias.DESPESA && subTipoCategoria.getTiposCategorias() ==
+                TiposCategorias.DESPESA) {
+                    return new CategoriaFinanceira(categoria,subTipoCategoria).getTiposCategorias();
+            }
+            return categoria;
+        }
     }
 

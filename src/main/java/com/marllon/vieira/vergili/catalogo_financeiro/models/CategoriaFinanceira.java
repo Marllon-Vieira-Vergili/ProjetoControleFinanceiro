@@ -41,7 +41,13 @@ public class CategoriaFinanceira {
 
     @NotNull(message = "O campo SubtTipo não pode ser nulo")
     @Column(name = "subtipo_categoria",nullable = false)
+    @Enumerated(EnumType.STRING)
     private SubTipoCategoria subTipo;
+
+    //Construtor dos enum
+    public CategoriaFinanceira(TiposCategorias categoria, SubTipoCategoria subTipoCategoria) {
+
+    }
 
 
     //RELACIONAMENTOS:
@@ -80,6 +86,8 @@ public class CategoriaFinanceira {
     @JoinColumn(name = "usuario_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_categoria_usuario"))
     //categoria será relacionado a id do usuário, coluna de junção
     private Usuario usuarioRelacionado;
+
+
 
 
     /**MÈTODOS DE ASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
@@ -212,6 +220,9 @@ public class CategoriaFinanceira {
             throw new IllegalArgumentException("Não é possível associar um subtipo a uma categoria que não seja receita");
         }
     }
+
+
+
 
 
 

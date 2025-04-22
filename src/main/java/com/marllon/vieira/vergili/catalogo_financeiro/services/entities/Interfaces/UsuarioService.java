@@ -19,7 +19,7 @@ public interface UsuarioService {
     //Ler
     Usuario encontrarUsuarioPorId(Long id);
     List<Usuario> encontrarTodosUsuarios();
-    Usuario encontrarUsuarioPorNome(String nome);
+    List<Usuario> encontrarUsuarioPorNome(String nome); //Pode ter mais de um usuário com mesmo nome
 
     //Atualizar
     Usuario atualizarDadosUsuario(Long id, UsuarioRequest usuario);

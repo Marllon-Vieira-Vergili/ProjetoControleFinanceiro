@@ -28,7 +28,7 @@ public class UsuarioController {
     }
 
     @GetMapping(value = "/encontrarUsuarioPorNome/{nome}")
-    public Usuario encontrarUsuarioPorNome(@PathVariable String nome){
+    public List<Usuario> encontrarUsuarioPorNome(@PathVariable String nome){
         return usuarioService.encontrarUsuarioPorNome(nome);
     }
 

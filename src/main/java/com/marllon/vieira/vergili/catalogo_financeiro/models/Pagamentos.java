@@ -61,7 +61,7 @@ public class Pagamentos{
      *
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id", referencedColumnName = "id",foreignKey = @ForeignKey(name = "fk_pagamento_usuario"))
+    @JoinColumn(name = "usuarios_id", referencedColumnName = "id",foreignKey = @ForeignKey(name = "fk_pagamento_usuario"))
     private Usuario usuarioRelacionado;
 
     /**Vários pagamentos, pode ter vários históricos de transações(varios pagamentos diversos, pode ter varias transacoes)

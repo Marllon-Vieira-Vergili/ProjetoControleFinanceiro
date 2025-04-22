@@ -76,8 +76,8 @@ public class Usuario {
     /**Um usuário pode possuir uma conta(uma conta para mostrar seus gastos, receitas, etc.)
      *
      */
-    @OneToOne(mappedBy = "usuarioRelacionado", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private ContaUsuario contaRelacionada;
+    @OneToMany(mappedBy = "usuarioRelacionado", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<ContaUsuario> contasRelacionadas;
 
     /**Um usuário pode ter várias categorias de pagamentos relacionados(um usuário pode ter várias categorias de contas pagas
      *
@@ -123,16 +123,22 @@ public class Usuario {
         }
 
     }
-    //Associar usuario com Conta Relacionada(One to One)
+    //Associar usuario com Conta Relacionada(One to many)
     public void associarUsuarioComConta(ContaUsuario conta){
 
         //Associar usuário com uma conta
-        if(this.contaRelacionada == null || !this.contaRelacionada.equals(conta) ) {
-            this.contaRelacionada = conta;
+        if(this.contasRelacionadas == null) {
+            this.contasRelacionadas = new ArrayList<>();
         }
+        //Associar o usuário com as contas
+        this.contasRelacionadas.add(conta);
+
         //e também associar a conta ao usuário, do outro lado
-        conta.setUsuarioRelacionado(this);
+        if(conta.getUsuarioRelacionado() == null){
+            conta.setUsuarioRelacionado(this);
+        }
     }
+
     //Associar usuário com Categorias de contas Relacionadas(One to Many)
     public void associarUsuarioComCategoria(CategoriaFinanceira categoria){
 
@@ -159,7 +165,7 @@ public class Usuario {
 
         //Verificar se o usuário ja está associado ao pagamento que será desassociado
         if(this.pagamentosRelacionados == null || !this.pagamentosRelacionados.contains(pagamento)){
-            throw new NoSuchElementException("Não há nenhum usuário associado com esse pagamento!");
+            return;
         }
 
         //Desassocio o usuário do pagamento
@@ -175,7 +181,7 @@ public class Usuario {
 
         //Verificar se o usuário ja está associado a transação que será desassociado
         if(this.transacoesRelacionadas == null || !this.transacoesRelacionadas.contains(transacao)){
-            throw new NoSuchElementException("Nenhum usuário está associado a essa transação!");
+            return;
         }
         //Desassocio do lado do usuário
         this.transacoesRelacionadas.remove(transacao);
@@ -188,13 +194,13 @@ public class Usuario {
     public void desassociarUsuarioComConta(ContaUsuario conta){
 
         //Verificar se o usuário ja está associado a uma conta
-        if(this.contaRelacionada == null || !this.contaRelacionada.equals(conta)){
-            throw new NoSuchElementException("Esse usuário não está associado a essa conta");
+        if(this.contasRelacionadas == null || !this.contasRelacionadas.equals(conta)){
+            return;
         }
         //Desassociar do lado da conta, para o usuário
         conta.setUsuarioRelacionado(null);
         //e  do lado do usuário com a conta
-        this.contaRelacionada = null;
+        this.contasRelacionadas = null;
 
     }
     //Desassociar usuário com Categorias de contas Relacionadas(One to Many)
@@ -202,7 +208,7 @@ public class Usuario {
 
         //Verificar se o usuário possui alguma associação com essa categoria
         if(this.categoriasRelacionadas == null || !this.categoriasRelacionadas.contains(categoria)){
-            throw new NoSuchElementException("Não há nenhum usuário associado a essa categoria!");
+            return;
         }
         //Desassociar do lado do usuário com a cetegoria
         this.categoriasRelacionadas.remove(categoria);

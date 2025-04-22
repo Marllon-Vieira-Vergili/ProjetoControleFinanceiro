@@ -28,19 +28,17 @@ public class UsuarioImpl implements UsuarioService {
         novoUsuario.setSenha(usuario.senha());
         novoUsuario.setTelefone(usuario.telefone());
 
+
         //Verificar se o usuário não digitou valores nulos ou vazios
-        if(novoUsuario.getNome() == null || novoUsuario.getNome().isEmpty() ||
-                novoUsuario.getEmail() == null || novoUsuario.getEmail().isEmpty() ||
-                novoUsuario.getSenha() == null || novoUsuario.getSenha().isEmpty() ||
-                novoUsuario.getTelefone() == null || novoUsuario.getTelefone().isEmpty()){
-            throw new IllegalArgumentException("Por favor, preencha todos os campos obrigatórios");
-        }
+        verificarSeDigitouValoresNulos(novoUsuario);
+
 
         //Verificar se esse nome, email e telefone passado do parâmetro já não existe no banco um igual
         if(usuarioRepository.existsByNomeAndEmailAndTelefone(novoUsuario.getNome(),
                 novoUsuario.getEmail(), novoUsuario.getTelefone())){
             throw new IllegalArgumentException("Já existe uma conta com esse nome, este saldo e tipo de conta criados");
         }
+
         //Salvar o novo usuário, se estiver tudo certo
         usuarioRepository.save(novoUsuario);
 
@@ -95,12 +93,7 @@ public class UsuarioImpl implements UsuarioService {
         usuarioEncontrado.setTelefone(usuario.telefone());
 
         //Verificar se o usuário não digitou valores nulos ou vazios
-        if(usuarioEncontrado.getNome() == null || usuarioEncontrado.getNome().isEmpty() ||
-                usuarioEncontrado.getEmail() == null || usuarioEncontrado.getEmail().isEmpty() ||
-                usuarioEncontrado.getSenha() == null || usuarioEncontrado.getSenha().isEmpty() ||
-                usuarioEncontrado.getTelefone() == null || usuarioEncontrado.getTelefone().isEmpty()){
-            throw new IllegalArgumentException("Por favor, preencha todos os campos obrigatórios");
-        }
+        verificarSeDigitouValoresNulos(usuarioEncontrado);
 
         //Salvar os dados atualizados do usuário
         usuarioRepository.save(usuarioEncontrado);
@@ -124,11 +117,11 @@ public class UsuarioImpl implements UsuarioService {
     }
 
     @Override
-    public Usuario encontrarUsuarioPorNome(String nome) {
+    public List<Usuario> encontrarUsuarioPorNome(String nome) {
 
 
         //Encontrar a conta pela id
-        List<Usuario> usuariosEncontrados = usuarioRepository.findAll();
+        List<Usuario> usuariosEncontrados = usuarioRepository.encontrarUsuarioPorNome(nome);
 
         //Se não tiver nenhuma conta no banco de dados
         if (usuarioRepository.findAll().isEmpty()) {
@@ -137,11 +130,20 @@ public class UsuarioImpl implements UsuarioService {
 
         for (Usuario usuariosPercorridos : usuariosEncontrados) {
             if (usuariosPercorridos.getNome().equalsIgnoreCase(nome)) {
-                return usuariosPercorridos;
+                return List.of(usuariosPercorridos);
             }
         }
         throw new IllegalArgumentException("Nenhum usuário encontrado com o nome: " + nome);
     }
 
 
+    public void verificarSeDigitouValoresNulos(Usuario usuarioEncontrado){
+//Verificar se o usuário não digitou valores nulos ou vazios
+        if(usuarioEncontrado.getNome() == null || usuarioEncontrado.getNome().isEmpty() ||
+                usuarioEncontrado.getEmail() == null || usuarioEncontrado.getEmail().isEmpty() ||
+                usuarioEncontrado.getSenha() == null || usuarioEncontrado.getSenha().isEmpty() ||
+                usuarioEncontrado.getTelefone() == null || usuarioEncontrado.getTelefone().isEmpty()){
+            throw new IllegalArgumentException("Por favor, preencha todos os campos obrigatórios");
+        }
+    }
 }

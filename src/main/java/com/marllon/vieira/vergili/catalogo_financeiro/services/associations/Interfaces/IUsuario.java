@@ -2,6 +2,8 @@ package com.marllon.vieira.vergili.catalogo_financeiro.services.associations.Int
 
 
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.associations.UsuarioAssociationRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.ContaUsuarioRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.UsuarioRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.associations.UsuarioAssociationResponse;
 
 import java.util.List;
@@ -19,11 +21,11 @@ public interface IUsuario {
     //Ler
     UsuarioAssociationResponse encontrarUsuarioAssociadoPorId(Long id);
     List<UsuarioAssociationResponse> encontrarTodosUsuariosAssociados();
-
+    List<UsuarioAssociationResponse> encontrarUsuarioAssociadoPorNome(String nome);
     //Atualizar
-    UsuarioAssociationResponse atualizarUsuarioAssociado(Long id, UsuarioAssociationRequest usuarioAtualizado);
+    UsuarioAssociationResponse atualizarUsuarioAssociado(Long id, UsuarioRequest usuarioAtualizado);
 
 
     //Deletar
-    UsuarioAssociationResponse removerUsuarioAssociadoPelaId(Long id);
+    void removerUsuarioAssociadoPelaId(Long id);
 }

@@ -7,8 +7,5 @@ import java.util.List;
  * e seus respectivos relacionamentos
  */
 public record UsuarioAssociationResponse(UsuarioResponse usuarioRelacionado,
-                                         ContaUsuarioResponse contaRelacionada,
-                                         List<CategoriaFinanceiraResponse> categoriasRelacionadas,
-                                         List<PagamentosResponse> pagamentosRelacionados,
-                                         List<HistoricoTransacaoResponse> historicosTransacoesRelacionadas) {
+                                         List<ContaUsuarioResponse> contaRelacionada) {
 }

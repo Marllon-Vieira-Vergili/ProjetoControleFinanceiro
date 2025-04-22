@@ -2,6 +2,8 @@ package com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator;
 import lombok.AccessLevel;
 import lombok.Getter;
 
+import java.util.NoSuchElementException;
+
 
 /**
  * ENUMERATOR para mostrar opções de Tipos de contas
@@ -45,5 +47,13 @@ public enum TiposContas {
             }
         }
         return false;
+    }
+
+    //Metodo para mostrar todos os tipos de contas
+    public static String todosTiposValidos(){
+        for(TiposContas tiposContas: TiposContas.values()){
+            return tiposContas.name();
+        }
+        throw new NoSuchElementException("Nenhum tipo de conta encontrado");
     }
 }

@@ -5,6 +5,8 @@ import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.Categ
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.associations.CategoriaFinanceiraAssociationResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.entities.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.SubTipoCategoria;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.associations.Interfaces.ICategoria;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.entities.Interfaces.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,10 +44,16 @@ public class ICategoriaImplement implements ICategoria {
             CategoriaFinanceira categoriaCriada =
                     categoriaFinanceiraService.criarCategoria(novaCategoria.categoria());
 
+            //Verificar se a subcategoria foi digitada
+            if(categoriaCriada.getTiposCategorias() == null){
+                throw new IllegalArgumentException("Por favor, digite um tipo de categoria, se é receita ou despesa!");
+            }
+
             //Associar a categoria a um novo pagamento
             if(categoriaCriada.getPagamentosRelacionados().isEmpty()){
                 List<Pagamentos> pagamentoEncontrado = pagamentosService.encontrarPagamentoPorValor
                         (novaCategoria.valorPagamento());
+
 
                     //Associar a categoria ao pagamento
                 categoriaCriada.associarCategoriaComPagamentos(pagamentoEncontrado.stream().filter(pagamentos ->

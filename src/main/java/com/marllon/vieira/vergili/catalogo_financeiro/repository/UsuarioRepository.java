@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
 
@@ -15,7 +17,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     //Encontrar o usuário pelo Nome dele
     @Query("SELECT u FROM Usuario u WHERE u.nome =:nomeUsuario")
-    Usuario encontrarUsuarioPorNome(@Param("nomeUsuario") String nomeUsuario);
+    List<Usuario> encontrarUsuarioPorNome(@Param("nomeUsuario") String nomeUsuario);
 
     //Encontrar o usuário pelo Email dele
     @Query("SELECT u FROM Usuario u WHERE u.email =:emailUsuario")
