@@ -136,6 +136,17 @@ public class UsuarioImpl implements UsuarioService {
         throw new IllegalArgumentException("Nenhum usuário encontrado com o nome: " + nome);
     }
 
+    @Override
+    public Usuario encontrarUsuarioPeloEmail(String email) {
+
+        Usuario usuarioEncontrado = usuarioRepository.encontrarUsuarioPeloEmail(email);
+
+        if(usuarioEncontrado == null){
+            throw new NoSuchElementException("Nenhum usuário foi encontrado com esse email");
+        }
+        return usuarioEncontrado;
+    }
+
 
     public void verificarSeDigitouValoresNulos(Usuario usuarioEncontrado){
 //Verificar se o usuário não digitou valores nulos ou vazios

@@ -3,6 +3,8 @@ import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.Categ
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.ContaUsuarioRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.PagamentosRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.UsuarioRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.ContaUsuario;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.SubTipoCategoria;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias;
 
 /**
@@ -12,7 +14,8 @@ import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCat
  */
 
 public record PagamentoAssociationRequest(PagamentosRequest pagamento,
-                                          CategoriaFinanceiraRequest tiposCategoria,
-                                          ContaUsuarioRequest contaAssociada,
-                                          UsuarioRequest usuarioAssociado) {
+                                          SubTipoCategoria subTipoCategoria,
+                                          String nomeContaAssociada) {
 }
+
+

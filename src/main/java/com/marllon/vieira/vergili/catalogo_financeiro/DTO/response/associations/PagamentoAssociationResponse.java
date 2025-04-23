@@ -11,6 +11,5 @@ import java.util.List;
 public record PagamentoAssociationResponse(List<PagamentosResponse> pagamentosRelacionados,
                                            List<HistoricoTransacaoResponse> historicoTransacoesRelacionados,
                                            List<CategoriaFinanceiraResponse> categoriasRelacionadas,
-                                           ContaUsuarioResponse contaRelacionada,
-                                           UsuarioResponse usuarioRelacionado) {
+                                           ContaUsuarioResponse contaRelacionada) {
 }

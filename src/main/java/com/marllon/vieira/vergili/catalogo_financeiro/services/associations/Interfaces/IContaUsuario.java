@@ -1,5 +1,6 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.services.associations.Interfaces;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.associations.ContaUsuarioAssociationRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.ContaUsuarioRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.associations.ContaUsuarioAssociationResponse;
 
 import java.util.List;
@@ -19,9 +20,9 @@ public interface IContaUsuario {
     List<ContaUsuarioAssociationResponse> encontrarTodasContasAssociadas();
 
     //Atualizar
-    ContaUsuarioAssociationResponse atualizarContaAssociada(Long id, ContaUsuarioAssociationRequest contaAtualizada);
+    ContaUsuarioAssociationResponse atualizarContaAssociada(Long id, ContaUsuarioRequest contaAtualizada);
 
 
     //Deletar
-    ContaUsuarioAssociationResponse removerContaAssociadaPelaId(Long id);
+    void removerContaAssociadaPelaId(Long id);
 }

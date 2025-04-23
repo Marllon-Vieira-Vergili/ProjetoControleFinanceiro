@@ -28,8 +28,8 @@ public class CategoriaFinanceiraController {
 
 
     @GetMapping(value = "/obterTodasCategorias")
-    public List<CategoriaFinanceira> obterTodasCategorias(){
-        return categoriaFinanceiraService.encontrarTodasCategorias();
+    public List<TiposCategorias> obterTodasCategorias(){
+        return (categoriaFinanceiraService.encontrarTodasCategorias());
     }
 
     @GetMapping(value = "/obterCategoria/{tipo}")

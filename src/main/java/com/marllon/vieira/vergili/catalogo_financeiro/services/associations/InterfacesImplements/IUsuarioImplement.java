@@ -10,11 +10,11 @@ import com.marllon.vieira.vergili.catalogo_financeiro.repository.UsuarioReposito
 import com.marllon.vieira.vergili.catalogo_financeiro.services.associations.Interfaces.IUsuario;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.entities.Interfaces.ContaUsuarioService;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.entities.Interfaces.UsuarioService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.*;
-import java.util.stream.Collectors;
+
 
 @Service
 public class IUsuarioImplement implements IUsuario {
@@ -29,6 +29,7 @@ public class IUsuarioImplement implements IUsuario {
     private ContaUsuarioService contaUsuarioService;
 
     @Override
+    @Transactional
     public UsuarioAssociationResponse criarEAssociarUsuario(UsuarioAssociationRequest novoUsuario) {
         try {
             // Criar o usuário

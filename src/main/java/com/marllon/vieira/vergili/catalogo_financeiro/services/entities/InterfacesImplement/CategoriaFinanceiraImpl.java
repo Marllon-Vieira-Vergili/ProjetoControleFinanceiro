@@ -73,17 +73,10 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
     }
 
     @Override
-    public List<CategoriaFinanceira> encontrarTodasCategorias() {
-
-        //Encontrar todas as categorias ou retornar uma exceção se não forem encontradas
-        List<CategoriaFinanceira> todasCategorias = categoriaFinanceiraRepository.findAll();
-
-        if (todasCategorias.isEmpty()) {
-            throw new NoSuchElementException("não há nenhuma categoria financeira na lista");
-        }
-        //Retornar todas as categorias financeiras
-        return todasCategorias;
+    public List<TiposCategorias> encontrarTodasCategorias() {
+        return Arrays.asList(TiposCategorias.values());
     }
+
 
     @Override
     public CategoriaFinanceira atualizarCategoria(Long id, CategoriaFinanceiraRequest categoria) {

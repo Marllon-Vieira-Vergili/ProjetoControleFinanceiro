@@ -20,7 +20,7 @@ public interface CategoriaFinanceiraService {
 
     // Ler
     CategoriaFinanceira encontrarCategoriaPorId(Long id);
-    List<CategoriaFinanceira> encontrarTodasCategorias();
+    List<TiposCategorias>encontrarTodasCategorias();
     List<SubTipoCategoria> encontrarCategoriasPorTipo(TiposCategorias tipo);
 
     // Atualizar

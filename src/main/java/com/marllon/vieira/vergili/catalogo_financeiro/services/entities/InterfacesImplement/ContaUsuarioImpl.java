@@ -132,10 +132,7 @@ public class ContaUsuarioImpl implements ContaUsuarioService {
             throw new IllegalArgumentException("Por favor, preencha todos os campos obrigatórios");
         }
 
-        //Verificar se esse nome, e saldo conta passado do parâmetro já não existe no banco um igual
-        if (contaUsuarioRepository.existsByNomeAndSaldo(contaUsuario.getNome(), contaUsuario.getSaldo())) {
-            throw new IllegalArgumentException("Já existe uma conta com esse nome e saldo criados");
-        }
+
 
         //Salvar os dados atualizados da conta do usuário
         contaUsuarioRepository.save(contaUsuario);

@@ -9,9 +9,6 @@ import java.util.List;
  * Records de associações para serem mostradas ao usuário. neste caso, record para receber "Contas de usuários")
  * e seus respectivos relacionamentos
  */
-public record ContaUsuarioAssociationResponse(ContaUsuarioResponse contaRelacionada,
-                                              UsuarioResponse usuarioRelacionado,
-                                              List<PagamentosResponse> pagamentosRelacionados,
-                                              List<HistoricoTransacaoResponse> historicoTransacoesRelacionados,
-                                              List<CategoriaFinanceiraResponse> categoriasRelacionadas) {
+public record ContaUsuarioAssociationResponse(List<ContaUsuarioResponse> contaRelacionada,
+                                              List<UsuarioResponse> usuarioRelacionado) {
 }

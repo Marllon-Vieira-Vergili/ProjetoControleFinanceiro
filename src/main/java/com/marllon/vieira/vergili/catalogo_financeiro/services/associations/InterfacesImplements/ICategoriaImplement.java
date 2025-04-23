@@ -85,10 +85,10 @@ public class ICategoriaImplement implements ICategoria {
             
             //Associar a categoria a um novo usuário
             if(categoriaCriada.getUsuarioRelacionado().getNome().equals(novaCategoria.nomeConta())){
-                Usuario usuarioEncontrado = usuarioService.encontrarUsuarioPorNome(novaCategoria.nomeUsuario());
+                List<Usuario> usuarioEncontrado = usuarioService.encontrarUsuarioPorNome(novaCategoria.nomeUsuario());
 
                 //Associar a categoria ao usuário encontrado
-                categoriaCriada.associarCategoriaComUsuario(usuarioEncontrado);
+                categoriaCriada.associarCategoriaComUsuario((Usuario) usuarioEncontrado);
             }else{
                 throw new IllegalArgumentException("Erro ao associar a categoria: " + categoriaCriada + " com esse usuário informado");
             }

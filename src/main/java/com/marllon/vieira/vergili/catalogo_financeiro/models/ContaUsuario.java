@@ -193,7 +193,7 @@ public class ContaUsuario {
 
         //Verificar se existe alguma categoria associada a essa conta
         if (!this.categoriasRelacionadas.contains(categoriaConta)) {
-            throw new IllegalArgumentException("Não existe nenhuma categoria associada a essa conta");
+            return;
         }
         //Senão, vou pegar essa conta, e vou desassociar a categoria dela
         categoriasRelacionadas.remove(categoriaConta);
@@ -206,7 +206,7 @@ public class ContaUsuario {
 
         //Verificar se existe o pagamento passado como parametro, associado a essa conta
         if (!this.pagamentosRelacionados.contains(pagamento)) {
-            throw new IllegalArgumentException("Não existe nenhum pagamento associado a essa conta");
+            return;
         }
         //Senão, se existir algum pagamento associado a essa conta, desassociar do lado da conta para o pagamento
         this.pagamentosRelacionados.remove(pagamento);
@@ -219,7 +219,7 @@ public class ContaUsuario {
 
         //Verificar primeiramente, se existe o histórico de transação passado como parametro, vinculado a essa conta
         if (!this.transacoesRelacionadas.contains(transacao)) {
-            throw new IllegalArgumentException("Não existe nenhuma transação associada a essa conta");
+            return;
         }
         //Senão, se existir.. vamos desassociá-lo do lado de conta para transação
         this.transacoesRelacionadas.remove(transacao);
@@ -231,7 +231,7 @@ public class ContaUsuario {
     public void desassociarContaDeUsuario(Usuario usuario) {
         // Verificar se o usuário realmente tem essa conta
         if (usuario.getContasRelacionadas() == null || !usuario.getContasRelacionadas().contains(this)) {
-            throw new IllegalArgumentException("Não existe esse usuário associado a essa conta!");
+            return;
         }
 
         // Desassociar do lado da conta

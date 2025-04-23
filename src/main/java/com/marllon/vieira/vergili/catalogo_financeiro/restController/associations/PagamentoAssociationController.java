@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(value = "/api/pagamentosAssociados")
-@Tag(name = "Cruds de associação da parte da categoria")
+@Tag(name = "Cruds de associação da parte de pagamentos")
 public class PagamentoAssociationController {
 
     @Autowired
