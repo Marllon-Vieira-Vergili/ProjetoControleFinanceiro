@@ -183,7 +183,7 @@ public class Pagamentos{
         //Verificar, se existe algum usuário associado a esse pagamento
         if(this.usuarioRelacionado == null || this.usuarioRelacionado.getPagamentosRelacionados() == null ||
                 !this.usuarioRelacionado.getPagamentosRelacionados().contains(this)){
-            throw new NoSuchElementException("Não existe nenhum pagamento associado a esse usuário");
+            return;
         }
 
         //Desassociar do lado do usuario, deste pagamento(lado one to many do usuário)
@@ -201,7 +201,7 @@ public class Pagamentos{
 
         //Verificar, primeiramente, se existe algum pagamento associado a essa transação
         if(this.transacoesRelacionadas == null || !this.transacoesRelacionadas.contains(transacao)){
-            throw new NoSuchElementException("Não há nenhum pagamento associado a essa transação");
+            return;
         }
         //Desassociar do lado do pagamento ao histórico de transação
         this.transacoesRelacionadas.remove(transacao);
@@ -217,7 +217,7 @@ public class Pagamentos{
 
         //Verificar, primeiramente, se existe algum pagamento associado a essa transação
         if (this.contaRelacionada.getPagamentosRelacionados() == null) {
-            throw new NoSuchElementException("Não há nenhum pagamento associado a essa conta!");
+            return;
         }
         //Desassociar do lado da conta, para os pagamentos encontrados
         if (conta.getPagamentosRelacionados() != null) {
@@ -235,7 +235,7 @@ public class Pagamentos{
 
         //Verificar, primeiramente, se existe algum pagamento associado a essa categoria
         if (this.categoriasRelacionadas == null || !this.categoriasRelacionadas.contains(categoria)) {
-            throw new NoSuchElementException("Não há nenhum pagamento associado a essa categoria!");
+            return;
         }
         //Desassociar tanto do lado dos pagamentos
         this.categoriasRelacionadas.remove(categoria);
@@ -244,6 +244,4 @@ public class Pagamentos{
             categoria.getPagamentosRelacionados().remove(this);
         }
     }
-
-
 }

@@ -1,5 +1,6 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.associations;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.CategoriaFinanceiraRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.PagamentosRequest;
 
 import java.math.BigDecimal;
 
@@ -9,6 +10,5 @@ import java.math.BigDecimal;
  * e seus respectivos relacionamentos
  */
 
-public record CategoriaFinanceiraAssociationRequest(CategoriaFinanceiraRequest categoria, String nomeUsuario, String nomeConta,
-                                                    BigDecimal valorPagamento, BigDecimal valorTransacao) {
+public record CategoriaFinanceiraAssociationRequest(CategoriaFinanceiraRequest categoria, PagamentoAssociationRequest pagamento) {
 }

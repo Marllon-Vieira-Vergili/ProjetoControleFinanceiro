@@ -1,5 +1,8 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.services.entities.InterfacesImplement;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.CategoriaFinanceiraRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.CategoriaNaoEncontrada;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.SubTIpoNaoEncontrado;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.TiposCategoriasNaoEncontrado;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.SubTipoCategoria;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias;
@@ -11,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias.DESPESA;
 import static com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias.RECEITA;
@@ -39,7 +43,7 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
                     .map(Enum::name)
                     .anyMatch(valor -> valor.equalsIgnoreCase(String.valueOf(categoria.subtipo())));
             if (!valido) {
-                throw new IllegalArgumentException("Subtipo inválido para RECEITA. Valores permitidos: " +
+                throw new SubTIpoNaoEncontrado("Subtipo inválido para RECEITA. Valores permitidos: " +
                         Arrays.toString(TiposCategorias.mostrarTodasReceitas().toArray()));
             }
         } else if (novaCategoria.getTiposCategorias().equals(DESPESA)) {
@@ -47,11 +51,11 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
                     .map(Enum::name)
                     .anyMatch(valor -> valor.equalsIgnoreCase(String.valueOf(categoria.subtipo())));
             if (!valido) {
-                throw new IllegalArgumentException("Subtipo inválido para DESPESA. Valores permitidos: " +
+                throw new SubTIpoNaoEncontrado("Subtipo inválido para DESPESA. Valores permitidos: " +
                         Arrays.toString(TiposCategorias.mostrarTodasDespesas().toArray()));
             }
         } else {
-            throw new IllegalArgumentException("Tipo de categoria inválido. Use apenas RECEITA ou DESPESA.");
+            throw new TiposCategoriasNaoEncontrado("Tipo de categoria inválido. Use apenas RECEITA ou DESPESA.");
         }
 
         // Atualizar o subtipo após validação
@@ -69,7 +73,7 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
 
         //Retornar a categoria, se encontrada
         return categoriaFinanceiraRepository.findById(id).orElseThrow(() ->
-                new NoSuchElementException("Nenhuma categoria foi encontrada com essa id!"));
+                new CategoriaNaoEncontrada("Nenhuma categoria foi encontrada com essa id!"));
     }
 
     @Override
@@ -79,11 +83,11 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
 
 
     @Override
-    public CategoriaFinanceira atualizarCategoria(Long id, CategoriaFinanceiraRequest categoria) {
+    public CategoriaFinanceira atualizarValoresCategoria(Long id, CategoriaFinanceiraRequest categoria) {
 
         //Encontrar a id da categoria que será atualizada
         CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraRepository.findById(id).orElseThrow(() ->
-                new NoSuchElementException("Nenhuma categoria foi encontrada com essa id!"));
+                new CategoriaNaoEncontrada("Nenhuma categoria foi encontrada com essa id!"));
 
         //Se a categoria for encontrada.. instanciar os novos valores
         categoriaEncontrada.setTiposCategorias(categoria.tipoCategoria());
@@ -97,7 +101,7 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
                     .anyMatch(valor -> valor.equalsIgnoreCase(String.valueOf(categoria.subtipo())));
 
             if (!valido) {
-                throw new IllegalArgumentException("Subtipo inválido para RECEITA. Valores permitidos: " +
+                throw new SubTIpoNaoEncontrado("Subtipo inválido para RECEITA. Valores permitidos: " +
                         Arrays.toString(TiposCategorias.mostrarTodasReceitas().toArray()));
             }
         } else if (categoriaEncontrada.getTiposCategorias().equals(DESPESA)) {
@@ -105,12 +109,12 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
                     .map(Enum::name)
                     .anyMatch(valor -> valor.equalsIgnoreCase(String.valueOf(categoria.subtipo())));
             if (!valido) {
-                throw new IllegalArgumentException("Subtipo inválido para DESPESA. Valores permitidos: " +
+                throw new SubTIpoNaoEncontrado("Subtipo inválido para DESPESA. Valores permitidos: " +
                         Arrays.toString(TiposCategorias.mostrarTodasDespesas().toArray()));
             }
 
         } else {
-            throw new IllegalArgumentException("Tipo de categoria inválido. Use apenas RECEITA ou DESPESA.");
+            throw new TiposCategoriasNaoEncontrado("Tipo de categoria inválido. Use apenas RECEITA ou DESPESA.");
         }
 
         categoriaEncontrada.setSubTipo(categoria.subtipo());
@@ -126,7 +130,7 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
 
         //encontrar a categoria pela id
         CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraRepository.findById(id).orElseThrow(() -> new
-                NoSuchElementException("Nenhuma categoria financeira foi encontrado com esta id informada"));
+                CategoriaNaoEncontrada("Nenhuma categoria financeira foi encontrado com esta id informada"));
 
         //Remover a categoria financeira encontrada
         categoriaFinanceiraRepository.delete(categoriaEncontrada);
@@ -143,7 +147,7 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
 
         // Validar se existem categorias com o tipo fornecido
         if (todasCategorias.isEmpty()) {
-            throw new NoSuchElementException("Não há nenhuma categoria desse tipo no banco de dados!");
+            throw new CategoriaNaoEncontrada("Não há nenhuma categoria desse tipo no banco de dados!");
         }
 
         // Verificar o tipo e validar os subtipos
@@ -155,9 +159,22 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
             // Mapear as categorias encontradas para a resposta
             return TiposCategorias.mostrarTodasDespesas();
         } else {
-            throw new IllegalArgumentException("Tipo de categoria inválido. Use apenas RECEITA ou DESPESA.");
+            throw new TiposCategoriasNaoEncontrado("Tipo de categoria inválido. Use apenas RECEITA ou DESPESA.");
 
         }
+    }
+
+    @Override
+    public CategoriaFinanceira encontrarCategoriaETipo(TiposCategorias tipoCategoria, SubTipoCategoria subTipoCategoria) {
+        try{
+            return categoriaFinanceiraRepository.findByTipoAndSubtipo(tipoCategoria, subTipoCategoria);
+        } catch (Exception e) {
+            throw new CategoriaNaoEncontrada("Não foi encontrado nenhuma categoria e nenhum subtipo de categoria dessa categoria informada");
+        }
+    }
+
+    public void salvarNovaCategoria(CategoriaFinanceira novaCategoria){
+        categoriaFinanceiraRepository.save(novaCategoria);
     }
 }
 

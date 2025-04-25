@@ -240,4 +240,21 @@ public class ContaUsuario {
         // Remover a conta da lista de contas do usuário
         usuario.getContasRelacionadas().remove(this);
     }
+
+
+    /**
+     * Métodos para adição e subtração de valores do saldo
+     */
+
+
+    public void adicionarSaldo(ContaUsuario conta, BigDecimal valor){
+        //Pegar o novo saldo
+        BigDecimal novoSaldo = conta.getSaldo().add(valor);
+        conta.setSaldo(novoSaldo);
+    }
+
+    public void subtrairSaldo(ContaUsuario conta, BigDecimal valor){
+        BigDecimal novoSaldo = conta.getSaldo().subtract(valor);
+        conta.setSaldo(novoSaldo);
+    }
 }

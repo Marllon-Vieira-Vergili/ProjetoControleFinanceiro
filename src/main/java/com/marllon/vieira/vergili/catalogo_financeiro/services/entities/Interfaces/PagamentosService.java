@@ -1,6 +1,9 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.services.entities.Interfaces;
 
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.ContaUsuarioRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.PagamentosRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.ContaUsuario;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.Pagamentos;
 
 import java.math.BigDecimal;
@@ -18,6 +21,7 @@ public interface PagamentosService {
     //Criar (novo pagamento)
 
     Pagamentos criarNovoPagamento(PagamentosRequest pagamento);
+    void registrarTransacaoReceitaOuDespesa(PagamentosRequest pagamento, ContaUsuarioRequest contaUsuario);
 
     //Ler
     Pagamentos encontrarPagamentoPorId(Long id);
@@ -31,5 +35,8 @@ public interface PagamentosService {
     //Remover
     Pagamentos removerPagamentoPorId(Long id);
 
+
+    //Método para salvar em outras entidades
+    void salvarNovoPagamento(Pagamentos novoPagamento);
 
 }

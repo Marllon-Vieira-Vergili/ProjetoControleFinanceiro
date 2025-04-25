@@ -62,7 +62,7 @@ public class IContaUsuarioImplement implements IContaUsuario {
 
         //Mapear a conta correta
         List<ContaUsuarioResponse> contaResponse = Collections.singletonList(new ContaUsuarioResponse
-                (novaContaCriada.getId(), novaContaCriada.getNome(), novaContaCriada.getSaldo()));
+                (novaContaCriada.getId(), novaContaCriada.getNome(), novaContaCriada.getSaldo(),novaContaCriada.getTipoConta()));
 
         //Retornar o DTO ao usuário
         return new ContaUsuarioAssociationResponse(contaResponse, usuarioResponse);
@@ -86,7 +86,7 @@ public class IContaUsuarioImplement implements IContaUsuario {
 
         List<ContaUsuarioResponse> contaUsuarioResponse = Collections.singletonList
                 (new ContaUsuarioResponse(contaEncontrada.getId(), contaEncontrada.getNome(),
-                        contaEncontrada.getSaldo()));
+                        contaEncontrada.getSaldo(),contaEncontrada.getTipoConta()));
 
         return new ContaUsuarioAssociationResponse(contaUsuarioResponse, Collections.singletonList(usuarioResponse));
     }
@@ -100,7 +100,7 @@ public class IContaUsuarioImplement implements IContaUsuario {
         //Mapear cada conta encontrada
         List<ContaUsuarioResponse> contas = todasContasEncontradas.stream()
                 .map(contaUsuario -> new ContaUsuarioResponse(contaUsuario.getId(),
-                        contaUsuario.getNome(), contaUsuario.getSaldo())).toList();
+                        contaUsuario.getNome(), contaUsuario.getSaldo(),contaUsuario.getTipoConta())).toList();
 
 //Encontrar seus usuarios associados
         List<UsuarioResponse> usuarioResponse = todasContasEncontradas.stream()
@@ -126,7 +126,7 @@ public class IContaUsuarioImplement implements IContaUsuario {
 
         List<ContaUsuarioResponse> contaUsuarioResponse = Collections.singletonList
                 (new ContaUsuarioResponse(contaSerAtualizada.getId(), contaSerAtualizada.getNome(),
-                        contaSerAtualizada.getSaldo()));
+                        contaSerAtualizada.getSaldo(),contaSerAtualizada.getTipoConta()));
 
         Usuario usuarioRelacionado = contaSerAtualizada.getUsuarioRelacionado();
 

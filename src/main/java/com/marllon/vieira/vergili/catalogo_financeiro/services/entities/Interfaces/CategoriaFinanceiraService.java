@@ -6,6 +6,7 @@ import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.SubTipoC
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Interface para representar os métodos separadamente de acordo com cada entidade representada,
@@ -22,12 +23,17 @@ public interface CategoriaFinanceiraService {
     CategoriaFinanceira encontrarCategoriaPorId(Long id);
     List<TiposCategorias>encontrarTodasCategorias();
     List<SubTipoCategoria> encontrarCategoriasPorTipo(TiposCategorias tipo);
+    CategoriaFinanceira encontrarCategoriaETipo(TiposCategorias tipoCategoria, SubTipoCategoria subTipoCategoria);
 
     // Atualizar
-    CategoriaFinanceira atualizarCategoria(Long id, CategoriaFinanceiraRequest categoria);
+    CategoriaFinanceira atualizarValoresCategoria(Long id, CategoriaFinanceiraRequest categoria);
 
     // Remover
     CategoriaFinanceira removerCategoria(Long id);
 
+
+
+    //Método para salvar em outras entidades
+    void salvarNovaCategoria(CategoriaFinanceira novaCategoria);
 
 }

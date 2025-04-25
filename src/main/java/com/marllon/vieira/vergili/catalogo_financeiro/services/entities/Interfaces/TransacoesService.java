@@ -1,6 +1,7 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.services.entities.Interfaces;
 
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.HistoricoTransacaoRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.HistoricoTransacao;
 
 import java.math.BigDecimal;
@@ -31,4 +32,6 @@ public interface TransacoesService {
     HistoricoTransacao removerTransacaoPorId(Long id);
 
 
+    //Método para salvar em outras entidades
+    void salvarNovaTransacao(HistoricoTransacao novaTransacao);
 }

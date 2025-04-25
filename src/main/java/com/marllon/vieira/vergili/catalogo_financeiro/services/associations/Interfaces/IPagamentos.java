@@ -25,5 +25,5 @@ public interface IPagamentos {
 
 
     //Deletar
-    PagamentoAssociationResponse removerPagamentoAssociadoPelaId(Long id);
+    void removerPagamentoAssociadoPelaId(Long id);
 }

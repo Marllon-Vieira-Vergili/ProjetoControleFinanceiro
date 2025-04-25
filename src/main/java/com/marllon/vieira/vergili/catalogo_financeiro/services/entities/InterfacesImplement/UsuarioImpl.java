@@ -1,6 +1,8 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.services.entities.InterfacesImplement;
 
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.UsuarioRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.JaExisteException;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.UsuarioNaoEncontrado;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.Usuario;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.UsuarioRepository;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.entities.Interfaces.UsuarioService;
@@ -36,7 +38,7 @@ public class UsuarioImpl implements UsuarioService {
         //Verificar se esse nome, email e telefone passado do parâmetro já não existe no banco um igual
         if(usuarioRepository.existsByNomeAndEmailAndTelefone(novoUsuario.getNome(),
                 novoUsuario.getEmail(), novoUsuario.getTelefone())){
-            throw new IllegalArgumentException("Já existe uma conta com esse nome, este saldo e tipo de conta criados");
+            throw new JaExisteException("Já existe uma conta com esse nome, este saldo e tipo de conta criados");
         }
 
         //Salvar o novo usuário, se estiver tudo certo
@@ -52,11 +54,11 @@ public class UsuarioImpl implements UsuarioService {
 
         //Encontrar o usuário pela id
         Usuario usuarioEncontrado = usuarioRepository.findById(id).orElseThrow(() ->
-                new NoSuchElementException("Nenhum usuário encontrado com a ID informada"));
+                new UsuarioNaoEncontrado("Nenhum usuário encontrado com a ID informada"));
 
         //Se não tiver nenhum usuário no banco de dados
         if(usuarioRepository.findAll().isEmpty()){
-            throw  new NullPointerException("Não há nenhum usuário no banco de dados, ele está vazio");
+            throw  new UsuarioNaoEncontrado("Não há nenhum usuário no banco de dados, ele está vazio");
         }
         //Retornar os dados da id encontrada
         return usuarioEncontrado;
@@ -70,7 +72,7 @@ public class UsuarioImpl implements UsuarioService {
 
         //Se não tiver nenhum usuario encontrado, retornar Exception
         if(todosUsuariosEncontrados.isEmpty()){
-            throw new NullPointerException("Não há nenhuma conta no banco de dados, ele está vazio");
+            throw new UsuarioNaoEncontrado("Não há nenhuma conta no banco de dados, ele está vazio");
         }
 
         //Retornar a lista de todas as contas encontradas
@@ -84,7 +86,7 @@ public class UsuarioImpl implements UsuarioService {
 
         //Encontrando o usuario que quero atualizar, pela sua id
         Usuario usuarioEncontrado = usuarioRepository.findById(id).orElseThrow(() ->
-                new NoSuchElementException("Nenhum usuário com essa id foi encontrada"));
+                new UsuarioNaoEncontrado("Nenhum usuário com essa id foi encontrada"));
 
         //Se achar.. vamos atualizar os dados do usuario
         usuarioEncontrado.setNome(usuario.nome().toUpperCase());
@@ -107,13 +109,18 @@ public class UsuarioImpl implements UsuarioService {
 
         //encontrar o usuario pela id
         Usuario usuarioEncontrado = usuarioRepository.findById(id).orElseThrow(() -> new
-                NoSuchElementException("Nenhum usuario foi encontrado com esta id informada"));
+                UsuarioNaoEncontrado("Nenhum usuario foi encontrado com esta id informada"));
 
         //Remover o usuario encontrado
         usuarioRepository.delete(usuarioEncontrado);
 
         //Retornar o valor do usuario que foi deletado
         return usuarioEncontrado;
+    }
+
+    @Override
+    public void salvarNovoUsuario(Usuario novoUsuario) {
+        usuarioRepository.save(novoUsuario);
     }
 
     @Override
@@ -125,7 +132,7 @@ public class UsuarioImpl implements UsuarioService {
 
         //Se não tiver nenhuma conta no banco de dados
         if (usuarioRepository.findAll().isEmpty()) {
-            throw new NullPointerException("Não há nenhum usuário no banco de dados, ele está vazio");
+            throw new UsuarioNaoEncontrado("Não há nenhum usuário no banco de dados, ele está vazio");
         }
 
         for (Usuario usuariosPercorridos : usuariosEncontrados) {
@@ -133,7 +140,7 @@ public class UsuarioImpl implements UsuarioService {
                 return List.of(usuariosPercorridos);
             }
         }
-        throw new IllegalArgumentException("Nenhum usuário encontrado com o nome: " + nome);
+        throw new UsuarioNaoEncontrado("Nenhum usuário encontrado com o nome: " + nome);
     }
 
     @Override
@@ -142,7 +149,7 @@ public class UsuarioImpl implements UsuarioService {
         Usuario usuarioEncontrado = usuarioRepository.encontrarUsuarioPeloEmail(email);
 
         if(usuarioEncontrado == null){
-            throw new NoSuchElementException("Nenhum usuário foi encontrado com esse email");
+            throw new UsuarioNaoEncontrado("Nenhum usuário foi encontrado com esse email");
         }
         return usuarioEncontrado;
     }

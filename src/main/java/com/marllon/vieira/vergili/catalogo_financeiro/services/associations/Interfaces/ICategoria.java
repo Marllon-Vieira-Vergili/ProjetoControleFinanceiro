@@ -21,13 +21,13 @@ public interface ICategoria {
 
     //Ler
     CategoriaFinanceiraAssociationResponse encontrarCategoriaAssociadaPorId(Long id);
-    List<CategoriaFinanceiraAssociationResponse> encontrarTodasCategoriasAssociadas();
+    List<CategoriaFinanceiraAssociationResponse> buscarCategoriaPorTipoESubCategoria(CategoriaFinanceiraRequest categoriaESubCategoria);
 
     //Atualizar
-    CategoriaFinanceiraAssociationResponse atualizarCategoriaAssociada(Long id, CategoriaFinanceiraRequest categoriaAtualizada);
+    CategoriaFinanceiraAssociationResponse alterarDadosCategoriaPelaID(Long id, CategoriaFinanceiraRequest categoriaAtualizada);
 
 
     //Deletar
-    CategoriaFinanceiraAssociationResponse removerCategoriaAssociadaPelaId(Long id);
+    void removerCategoriaAssociadaPelaId(Long id);
 
 }

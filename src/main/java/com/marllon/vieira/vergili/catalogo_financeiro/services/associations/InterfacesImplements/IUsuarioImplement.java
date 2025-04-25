@@ -56,8 +56,12 @@ public class IUsuarioImplement implements IUsuario {
             UsuarioResponse usuarioResponse = new UsuarioResponse(novoUsuarioCriado.getId(), novoUsuarioCriado.getNome(),
                     novoUsuarioCriado.getEmail(), novoUsuarioCriado.getTelefone());
 
-            List<ContaUsuarioResponse> contaUsuarioResponse = Collections.singletonList(new ContaUsuarioResponse(novaContaCriada.getId(),
-                    novaContaCriada.getNome(), novaContaCriada.getSaldo()));
+            List<ContaUsuarioResponse> contaUsuarioResponse = Collections.singletonList(
+                    new ContaUsuarioResponse(
+                            novaContaCriada.getId(),
+                    novaContaCriada.getNome(),
+                    novaContaCriada.getSaldo(),
+                    novaContaCriada.getTipoConta()));
 
             // Retornar os dados do novo usuário criado e sua conta
             return new UsuarioAssociationResponse(usuarioResponse, contaUsuarioResponse);
@@ -81,7 +85,10 @@ public class IUsuarioImplement implements IUsuario {
         }
 
         List<ContaUsuarioResponse> contaUsuarioResponse = contasEncontradas.stream().map(contaUsuario ->
-                new ContaUsuarioResponse(contaUsuario.getId(), contaUsuario.getNome(), contaUsuario.getSaldo())).toList();
+                new ContaUsuarioResponse(contaUsuario.getId(),
+                        contaUsuario.getNome(),
+                        contaUsuario.getSaldo(),contaUsuario.getTipoConta()
+                )).toList();
 
         //Se encontrar, obter os dto
         UsuarioResponse usuarioResponse = new UsuarioResponse(usuarioEncontrado.getId(), usuarioEncontrado.getNome(),
@@ -104,7 +111,8 @@ public class IUsuarioImplement implements IUsuario {
 
             List<ContaUsuarioResponse> contasUsuario = usuario.getContasRelacionadas().stream().map(
                     contaUsuario -> new ContaUsuarioResponse(contaUsuario.getId(),
-                            contaUsuario.getNome(), contaUsuario.getSaldo())).toList();
+                            contaUsuario.getNome(), contaUsuario.getSaldo(),contaUsuario.getTipoConta()
+                    )).toList();
 
             //Retornar o usuário associado e sua lista de contas
             return new UsuarioAssociationResponse(usuarioResponse, contasUsuario);
@@ -136,7 +144,7 @@ public class IUsuarioImplement implements IUsuario {
                     .map(conta -> new ContaUsuarioResponse(
                             conta.getId(),
                             conta.getNome(),
-                            conta.getSaldo()))
+                            conta.getSaldo(),conta.getTipoConta()))
                     .toList();
 
             // Converte o usuário para DTO
@@ -172,7 +180,7 @@ public class IUsuarioImplement implements IUsuario {
 
         List<ContaUsuarioResponse> contaUsuarioResponse = usuariofoiAtualizado.getContasRelacionadas().stream().map(
                 contaUsuario -> new ContaUsuarioResponse(contaUsuario.getId(), contaUsuario.getNome(),
-                        contaUsuario.getSaldo())).toList();
+                        contaUsuario.getSaldo(),contaUsuario.getTipoConta())).toList();
 
 
         return new UsuarioAssociationResponse(usuarioResponse, contaUsuarioResponse);

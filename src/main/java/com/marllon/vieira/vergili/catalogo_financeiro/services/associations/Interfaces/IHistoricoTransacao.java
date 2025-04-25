@@ -2,6 +2,8 @@ package com.marllon.vieira.vergili.catalogo_financeiro.services.associations.Int
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.associations.HistoricoTAssociationRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.associations.HistoricoTAssociationResponse;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -12,18 +14,12 @@ import java.util.List;
 public interface IHistoricoTransacao {
 
 
-        //Criar
-        HistoricoTAssociationResponse criarEAssociarHistoricoTransacao(HistoricoTAssociationRequest novoHistorico);
+
 
         //Ler
         HistoricoTAssociationResponse encontrarHistoricoTransacaoAssociadaPorId(Long id);
         List<HistoricoTAssociationResponse> encontrarTodosHistoricosTransacoesAssociados();
-
-        //Atualizar
-        HistoricoTAssociationResponse atualizarHistoricoTransacaoAssociado(Long id, HistoricoTAssociationRequest atualizarHistorico);
-
-
-        //Deletar
-        HistoricoTAssociationResponse removerHistoricoTransacaoAssociadoPelaId(Long id);
+        List<HistoricoTAssociationResponse> encontrarHistoricoTransacaoPorData(LocalDate data);
+        List<HistoricoTAssociationResponse> encontrarHistoricosPorValor(BigDecimal valor);
     }
 

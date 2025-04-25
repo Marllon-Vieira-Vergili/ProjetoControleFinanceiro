@@ -10,6 +10,6 @@ import java.util.List;
 public record CategoriaFinanceiraAssociationResponse(List<CategoriaFinanceiraResponse> categoriasRelacionadas,
                                                      List<PagamentosResponse> pagamentosRelacionados,
                                                      List<HistoricoTransacaoResponse> historicoTransacoesRelacionados,
-                                                     ContaUsuarioResponse contaRelacionada,
-                                                     UsuarioResponse usuarioRelacionado) {
+                                                     List<ContaUsuarioResponse> contaRelacionada,
+                                                     List<UsuarioResponse> usuarioRelacionado) {
 }

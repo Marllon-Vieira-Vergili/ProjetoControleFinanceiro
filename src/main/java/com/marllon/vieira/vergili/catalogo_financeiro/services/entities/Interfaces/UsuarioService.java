@@ -1,6 +1,7 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.services.entities.Interfaces;
 
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.UsuarioRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.Usuario;
 
 import java.util.List;
@@ -28,4 +29,7 @@ public interface UsuarioService {
     //Remover
     Usuario removerUsuarioPorId(Long id);
 
+
+    //Método para salvar em outras entidades
+    void salvarNovoUsuario(Usuario novoUsuario);
 }

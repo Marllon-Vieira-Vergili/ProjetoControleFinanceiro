@@ -1,6 +1,9 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.services.entities.InterfacesImplement;
 
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.HistoricoTransacaoRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.HistoricoTransacaoNaoEncontrado;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.JaExisteException;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.TiposCategoriasNaoEncontrado;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.HistoricoTransacao;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.Pagamentos;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.HistoricoTransacaoRepository;
@@ -9,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -42,12 +46,12 @@ public class HistoricoTransacaoImpl implements TransacoesService {
 
         //Se o novo histórico de transacao for diferente o tipo de categoria que deve ser informado
         if(novoHistorico.getCategorias()!= DESPESA && novoHistorico.getCategorias() != RECEITA) {
-            throw new IllegalArgumentException("Por favor, digite aqui: (DESPESA ou RECEITA)");
+            throw new TiposCategoriasNaoEncontrado("Por favor, digite aqui: (DESPESA ou RECEITA)");
         }
 
         //Verificar, se a data passada do historico de transacao, não for de datas passadas a partir do dia de hoje
         if(novoHistorico.getData().isBefore(LocalDate.now())){
-            throw new IllegalArgumentException("A data do histórico de transação deve ser do mesmo dia de hoje, igual da " +
+            throw new DateTimeException("A data do histórico de transação deve ser do mesmo dia de hoje, igual da " +
                     "data de pagamento");
         }
 
@@ -68,11 +72,11 @@ public class HistoricoTransacaoImpl implements TransacoesService {
     public HistoricoTransacao encontrarTransacaoPorId(Long id) {
         //Encontrar a transacao pela id
         HistoricoTransacao transacaoEncontrada = historicoTransacaoRepository.findById(id).orElseThrow(() ->
-                new NoSuchElementException("Nenhuma transacao encontrada com a ID informada"));
+                new HistoricoTransacaoNaoEncontrado("Nenhuma transacao encontrada com a ID informada"));
 
         //Se não tiver nenhuma transacao no banco de dados
         if(historicoTransacaoRepository.findAll().isEmpty()){
-            throw  new NullPointerException("Não há nenhuma transacao no banco de dados, ele está vazio");
+            throw  new HistoricoTransacaoNaoEncontrado("Não há nenhuma transacao no banco de dados, ele está vazio");
         }
         //Retornar os dados da id encontrada
         return transacaoEncontrada;
@@ -87,7 +91,7 @@ public class HistoricoTransacaoImpl implements TransacoesService {
 
         //Se a lista no banco de dados for vazia
         if(todasTransacoes.isEmpty()){
-            throw new NoSuchElementException("Não existe nenhum valor de transacoes no banco de dados");
+            throw new HistoricoTransacaoNaoEncontrado("Não existe nenhum valor de transacoes no banco de dados");
         }
 
         //senao retornar a lista de todos eles
@@ -102,7 +106,7 @@ public class HistoricoTransacaoImpl implements TransacoesService {
 
         //Se não encontrar nenhum pagamento.. retornar exceção
         if (transacoesEncontradas.isEmpty()) {
-            throw new NoSuchElementException("Não existe nenhum valor no banco de dados");
+            throw new HistoricoTransacaoNaoEncontrado("Não existe nenhum valor no banco de dados");
 
         }
         //Se encontrar transacoes, verificar quanto ao valor deles
@@ -117,7 +121,7 @@ public class HistoricoTransacaoImpl implements TransacoesService {
 
         //Se não encontrar nenhuma transacao.. retornar exceção
         if(transacoesEncontradas.isEmpty()){
-            throw new NoSuchElementException("Não existe nenhum valor no banco de dados");
+            throw new HistoricoTransacaoNaoEncontrado("Não existe nenhum valor no banco de dados");
 
         }
         //Se encontrar transacoes, verificar quanto ao valor deles
@@ -129,7 +133,7 @@ public class HistoricoTransacaoImpl implements TransacoesService {
 
         //Verificar se a id do historico de transacao já existe no banco de dados
         HistoricoTransacao transacaoEncontrada = historicoTransacaoRepository.findById(id).orElseThrow(() ->
-                new NoSuchElementException("Nenhum historico de transacao encontrado com essa id!"));
+                new HistoricoTransacaoNaoEncontrado("Nenhum historico de transacao encontrado com essa id!"));
 
         //Se o historico existir..
         transacaoEncontrada.setValor(historicoTransacao.valor());
@@ -146,12 +150,12 @@ public class HistoricoTransacaoImpl implements TransacoesService {
         //verificar se esse historico de transacao já não existe, comparando  data e descricao
         if(historicoTransacaoRepository.existsByDataAndDescricao(transacaoEncontrada.getData(),
                 transacaoEncontrada.getDescricao())){
-            throw new IllegalArgumentException("Já existe um historico de transacao com a mesma descricao e data");
+            throw new JaExisteException("Já existe um historico de transacao com a mesma descricao e data");
         }
 
         //Verificar, se a data passada do historico de transacao, não for de datas passadas a partir do dia de hoje
         if(transacaoEncontrada.getData().isBefore(LocalDate.now())){
-            throw new IllegalArgumentException("A data do histórico de transação deve ser do mesmo dia de hoje, igual da " +
+            throw new DateTimeException("A data do histórico de transação deve ser do mesmo dia de hoje, igual da " +
                     "data de pagamento");
         }
         //Salvar o historico de transacao atualizado
@@ -166,12 +170,17 @@ public class HistoricoTransacaoImpl implements TransacoesService {
 
         //encontrar o pagamento pela id
         HistoricoTransacao transacaoEncontrada = historicoTransacaoRepository.findById(id).orElseThrow(() -> new
-                NoSuchElementException("Nenhum histórico de transação foi encontrado com esta id informada"));
+                HistoricoTransacaoNaoEncontrado("Nenhum histórico de transação foi encontrado com esta id informada"));
 
         //Remover o histórico de transação encontrado
         historicoTransacaoRepository.delete(transacaoEncontrada);
 
         //Retornar o valor do pagamento que foi deletado
         return transacaoEncontrada;
+    }
+
+    @Override
+    public void salvarNovaTransacao(HistoricoTransacao novaTransacao) {
+        historicoTransacaoRepository.save(novaTransacao);
     }
 }

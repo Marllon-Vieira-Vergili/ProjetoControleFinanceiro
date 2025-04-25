@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CategoriaFinanceiraRepository extends JpaRepository<CategoriaFinanceira,Long> {
 
@@ -23,4 +24,9 @@ public interface CategoriaFinanceiraRepository extends JpaRepository<CategoriaFi
     @Query(value = "SELECT c FROM CategoriaFinanceira c WHERE c.subTipo = :subtipo_categoria")
     List<CategoriaFinanceira> encontrarPorSubtipoCategoria(@Param(value = "subtipo_categoria") TiposCategorias subtipoCategoria);
 
+
+    //Método para procurar a categoria pelo tipo, e seu subtipo respectivamente
+    @Query(value = "SELECT c FROM CategoriaFinanceira c WHERE c.tiposCategorias = :tipoCategoria AND c.subTipo = :subTipoCategoria")
+    CategoriaFinanceira findByTipoAndSubtipo(@Param(value = "tipoCategoria") TiposCategorias tipoCategoria,
+                                                       @Param(value = "subTipoCategoria") SubTipoCategoria subTipoCategoria);
 }
