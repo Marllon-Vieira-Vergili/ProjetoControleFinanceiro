@@ -25,17 +25,19 @@ import java.util.NoSuchElementException;
 @Setter(AccessLevel.PUBLIC)
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 @AllArgsConstructor(access = AccessLevel.PUBLIC)
-@EqualsAndHashCode(of = {"nome", "email", "senha", "telefone"})
+@EqualsAndHashCode(of = {"id"})
 @ToString(of = {"id", "nome", "telefone"})
 public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id",nullable = false)
-
     private Long id;
 
     @Column(name = "nome", length = 50,nullable = false)
+    @Pattern(
+            regexp = "^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$",
+            message = "O nome só pode conter letras, espaços, apóstrofos e hífens!")
     @NotBlank(message = "Nome do usuário é obrigatório!")
     private String nome;
 
@@ -56,7 +58,6 @@ public class Usuario {
     @Size(min = 14,max = 14, message = "Padrão de telefone aceito: (DDD)00000-0000")
     @Pattern(regexp = "\\(\\d{2}\\)\\d{5}-\\d{4}", message = "O formato deve ser formato Brasil (99)99999-9999")
     private String telefone;
-
 
 
     //RELACIONAMENTOS
@@ -86,10 +87,15 @@ public class Usuario {
     private List<CategoriaFinanceira> categoriasRelacionadas = new ArrayList<>();
 
 
-    /**MÈTODOS DE ASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
+    //--------------------MÈTODOS DE ASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE----------------------------//
+    /**
+     * Estes métodos são associações desta entidade CategoriaFinanceira com todas as outras..
+     * O parâmetro de entrada de dados vai variar conforme o nome da outra entidade
+     * O retorno dos dados vai variar conforme o nome da outra entidade
+     * Jogar Exceções personalizadas, se houver erros de não encontrados, ou já existe.. etc;
      */
 
-    //Associar Usuario com Pagamentos Relacionados(One to Many)
+
     public void associarUsuarioComPagamento(Pagamentos pagamento){
 
         //Verificar se a lista de pagamentos do usuario é nula, se for nula, criar uma nova lista de array
@@ -105,9 +111,8 @@ public class Usuario {
         }
     }
 
-    //Associar Usuario com Transações Relacionadas(One to Many)
-    public void associarUsuarioComTransacoes(HistoricoTransacao transacao){
 
+    public void associarUsuarioComTransacoes(HistoricoTransacao transacao){
 
         //Verificar se a lista de transações com o usuário é nula
         if(this.transacoesRelacionadas == null || this.transacoesRelacionadas.isEmpty()){
@@ -123,7 +128,7 @@ public class Usuario {
         }
 
     }
-    //Associar usuario com Conta Relacionada(One to many)
+
     public void associarUsuarioComConta(ContaUsuario conta){
 
         //Associar usuário com uma conta
@@ -139,7 +144,6 @@ public class Usuario {
         }
     }
 
-    //Associar usuário com Categorias de contas Relacionadas(One to Many)
     public void associarUsuarioComCategoria(CategoriaFinanceira categoria){
 
         //Instanciar uma nova arrayList de usuario para categorias relacionadas, se a mesma ainda nao estiver sido criada
@@ -157,9 +161,13 @@ public class Usuario {
         }
     }
 
-    /**MÈTODOS DE DESASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
+    //--------------------MÈTODOS DE DESASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE----------------------------//
+    /**
+     * Estes métodos são desassociações desta entidade Usuario com todas as outras..
+     * O parâmetro de entrada de dados vai variar conforme o nome da outra entidade
+     * Não irá ter retorno dos dados, pois só será feito para execução
+     * Jogar Exceções personalizadas, se houver erros de não encontrados, ou já existe.. etc;
      */
-
     //Desassociar Usuario com Pagamentos Relacionados(One to Many)
     public void desassociarUsuarioComPagamento(Pagamentos pagamento){
 

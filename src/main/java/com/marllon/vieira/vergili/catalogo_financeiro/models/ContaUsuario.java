@@ -1,20 +1,19 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models;
 
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposContas;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.JaExisteException;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
+import org.hibernate.ObjectNotFoundException;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
-
-import static com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposContas.CONTA_CORRENTE;
-import static com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposContas.CONTA_POUPANCA;
 
 
 /**
@@ -90,12 +89,14 @@ public class ContaUsuario {
     private Usuario usuarioRelacionado;
 
 
+    //--------------------MÈTODOS DE ASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE----------------------------//
+
     /**
-     * MÈTODOS DE ASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
+     * Estes métodos são associações desta entidade ContaUsuario com todas as outras..
+     * O parâmetro de entrada de dados vai variar conforme o nome da outra entidade
+     * O retorno dos dados vai variar conforme o nome da outra entidade
+     * Jogar Exceções personalizadas, se houver erros de não encontrados, ou já existe.. etc;
      */
-
-
-    //Associar o tipo de conta a um enum conta
     public void associarTipoConta(TiposContas tipoConta) {
 
         //Associar o tipo da conta
@@ -110,7 +111,6 @@ public class ContaUsuario {
     }
 
 
-    //Associar Conta com Categoria de contas(One to Many)
     public void associarContaComCategoria(CategoriaFinanceira categoriaConta) {
 
         //Inicializar a lista primeiramente, para evitar erros de NullPointerException
@@ -127,7 +127,7 @@ public class ContaUsuario {
         categoriaConta.setContaRelacionada(this); //categoria, essa é sua conta
     }
 
-    //Associar Conta com Pagamentos (One to Many) - Uma conta pode ter muitos pagamentos
+
     public void associarContaComPagamentos(Pagamentos pagamento) {
 
         //ter certeza que a lista não seja nula, já instanciando um novo array list
@@ -145,7 +145,7 @@ public class ContaUsuario {
         pagamento.setContaRelacionada(this); //Pagamento, setar a sua conta relacionada a este pagamentos relacionados(this)
     }
 
-    //Associar Conta com Historico de Transações (One to Many)
+
     public void associarContaComTransacoes(HistoricoTransacao transacao) {
 
         //Ja instanciar uma nova lista, para ter certeza que a mesma não será nula, evitando NullPointerException
@@ -164,7 +164,7 @@ public class ContaUsuario {
 
     }
 
-    //Associar Conta com Usuário (Many to One)
+
     public void associarContaComUsuario(Usuario usuario) {
 
         // Verificar se a conta já está associada
@@ -184,11 +184,14 @@ public class ContaUsuario {
         usuario.getContasRelacionadas().add(this);
     }
 
-    /**
-     * MÈTODOS DE DESASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
-     */
+    //--------------------MÈTODOS DE DESASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE----------------------------//
 
-    //Desassociar Conta com categoria de contas(One to Many)
+    /**
+     * Estes métodos são desassociações desta entidade ContaUsuario com todas as outras..
+     * O parâmetro de entrada de dados vai variar conforme o nome da outra entidade
+     * Não terá retorno de dados, só execução
+     * Jogar Exceções personalizadas, se houver erros de não encontrados, ou já existe.. etc;
+     */
     public void desassociarContaDeCategorias(CategoriaFinanceira categoriaConta) {
 
         //Verificar se existe alguma categoria associada a essa conta
@@ -201,7 +204,7 @@ public class ContaUsuario {
         categoriaConta.setContaRelacionada(null);
     }
 
-    //Desassociar Conta com Pagamentos (One to Many)
+
     public void desassociarContaDePagamento(Pagamentos pagamento) {
 
         //Verificar se existe o pagamento passado como parametro, associado a essa conta
@@ -214,7 +217,7 @@ public class ContaUsuario {
         pagamento.setContaRelacionada(null);
     }
 
-    //Desassociar Conta com Historico de Transações (One to Many)
+
     public void desassociarContaDeHistoricoDeTransacao(HistoricoTransacao transacao) {
 
         //Verificar primeiramente, se existe o histórico de transação passado como parametro, vinculado a essa conta
@@ -227,7 +230,7 @@ public class ContaUsuario {
         transacao.setContaRelacionada(null);
     }
 
-    //Desassociar Conta com Usuário (Many to One)
+
     public void desassociarContaDeUsuario(Usuario usuario) {
         // Verificar se o usuário realmente tem essa conta
         if (usuario.getContasRelacionadas() == null || !usuario.getContasRelacionadas().contains(this)) {
@@ -242,11 +245,6 @@ public class ContaUsuario {
     }
 
 
-    /**
-     * Métodos para adição e subtração de valores do saldo
-     */
-
-
     public void adicionarSaldo(ContaUsuario conta, BigDecimal valor){
         //Pegar o novo saldo
         BigDecimal novoSaldo = conta.getSaldo().add(valor);
@@ -257,4 +255,5 @@ public class ContaUsuario {
         BigDecimal novoSaldo = conta.getSaldo().subtract(valor);
         conta.setSaldo(novoSaldo);
     }
+
 }

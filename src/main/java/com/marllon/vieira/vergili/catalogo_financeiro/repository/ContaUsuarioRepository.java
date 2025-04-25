@@ -1,34 +1,53 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.repository;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.ContaUsuario;
-import lombok.EqualsAndHashCode;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
 import java.math.BigDecimal;
 
+/**
+ * Repositório responsável pelas operações de persistência da entidade {@link ContaUsuario}.
+ * Estende JpaRepository para fornecer operações CRUD, além de métodos customizados
+ * para busca por nome, saldo e tipo de conta.
+ */
 public interface ContaUsuarioRepository extends JpaRepository<ContaUsuario, Long> {
 
-
-    //Metodos customizados do repositório de ContaUsuario
-
-
-    //Método para comparação, verificar se nome, saldo  são iguais
+    /**
+     * Verifica se já existe uma conta com o mesmo nome e saldo.
+     * Útil para validar duplicidade antes de salvar uma nova conta.
+     *
+     * @param nome o nome da conta
+     * @param saldo o saldo da conta
+     * @return true se já existir uma conta com o mesmo nome e saldo
+     */
     boolean existsByNomeAndSaldo(String nome, BigDecimal saldo);
 
-
-    //Método para procurar a conta pelo nome da mesma
-    @Query("SELECT c FROM ContaUsuario c WHERE c.nome =:nome")
+    /**
+     * Busca uma conta com base no nome.
+     * Útil para buscas diretas por nome.
+     *
+     * @param nome o nome da conta
+     * @return a {@link ContaUsuario} correspondente, ou null se não for encontrada
+     */
+    @Query("SELECT c FROM ContaUsuario c WHERE c.nome = :nome")
     ContaUsuario encontrarContaPeloNome(@Param("nome") String nome);
 
-
-    //Método para procurar a conta pelo nome saldo da mesma
-    @Query("SELECT c FROM ContaUsuario c WHERE c.saldo =:saldo")
+    /**
+     * Busca uma conta com base no saldo exato.
+     * Pode ser usada para relatórios ou verificações específicas.
+     *
+     * @param saldo o saldo da conta
+     * @return a {@link ContaUsuario} correspondente, ou null se não for encontrada
+     */
+    @Query("SELECT c FROM ContaUsuario c WHERE c.saldo = :saldo")
     ContaUsuario encontrarContaPeloSaldo(@Param("saldo") BigDecimal saldo);
 
-/*NÂO INSTANCIAR ESSE MÈTODO! EU DECIDI TIRAR ELE POR ENQUANTO, NÂO VEJO NECESSICADE
-    //Método para procurar a conta pelo tipo de conta
-    @Query("SELECT c FROM ContaUsuario c WHERE c.tipoConta =:tipo")
+    /**
+     * Busca uma conta com base no tipo de conta (ex: CORRENTE, POUPANÇA).
+     *
+     * @param tipoConta o tipo da conta em formato {@link String}
+     * @return a {@link ContaUsuario} correspondente, ou null se não for encontrada
+     */
+    @Query("SELECT c FROM ContaUsuario c WHERE c.tipoConta = :tipo")
     ContaUsuario encontrarpeloTipoDeConta(@Param("tipo") String tipoConta);
- */
 }

@@ -1,7 +1,8 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -13,7 +14,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 /**registros de despesas e contas a pagar e receber de alguém.. criará registro nessa entidade
  */
@@ -53,6 +53,10 @@ public class Pagamentos{
     @Enumerated(EnumType.STRING)
     private TiposCategorias categoria;
 
+    @NotNull(message = "O campo SubtTipo não pode ser nulo")
+    @Column(name = "subtipo_pagamento",nullable = false)
+    @Enumerated(EnumType.STRING)
+    private SubTipoCategoria subTipo;
 
 
     //RELACIONAMENTOS
@@ -88,10 +92,13 @@ public class Pagamentos{
             @JoinColumn(name = "categoria_id"), inverseForeignKey = @ForeignKey(name = "fk_categoria"))
     private List<CategoriaFinanceira> categoriasRelacionadas = new ArrayList<>();
 
-
-    /**MÈTODOS DE ASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
+//--------------------MÈTODOS DE ASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE----------------------------//
+    /**
+     * Estes métodos são associações desta entidade Pagamentos com todas as outras..
+     * O parâmetro de entrada de dados vai variar conforme o nome da outra entidade
+     * O retorno dos dados vai variar conforme o nome da outra entidade
+     * Jogar Exceções personalizadas, se houver erros de não encontrados, ou já existe.. etc;
      */
-
 
     //Associar Pagamentos com Usuário relacionado(Many to one)
     public void associarPagamentoComUsuario(Usuario usuario) {
@@ -174,7 +181,12 @@ public class Pagamentos{
         }
     }
 
-    /**MÈTODOS DE DESASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
+    //--------------------MÈTODOS DE DESASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE----------------------------//
+    /**
+     * Estes métodos são desassociações desta entidade Pagamentos com todas as outras..
+     * O parâmetro de entrada de dados vai variar conforme o nome da outra entidade
+     * Não irá ter retorno dos dados, pois só será feito para execução
+     * Jogar Exceções personalizadas, se houver erros de não encontrados, ou já existe.. etc;
      */
 
     //Desassociar pagamento de Usuario(Many to one)

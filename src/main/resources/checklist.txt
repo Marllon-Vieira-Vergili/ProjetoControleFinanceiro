@@ -1,0 +1,54 @@
+
+Checklist Personalizado de Revisão do Backend
+
+1. Organização de Pacotes e Classes
+- [ ] Consolidar o pacote de DTOs: atualmente existem quatro subpacotes (request/entities, request/associations, response/entities, response/associations). Avaliar fundir request/entities + request/associations em um único request e o mesmo para response, reduzindo duplicação.
+- [ ] Remover o subpacote 'entities' dentro de services; usar apenas com.marllon.vieira.vergili.catalogo_financeiro.services.interfaces e .impl.
+- [ ] Renomear o pacote 'enumerator' para 'enums' para seguir convenção Java.
+
+2. DTOs
+- [ ] Avaliar se todos os 20 DTOs são necessários; muitos espelham diretamente as entidades sem lógica adicional.
+- [ ] Implementar mapeamento automático (MapStruct) para reduzir código boilerplate de conversão.
+
+3. Repositórios
+- [ ] Todas as interfaces (CategoriaFinanceiraRepository, etc) estendem JpaRepository — verificar se não há métodos customizados não utilizados.
+- [ ] Remover imports e queries não usados.
+
+4. Serviços
+- [ ] Verificar uso de injeção de dependência por construtor em todas as implementações (CategoriaFinanceiraImpl, etc).
+- [ ] Consolidar lógica de associação dentro dos serviços de cada entidade e remover serviços/impl específicos de associações.
+- [ ] Centralizar validações de negócio aqui, não nos controladores.
+
+5. Controladores REST
+- [ ] Mesclar endpoints de association controllers (e.g., ContaUsuarioAssociationController) nos controllers de entidade correspondente.
+- [ ] Garantir uso de DTOs de response e não expor entidades JPA diretamente.
+- [ ] Remover duplicação de tratamento de exceções: usar GlobalExceptionLogic (@ControllerAdvice).
+
+6. Entidades e Relacionamentos
+- [ ] Ajustar fetch type para coleções: usar FetchType.LAZY sempre que possível.
+- [ ] Implementar equals e hashCode em entidades para evitar problemas em relacionamentos bidirecionais.
+- [ ] Validar uso de cascade apenas quando necessário.
+
+7. Exceções
+- [ ] Consolidar múltiplas classes NotFound em uma única GenericNotFoundException, passando o tipo e ID.
+- [ ] Usar JaExisteException apenas para regras de unicidade e evitar classes de exceção em excesso.
+
+8. Convenções de Nomeação
+- [ ] Renomear CatalogoFinanceiroAppApplication.java para Application ou CatalogoFinanceiroApplication.
+- [ ] Padronizar nomes (sem hífens) em spring.application.name no application.properties.
+- [ ] Pacotes em lowercase sem underscore: com.marllon.vieira.vergili.catalogofinanceiro.
+
+9. Configuração
+- [ ] Externalizar credenciais de BD (username, password) em variáveis de ambiente.
+- [ ] Revisar spring.jpa.hibernate.ddl-auto=update para produção (usar validate ou migrations).
+
+10. Testes e Qualidade
+- [ ] Adicionar testes unitários para services e controllers (diretório src/test está vazio).
+- [ ] Incluir static code analysis (Checkstyle, PMD).
+
+11. Logging
+- [ ] Inserir logs (SLF4J) em pontos críticos de serviços.
+- [ ] Remover prints e usar níveis adequados (INFO, DEBUG, ERROR).
+
+12. Código Morto
+- [ ] Eliminar classes, métodos e imports não referenciados (ex.: alguns Controllers de associação podem ser removidos).

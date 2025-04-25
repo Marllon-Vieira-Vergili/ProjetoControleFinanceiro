@@ -1,20 +1,21 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models;
 
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.SubTipoCategoria;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.JaExisteException;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.SubTipoNaoEncontrado;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.hibernate.ObjectNotFoundException;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 /**
  * Classificar suas transações, por exemplo, categorias de alimentação, transporte, lazer, salário, investimentos,
  *  moradia,etc..
- * orzanizando os gastos e receitas, pela categoria de gastos, pra ver onde cada dinheiro está indo.
+ * organizando os gastos e receitas, pela categoria de gastos, pra ver onde cada dinheiro está indo.
  *
  */
 
@@ -27,6 +28,10 @@ import java.util.NoSuchElementException;
 @EqualsAndHashCode(of = "tiposCategorias")
 @ToString(of = {"id", "contaRelacionada"})
 public class CategoriaFinanceira {
+
+
+    //----------------------------------------ATRIBUTOS--------------------------------------------------------//
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,7 +55,8 @@ public class CategoriaFinanceira {
     }
 
 
-    //RELACIONAMENTOS:
+    //----------------------------------------RELACIONAMENTOS--------------------------------------------------------//
+
 
     /**Várias categorias de contas, pode ter uma conta relacionadas(Uma categoria de despesa de conta, pode
      * ter uma conta relacionada ex: uma categoria de conta de despesa(conta de luz) pode ser paga por
@@ -89,16 +95,21 @@ public class CategoriaFinanceira {
 
 
 
+//--------------------MÈTODOS DE ASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE----------------------------//
 
-    /**MÈTODOS DE ASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
+    //jogar na lógica de negócios
+    /**
+     * Estes métodos são associações desta entidade CategoriaFinanceira com todas as outras..
+     * O parâmetro de entrada de dados vai variar conforme o nome da outra entidade
+     * O retorno dos dados vai variar conforme o nome da outra entidade
+     * Jogar Exceções personalizadas, se houver erros de não encontrados, ou já existe.. etc;
      */
 
-    //Associar Categoria com contas(Many to One)
     public void associarCategoriaComConta(ContaUsuario conta) {
 
         //Verificar primeiramente, se essa conta passada como parametro, ja não existe na associação das duas entidades
         if (conta.getCategoriasRelacionadas() != null && conta.getCategoriasRelacionadas().contains(this)) {
-            throw new IllegalArgumentException("Já existe uma conta associada a essa categoria de contas!");
+            throw new JaExisteException("Já existe uma conta associada a essa categoria de contas!");
         }
 
         //Associar a categoria a conta(Lado Many to one) - Muitas categorias para uma Conta
@@ -115,12 +126,13 @@ public class CategoriaFinanceira {
 
     }
 
-    //Associar Categoria com Pagamento (Many to many)
+
+
     public void associarCategoriaComPagamentos(Pagamentos pagamento) {
 
         //Verificar se já não possui nenhum pagamento passado como parâmetro, já associado a essa categoria
         if (pagamento.getCategoriasRelacionadas().contains(this)) {
-            throw new IllegalArgumentException("Esse pagamento já foi passado a essa categoria");
+            throw new JaExisteException("Esse pagamento já foi passado a essa categoria");
         }
 
         //Se a lista de pagamentos estiver vazia, criar uma nova array list
@@ -141,12 +153,11 @@ public class CategoriaFinanceira {
         }
     }
 
-    //Associar Categoria com Transações(Many to Many)
     public void associarCategoriaComTransacoes(HistoricoTransacao transacao) {
 
         //Verificar se já existe algum histórico de transação já associado a essa categoria
         if (transacao.getCategoriasRelacionadas().contains(this)) {
-            throw new IllegalArgumentException("Já existe uma transação associada a essa categoria");
+            throw new JaExisteException("Já existe uma transação associada a essa categoria");
         }
 
         //Se a lista de transações relacionadas a pagamentos estiver vazia, instanciar uma nova llista
@@ -168,12 +179,12 @@ public class CategoriaFinanceira {
         }
     }
 
-    //Associar Categoria com Usuário(Many to one)
+
     public void associarCategoriaComUsuario(Usuario usuario) {
 
         //Verificar se já existe algum usuario já associado a essa categoria
         if (usuario.getCategoriasRelacionadas().contains(this)) {
-            throw new IllegalArgumentException("Já existe um usuario associado a essa categoria");
+            throw new JaExisteException("Já existe um usuario associado a essa categoria");
         }
 
         //Associar o usuário a categoria (Many to one)
@@ -190,7 +201,6 @@ public class CategoriaFinanceira {
     }
 
 
-    //Método para associar o enum do tipo de categoria na subcategoria solicitada
     public void associarSubTipoCategoriaComDespesa(SubTipoCategoria subTipo) {
         //Verificar se o tipo de categoria é despesa
         if (this.tiposCategorias.equals(TiposCategorias.DESPESA)) {
@@ -202,39 +212,42 @@ public class CategoriaFinanceira {
             //Associar o subtipo a categoria
             this.subTipo = subTipo;
         } else {
-            throw new IllegalArgumentException("Não é possível associar um subtipo a uma categoria que não seja despesa");
+            throw new ObjectNotFoundException(subTipo,
+                    "Não é possível associar esse tipo de subTipo, pois ele é de RECEITA");
         }
     }
+
 
     public void associarSubTipoCategoriaComReceita(SubTipoCategoria subTipo) {
         //Verificar se o tipo de categoria é receita
         if (this.tiposCategorias.equals(TiposCategorias.RECEITA)) {
             List<SubTipoCategoria> subtiposReceitas = TiposCategorias.mostrarTodasReceitas();
             if(subtiposReceitas == null || !subtiposReceitas.contains(subTipo)) {
-                throw new IllegalArgumentException("Não existe esse subtipo de categoria para associar a essa categoria," +
+                throw new SubTipoNaoEncontrado("Não existe esse subtipo de categoria para associar a essa categoria," +
                         " os tipos disponíveis são: " + subtiposReceitas);
             }
             //Associar o subtipo a categoria
             this.subTipo = subTipo;
         } else {
-            throw new IllegalArgumentException("Não é possível associar um subtipo a uma categoria que não seja receita");
+            throw new ObjectNotFoundException(subTipo,
+                    "Não é possível associar esse tipo de subTipo, pois ele é de DESPESA");
         }
     }
 
 
+    //--------------------MÈTODOS DE DESASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE----------------------------//
 
-
-
-
-    /**MÈTODOS DE DESASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
+    /**
+     * Estes métodos são desassociações desta entidade CategoriaFinanceira com todas as outras..
+     * O parâmetro de entrada de dados vai variar conforme o nome da outra entidade
+     * Não irá ter retorno dos dados, pois só será feito para execução
+     * Jogar Exceções personalizadas, se houver erros de não encontrados, ou já existe.. etc;
      */
-
-    //Desassociar categoria de contas a uma conta específica (Many to one)
     public void desassociarCategoriaAConta(ContaUsuario conta){
 
         //Se a conta passada não existir associação na categoria, retornar uma exception
         if(conta.getCategoriasRelacionadas() == null || !conta.getCategoriasRelacionadas().contains(this)){
-            throw new NoSuchElementException("Não há nenhuma conta associado a essa categoria");
+            throw new ObjectNotFoundException(conta,"Não há nenhuma conta associado a essa categoria");
         }
         //Remover a associação da conta
         conta.getCategoriasRelacionadas().remove(this);
@@ -242,12 +255,12 @@ public class CategoriaFinanceira {
         this.contaRelacionada = null;
     }
 
-    //Desassociar categoria de contas a um pagamento específico (Many to Many)
+
     public void desassociarCategoriaAPagamento(Pagamentos pagamento){
 
         //Se o pagamento não existir associação na categoria, retornar uma exception
         if(pagamento.getCategoriasRelacionadas() == null || !pagamento.getCategoriasRelacionadas().contains(this)){
-            throw new NoSuchElementException("Não há nenhum pagamento associado a essa categoria");
+            throw new ObjectNotFoundException(pagamento,"Não há nenhum pagamento associado a essa categoria");
         }
 
         //Remover a associação do pagamento
@@ -259,12 +272,12 @@ public class CategoriaFinanceira {
        }
     }
 
-    //Desassociar categoria de contas a uma transação específica (Many to Many)
+
     public void desassociarCategoriaTransacao(HistoricoTransacao transacao){
 
         //Se o histórico de transação não existir associação na categoria, retornar uma exception
         if(transacao.getCategoriasRelacionadas() == null || !transacao.getCategoriasRelacionadas().contains(this)) {
-            throw new NoSuchElementException("Não há nenhuma transação associada a essa categoria");
+            throw new ObjectNotFoundException(transacao,"Não há nenhuma transação associada a essa categoria");
         }
             //Senão, remover a associação do histórico de transação
             transacao.getCategoriasRelacionadas().remove(this);
@@ -276,12 +289,12 @@ public class CategoriaFinanceira {
 
     }
 
-    //Desassociar categoria de contas a um usuário específico (Many to one)
+
     public void desassociarCategoriaUsuario(Usuario usuario) {
 
         //Se o usuario não existir associação na categoria, retornar uma exception
         if (usuario.getCategoriasRelacionadas() == null || !usuario.getCategoriasRelacionadas().contains(this)) {
-            throw new NoSuchElementException("Não há nenhum usuário associado a essa categoria");
+            throw new ObjectNotFoundException(usuario, "Não há nenhum usuário associado a essa categoria");
         }
         //Remover a associação do lado do usuário
         usuario.getCategoriasRelacionadas().remove(this);
@@ -290,32 +303,34 @@ public class CategoriaFinanceira {
     }
 
 
-    //Método para associar o enum do tipo de categoria na subcategoria solicitada
-    public void desassociarSubTipoCategoriaComDespesa(SubTipoCategoria subTipo) {
+
+    public void desassociarTipoCategoriaComDespesa(SubTipoCategoria subTipo) {
         //Verificar se o tipo de categoria é despesa
         if (this.tiposCategorias.equals(TiposCategorias.DESPESA)) {
             if(this.subTipo == null || !this.subTipo.equals(subTipo)) {
-                throw new IllegalArgumentException("Não há um subtipo associado para remoção");
+                throw new SubTipoNaoEncontrado("Não há um subtipo associado para remoção");
             }
 
             //Desassociar do subtipo
             this.subTipo = null;
         }else{
-            throw new IllegalArgumentException("Não é possível remover um subtipo de uma categoria que não seja da despesa");
+            throw new ObjectNotFoundException(subTipo,
+                    "Não é possível remover um subtipo de uma categoria que não seja da despesa");
         }
     }
+
 
     public void desassociarTipoCategoriaComReceita(SubTipoCategoria subTipo) {
         //Verificar se o tipo de categoria é receita
         if (this.tiposCategorias.equals(TiposCategorias.RECEITA)) {
             if(this.subTipo == null || !this.subTipo.equals(subTipo)) {
-                throw new IllegalArgumentException("Não há um subtipo associado para remoção");
+                throw new SubTipoNaoEncontrado("Não há um subtipo associado para remoção");
             }
             //Desassociar do subtipo
             this.subTipo = null;
         } else {
-            throw new IllegalArgumentException("Não é possível remover um subtipo de uma categoria que não seja receita");
+            throw new ObjectNotFoundException(subTipo,
+                    "Não é possível remover um subtipo de uma categoria que não seja receita");
         }
     }
-
 }

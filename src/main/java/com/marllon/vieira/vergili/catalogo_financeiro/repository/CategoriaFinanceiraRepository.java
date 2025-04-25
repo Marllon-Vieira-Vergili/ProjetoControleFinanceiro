@@ -1,32 +1,47 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.repository;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.SubTipoCategoria;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
 import java.util.List;
-import java.util.Optional;
 
-public interface CategoriaFinanceiraRepository extends JpaRepository<CategoriaFinanceira,Long> {
+/**
+ * Repositório responsável pelas operações de persistência da entidade {@link CategoriaFinanceira}.
+ * Estende JpaRepository para fornecer métodos CRUD padrão, além de métodos customizados
+ * para buscas por tipo e subtipo de categoria.
+ */
+public interface CategoriaFinanceiraRepository extends JpaRepository<CategoriaFinanceira, Long> {
 
+    /**
+     * Busca todas as categorias financeiras de acordo com o tipo (RECEITA, DESPESA, etc).
+     *
+     * @param tipoCategoria o tipo da categoria {@link TiposCategorias}
+     * @return uma lista de {@link CategoriaFinanceira} que correspondem ao tipo informado
+     */
+    @Query("SELECT c FROM CategoriaFinanceira c WHERE c.tiposCategorias = :tipos_categorias")
+    List<CategoriaFinanceira> encontrarPorTipoCategoria(@Param("tipos_categorias") TiposCategorias tipoCategoria);
 
-    //Métodos customizados do repositório de categorias
+    /**
+     * Busca todas as categorias financeiras de acordo com o subtipo.
+     * Ideal para categorias mais específicas (ex: ALIMENTAÇÃO, INVESTIMENTO, etc.).
+     *
+     * @param subtipoCategoria o subtipo da categoria {@link SubTipoCategoria}
+     * @return uma lista de {@link CategoriaFinanceira} que possuem o subtipo informado
+     */
+    @Query("SELECT c FROM CategoriaFinanceira c WHERE c.subTipo = :subtipo_categoria")
+    List<CategoriaFinanceira> encontrarPorSubtipoCategoria(@Param("subtipo_categoria") SubTipoCategoria subtipoCategoria);
 
-
-    //Método para procurar a categoria de contas pelo tipo de Conta
-    @Query(value = "SELECT c FROM CategoriaFinanceira c WHERE c.tiposCategorias = :tipos_categorias")
-    List<CategoriaFinanceira> encontrarPorTipoCategoria(@Param(value = "tipos_categorias") TiposCategorias tipoCategoria);
-
-
-    //Método para procurar a categoria de contas pelo Subtipo da Conta
-    @Query(value = "SELECT c FROM CategoriaFinanceira c WHERE c.subTipo = :subtipo_categoria")
-    List<CategoriaFinanceira> encontrarPorSubtipoCategoria(@Param(value = "subtipo_categoria") TiposCategorias subtipoCategoria);
-
-
-    //Método para procurar a categoria pelo tipo, e seu subtipo respectivamente
-    @Query(value = "SELECT c FROM CategoriaFinanceira c WHERE c.tiposCategorias = :tipoCategoria AND c.subTipo = :subTipoCategoria")
-    CategoriaFinanceira findByTipoAndSubtipo(@Param(value = "tipoCategoria") TiposCategorias tipoCategoria,
-                                                       @Param(value = "subTipoCategoria") SubTipoCategoria subTipoCategoria);
+    /**
+     * Busca uma categoria financeira que corresponda exatamente ao tipo e subtipo informados.
+     * Útil para evitar duplicidade e garantir unicidade da combinação.
+     *
+     * @param tipoCategoria o tipo principal da categoria {@link TiposCategorias}
+     * @param subTipoCategoria o subtipo da categoria {@link SubTipoCategoria}
+     * @return uma instância de {@link CategoriaFinanceira} correspondente, ou null se não for encontrada
+     */
+    @Query("SELECT c FROM CategoriaFinanceira c WHERE c.tiposCategorias = :tipoCategoria AND c.subTipo = :subTipoCategoria")
+    CategoriaFinanceira findByTipoAndSubtipo(@Param("tipoCategoria") TiposCategorias tipoCategoria,
+                                             @Param("subTipoCategoria") SubTipoCategoria subTipoCategoria);
 }

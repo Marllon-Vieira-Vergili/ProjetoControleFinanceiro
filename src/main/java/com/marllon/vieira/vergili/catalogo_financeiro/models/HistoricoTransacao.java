@@ -1,6 +1,7 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -55,6 +56,11 @@ public class HistoricoTransacao {
     @Enumerated(EnumType.STRING)
     private TiposCategorias categorias;
 
+    @NotNull(message = "O campo SubtTipo não pode ser nulo")
+    @Column(name = "subtipo_transacao",nullable = false)
+    @Enumerated(EnumType.STRING)
+    private SubTipoCategoria subTipo;
+
 
     //Relacionamentos
 
@@ -84,10 +90,14 @@ public class HistoricoTransacao {
     private List<CategoriaFinanceira> categoriasRelacionadas = new ArrayList<>();
 
 
-    /**MÈTODOS DE ASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
-     */
+    //--------------------MÈTODOS DE ASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE----------------------------//
 
-    //Associar Historico de transações com Pagamentos relacionados(Many to Many)
+    /**
+     * Estes métodos são associações desta entidade HistóricoTransacao com todas as outras..
+     * O parâmetro de entrada de dados vai variar conforme o nome da outra entidade
+     * O retorno dos dados vai variar conforme o nome da outra entidade
+     * Jogar Exceções personalizadas, se houver erros de não encontrados, ou já existe.. etc;
+     */
     public void associarTransacaoComPagamento(Pagamentos pagamento) {
 
         //Instanciar primeiramente, um Array List vazio, caso pagamentoRelacionado seja nulo
@@ -175,8 +185,12 @@ public class HistoricoTransacao {
 
 
 
-
-    /**MÈTODOS DE DESASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE
+    //--------------------MÈTODOS DE DESASSOCIAÇÔES COM OUTRAS ENTIDADES BIDIRECIONALMENTE----------------------------//
+    /**
+     * Estes métodos são desassociações desta entidade HistoricoTransacao com todas as outras..
+     * O parâmetro de entrada de dados vai variar conforme o nome da outra entidade
+     * Não irá ter retorno dos dados, pois só será feito para execução
+     * Jogar Exceções personalizadas, se houver erros de não encontrados, ou já existe.. etc;
      */
 
     //Desassociar Historico de transações com Pagamentos relacionados(Many to Many)
