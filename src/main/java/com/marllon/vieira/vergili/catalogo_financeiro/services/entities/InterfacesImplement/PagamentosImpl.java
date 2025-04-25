@@ -8,6 +8,7 @@ import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.TiposCategorias
 import com.marllon.vieira.vergili.catalogo_financeiro.models.ContaUsuario;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.Pagamentos;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposCategorias;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enumerator.TiposContas;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.ContaUsuarioRepository;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.PagamentosRepository;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.entities.Interfaces.ContaUsuarioService;
@@ -35,6 +36,44 @@ public class PagamentosImpl implements PagamentosService {
     @Autowired
     private ContaUsuarioService contaUsuarioService;
 
+    @Override
+    public Pagamentos criarNovoRecebimento(PagamentosRequest recebimento) {
+
+        //Criar novo recebimento
+        Pagamentos novoRecebimento = new Pagamentos();
+        novoRecebimento.setValor(recebimento.valor());
+        novoRecebimento.setData(recebimento.data());
+        novoRecebimento.setDescricao(recebimento.descricao());
+        novoRecebimento.setCategoria(recebimento.categoria());
+
+        //Verificar se o  usuário não digitou  valores nulos ou vazios
+        if(novoRecebimento.getValor() == null || novoRecebimento.getValor().compareTo(BigDecimal.ZERO) <= 0 ||
+                novoRecebimento.getDescricao() == null || novoRecebimento.getDescricao().isEmpty()){
+            throw new IllegalArgumentException("Por favor, preencha todos os campos obrigatórios");
+        }
+
+        //Se o novo pagamento for diferente o tipo de categoria que deve ser informado
+        if(novoRecebimento.getCategoria()!= RECEITA ) {
+            throw new TiposCategoriasNaoEncontrado("Para criar um recebimento, só pode ser informado o tipo: RECEITA");
+        }
+
+        //Verificar, se a data passada do recebimento, não for de datas passadas a partir do dia de hoje
+        if(novoRecebimento.getData().isBefore(LocalDate.now())){
+            throw new DateTimeException("A data do pagamento não pode ser de dias passados");
+        }
+
+        //verificar se esse recebimento já não existe, comparando  data e descricao
+        if(pagamentosRepository.existsByDataAndDescricao(novoRecebimento.getData(),
+                novoRecebimento.getDescricao())){
+            throw new IllegalArgumentException("Já existe um recebimento com a mesma descricao e data");
+        }
+
+        //Salvar o novo recebimento
+        pagamentosRepository.save(novoRecebimento);
+
+        return novoRecebimento;
+    }
+
 
     @Override
     public Pagamentos criarNovoPagamento(PagamentosRequest pagamento) {
@@ -53,8 +92,8 @@ public class PagamentosImpl implements PagamentosService {
         }
 
         //Se o novo pagamento for diferente o tipo de categoria que deve ser informado
-        if(novoPagamento.getCategoria()!= DESPESA && novoPagamento.getCategoria() != RECEITA) {
-                throw new TiposCategoriasNaoEncontrado("Por favor, digite aqui: (DESPESA ou RECEITA)");
+        if(novoPagamento.getCategoria()!= DESPESA ) {
+                throw new TiposCategoriasNaoEncontrado("Para criar um pagamento, só pode ser de despesa");
         }
 
         //Verificar, se a data passada do pagamento, não for de datas passadas a partir do dia de hoje
@@ -75,8 +114,10 @@ public class PagamentosImpl implements PagamentosService {
         return novoPagamento;
     }
 
+
+
     @Override
-    public void registrarTransacaoReceitaOuDespesa(PagamentosRequest pagamento, ContaUsuarioRequest contaUsuario) {
+    public void processarPagamento(PagamentosRequest pagamento, ContaUsuarioRequest contaUsuario) {
 
         // Buscar conta e validar existência
         ContaUsuario contaEncontrada;
@@ -87,22 +128,17 @@ public class PagamentosImpl implements PagamentosService {
                     + e.getMessage());
         }
 
-        try {
-            //Verificar se o tipo de pagamento é receita ou despesa
-            if (pagamento.categoria().equals(DESPESA)) {
-                // Verificar saldo disponível antes de criar o pagamento
-                BigDecimal valorPagamento = pagamento.valor();
-                if (contaEncontrada.getSaldo().compareTo(valorPagamento) < 0) {
-                    // Subtrair saldo da conta, mas conta ficará com valor negativo
-                    contaEncontrada.subtrairSaldo(contaEncontrada, valorPagamento);
+        //Instanciar um valor
+        BigDecimal valor = pagamento.valor();
+        //pegar a categoria do parametro, e trocar as condições
+        switch (pagamento.categoria()) {
+            case DESPESA -> {
+                if (contaEncontrada.getSaldo().compareTo(valor) < 0) {
+                    contaEncontrada.subtrairSaldo(contaEncontrada, valor);
                 }
-            } else if (pagamento.categoria().equals(RECEITA)) {
-                //Verificar o valor que será recebido antes de adicionar a conta
-                BigDecimal valorSerRecebido = pagamento.valor();
-                contaEncontrada.adicionarSaldo(contaEncontrada, valorSerRecebido);
             }
-        } catch (RuntimeException e) {
-            throw new RuntimeException("Não foi possível registrar essa transação!" + e.getMessage());
+            case RECEITA -> contaEncontrada.adicionarSaldo(contaEncontrada, valor);
+            default -> throw new TiposCategoriasNaoEncontrado("Categoria não foi encontrada");
         }
     }
 

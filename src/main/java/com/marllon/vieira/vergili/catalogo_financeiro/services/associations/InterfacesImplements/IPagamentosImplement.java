@@ -173,6 +173,142 @@ public class IPagamentosImplement implements IPagamentos {
         );
     }
 
+    @Override
+    public PagamentoAssociationResponse criarEAssociarRecebimento(PagamentoAssociationRequest novoRecebimento) {
+
+
+        // Buscar conta e validar existência
+        ContaUsuario contaEncontrada = contaUsuarioService.encontrarContaPorNome(novoRecebimento.nomeContaAssociada());
+        if (contaEncontrada == null) {
+            throw new NoSuchElementException("Nenhuma conta foi encontrada com esse nome!");
+        }
+
+        //Verificar se o tipo de pagamento é receita
+        if (novoRecebimento.pagamento().categoria().equals(TiposCategorias.RECEITA)) {
+            // Verificar saldo disponível antes de criar o pagamento
+            BigDecimal valorRecebimento = novoRecebimento.pagamento().valor();
+                // somar saldo da conta
+                contaEncontrada.adicionarSaldo(contaEncontrada, valorRecebimento);
+
+        } else {
+            throw new IllegalArgumentException("Tipo de recebimento não pode ser do tipo DESPESA," +
+                    " e nem Subtipo de pagamentos associados a despesas");
+        }
+
+
+        // Criar novo recebimento
+        Pagamentos novoRecebimentoCriado;
+        try {
+            novoRecebimentoCriado = pagamentosService.criarNovoPagamento(novoRecebimento.pagamento());
+            if (novoRecebimentoCriado == null) {
+                throw new RuntimeException("Não foi possível criar este pagamento!");
+            }
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Erro ao criar o recebimento: " + e.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException("Erro inesperado ao criar o recebimento: " + e);
+        }
+
+        // Associar histórico de transação se necessário
+        HistoricoTransacao novoHistoricoTransacao = null;
+        if (novoRecebimentoCriado.getTransacoesRelacionadas().isEmpty()) {
+            try {
+                novoHistoricoTransacao = new HistoricoTransacao();
+                novoHistoricoTransacao.setValor(novoRecebimentoCriado.getValor());
+                novoHistoricoTransacao.setData(novoRecebimentoCriado.getData());
+                novoHistoricoTransacao.setDescricao(novoRecebimentoCriado.getDescricao());
+                novoHistoricoTransacao.setCategorias(novoRecebimentoCriado.getCategoria());
+                novoHistoricoTransacao.setContaRelacionada(novoRecebimentoCriado.getContaRelacionada());
+                novoHistoricoTransacao.setUsuarioRelacionado(novoRecebimentoCriado.getUsuarioRelacionado());
+
+                novoRecebimentoCriado.associarPagamentoATransacao(novoHistoricoTransacao);
+                transacoesService.salvarNovaTransacao(novoHistoricoTransacao);
+            } catch (RuntimeException e) {
+                throw new RuntimeException("Erro ao criar o Histórico de transação: " + e.getMessage());
+            } catch (Exception e) {
+                throw new RuntimeException("Erro inesperado ao criar Histórico de transação: " + e);
+            }
+        }
+
+        // Associar pagamento à conta e usuário
+        try {
+            if (Arrays.asList(TiposContas.values()).contains(contaEncontrada.getTipoConta())) {
+                novoRecebimentoCriado.associarPagamentoComConta(contaEncontrada);
+                novoRecebimentoCriado.setUsuarioRelacionado(contaEncontrada.getUsuarioRelacionado());
+                contaUsuarioService.salvarNovaContaUsuario(contaEncontrada);
+            } else {
+                throw new IllegalArgumentException("Tipo de conta inválido ou conta não existe.");
+            }
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Erro ao associar o pagamento à conta: " + e.getMessage());
+        }
+
+        // Associar pagamento a categoria
+        CategoriaFinanceira categoriaASerAssociada;
+        try {
+            if (novoRecebimentoCriado.getCategoria() == null) {
+                categoriaASerAssociada = categoriaService.encontrarCategoriaETipo(
+                        novoRecebimento.pagamento().categoria(),
+                        novoRecebimento.subTipoCategoria()
+                );
+
+                if (categoriaASerAssociada == null) {
+                    CategoriaFinanceira novaCategoria = new CategoriaFinanceira();
+                    novaCategoria.setTiposCategorias(novoRecebimento.pagamento().categoria());
+                    novaCategoria.setSubTipo(novoRecebimento.subTipoCategoria());
+                    novaCategoria.associarCategoriaComConta(contaEncontrada);
+                    novaCategoria.setUsuarioRelacionado(novoRecebimentoCriado.getUsuarioRelacionado());
+
+                    categoriaService.salvarNovaCategoria(novaCategoria);
+                }
+
+                novoRecebimentoCriado.associarPagamentoComCategoria(categoriaASerAssociada);
+            }
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Erro ao associar categoria ao pagamento: " + e.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException("Erro inesperado ao associar categoria ao pagamento: " + e);
+        }
+
+        // Montar DTOs para resposta
+        PagamentosResponse pagamentosResponse = new PagamentosResponse(
+                novoRecebimentoCriado.getId(),
+                novoRecebimentoCriado.getValor(),
+                novoRecebimentoCriado.getData(),
+                novoRecebimentoCriado.getDescricao(),
+                novoRecebimentoCriado.getCategoria()
+        );
+
+        ContaUsuarioResponse contaUsuarioResponse = new ContaUsuarioResponse(
+                contaEncontrada.getId(),
+                contaEncontrada.getNome(),
+                contaEncontrada.getSaldo(),
+                contaEncontrada.getTipoConta()
+        );
+
+        List<CategoriaFinanceiraResponse> categoriaFinanceiraResponses =
+                novoRecebimentoCriado.getCategoriasRelacionadas().stream()
+                        .map(c -> new CategoriaFinanceiraResponse(c.getId(), c.getTiposCategorias(), c.getSubTipo()))
+                        .toList();
+
+        assert novoHistoricoTransacao != null;
+        HistoricoTransacaoResponse historicoTransacaoResponse = new HistoricoTransacaoResponse(
+                novoHistoricoTransacao.getId(),
+                novoHistoricoTransacao.getValor(),
+                novoHistoricoTransacao.getData(),
+                novoHistoricoTransacao.getDescricao(),
+                novoHistoricoTransacao.getCategorias()
+        );
+
+
+        return new PagamentoAssociationResponse(
+                Collections.singletonList(pagamentosResponse),
+                Collections.singletonList(historicoTransacaoResponse),
+                categoriaFinanceiraResponses,
+                Collections.singletonList(contaUsuarioResponse)
+        );
+    }
+
 
     @Override
     public PagamentoAssociationResponse encontrarPagamentoAssociadoPorId(Long id) {

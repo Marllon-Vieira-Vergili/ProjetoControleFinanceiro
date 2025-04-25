@@ -21,7 +21,8 @@ public interface PagamentosService {
     //Criar (novo pagamento)
 
     Pagamentos criarNovoPagamento(PagamentosRequest pagamento);
-    void registrarTransacaoReceitaOuDespesa(PagamentosRequest pagamento, ContaUsuarioRequest contaUsuario);
+    Pagamentos criarNovoRecebimento(PagamentosRequest recebimento);
+    void processarPagamento(PagamentosRequest pagamento, ContaUsuarioRequest contaUsuario);
 
     //Ler
     Pagamentos encontrarPagamentoPorId(Long id);

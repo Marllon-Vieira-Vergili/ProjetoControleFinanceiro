@@ -15,7 +15,7 @@ public interface IPagamentos {
 
     //Criar
     PagamentoAssociationResponse criarEAssociarPagamento(PagamentoAssociationRequest novoPagamento);
-
+    PagamentoAssociationResponse criarEAssociarRecebimento(PagamentoAssociationRequest novoRecebimento);
     //Ler
     PagamentoAssociationResponse encontrarPagamentoAssociadoPorId(Long id);
     List<PagamentoAssociationResponse> encontrarTodosPagamentosAssociados();
