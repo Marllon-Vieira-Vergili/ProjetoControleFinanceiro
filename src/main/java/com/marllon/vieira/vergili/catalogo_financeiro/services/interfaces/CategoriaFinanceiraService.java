@@ -3,6 +3,7 @@ import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.CategoriaFinan
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.CategoriaFinanceiraResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.AssociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.CategoriaNaoEncontrada;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
@@ -148,7 +149,7 @@ public interface CategoriaFinanceiraService {
      *
      * @param categoriaId O ID da categoria.
      * @param contaId O ID da conta de usuário.
-     * @throws AssociationErrorException se a desassociação não der certo.
+     * @throws DesassociationErrorException se a desassociação não der certo.
      */
     void desassociarCategoriaAConta(Long categoriaId, Long contaId);
 
@@ -157,7 +158,7 @@ public interface CategoriaFinanceiraService {
      *
      * @param categoriaId O ID da categoria.
      * @param pagamentoId O ID do pagamento.
-     * @throws AssociationErrorException se a desassociação não der certo.
+     * @throws DesassociationErrorException se a desassociação não der certo.
      */
     void desassociarCategoriaAPagamento(Long categoriaId, Long pagamentoId);
 
@@ -166,7 +167,7 @@ public interface CategoriaFinanceiraService {
      *
      * @param categoriaId O ID da categoria.
      * @param transacaoId O ID da transação.
-     * @throws AssociationErrorException se a desassociação não der certo.
+     * @throws DesassociationErrorException se a desassociação não der certo.
      */
     void desassociarCategoriaTransacao(Long categoriaId, Long transacaoId);
 
@@ -175,7 +176,7 @@ public interface CategoriaFinanceiraService {
      *
      * @param categoriaId O ID da categoria.
      * @param usuarioId O ID do usuário.
-     * @throws AssociationErrorException se a desassociação não der certo.
+     * @throws DesassociationErrorException se a desassociação não der certo.
      */
     void desassociarCategoriaUsuario(Long categoriaId, Long usuarioId);
 
@@ -183,7 +184,7 @@ public interface CategoriaFinanceiraService {
      * Remove a associação de uma categoria com o tipo **DESPESA**.
      *
      * @param categoriaId O ID da categoria.
-     * @throws AssociationErrorException se a desassociação não der certo.
+     * @throws DesassociationErrorException se a desassociação não der certo.
      */
     void desassociarCategoriaCriadaComDespesa(Long categoriaId);
 
@@ -191,7 +192,7 @@ public interface CategoriaFinanceiraService {
      * Remove a associação de uma categoria com o tipo **RECEITA**.
      *
      * @param categoriaId O ID da categoria.
-     * @throws AssociationErrorException se a desassociação não der certo.
+     * @throws DesassociationErrorException se a desassociação não der certo.
      */
     void desassociarCategoriaCriadaComReceita(Long categoriaId);
 

@@ -7,63 +7,113 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+/**
+ * Classe responsável pelo tratamento global das exceções lançadas durante a execução da aplicação.
+ * Utiliza a anotação {@link RestControllerAdvice} para capturar exceções e retornar respostas HTTP apropriadas.
+ */
 @RestControllerAdvice
 public class GlobalExceptionLogic {
 
+    // ======================== EXCEÇÕES DE ENTIDADES NÃO ENCONTRADAS ========================
 
     /**
-     * Lógicas customizadas para exceções das entidades que não forem encontradas no banco de dados
-     * @return ResponseEntity
-     * 404 NotFound exception de cada entidade separadamente, para o usuário, na sua requisição HTTP
+     * Trata exceções de categoria financeira não encontrada.
+     *
+     * @param exception CategoriaNaoEncontrada
+     * @return ResponseEntity com status 404 e mensagem da exceção.
      */
     @ExceptionHandler(CategoriaNaoEncontrada.class)
-    public ResponseEntity<String> categoriaNaoEncontradaException(CategoriaNaoEncontrada exception){
+    public ResponseEntity<String> categoriaNaoEncontradaException(CategoriaNaoEncontrada exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
     }
-
-    @ExceptionHandler(ContaNaoEncontrada.class)
-    public ResponseEntity<String> contaNaoEncontradaException(ContaNaoEncontrada exception){
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
-    }
-
-    @ExceptionHandler(UsuarioNaoEncontrado.class)
-    public ResponseEntity<String> usuarioNaoEncontrado(UsuarioNaoEncontrado exception){
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
-    }
-
-    @ExceptionHandler(PagamentoNaoEncontrado.class)
-    public ResponseEntity<String> pagamentoNaoEncontradaException(PagamentoNaoEncontrado exception){
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
-    }
-
-    @ExceptionHandler(HistoricoTransacaoNaoEncontrado.class)
-    public ResponseEntity<String> historicoTransacaoNaoEncontradaException(HistoricoTransacaoNaoEncontrado exception){
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
-    }
-
-    @ExceptionHandler(TiposCategoriasNaoEncontrado.class)
-    public ResponseEntity<String> tiposCategoriasNaoEncontradaException(TiposCategoriasNaoEncontrado exception){
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
-    }
-
-    @ExceptionHandler(TiposContasNaoEncontrado.class)
-    public ResponseEntity<String> tiposContasNaoEncontradaException(TiposContasNaoEncontrado exception){
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
-    }
-
-    @ExceptionHandler(SubTipoNaoEncontrado.class)
-    public ResponseEntity<String> subtipoNaoEncontradaException(SubTipoNaoEncontrado exception){
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
-    }
-
 
     /**
+     * Trata exceções de conta não encontrada.
      *
-     * @param exception
-     * @return status 410(Conflict) - Indicando ao usuário que já existe salvo este valor
+     * @param exception ContaNaoEncontrada
+     * @return ResponseEntity com status 404 e mensagem da exceção.
+     */
+    @ExceptionHandler(ContaNaoEncontrada.class)
+    public ResponseEntity<String> contaNaoEncontradaException(ContaNaoEncontrada exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
+    }
+
+    /**
+     * Trata exceções de usuário não encontrado.
+     *
+     * @param exception UsuarioNaoEncontrado
+     * @return ResponseEntity com status 404 e mensagem da exceção.
+     */
+    @ExceptionHandler(UsuarioNaoEncontrado.class)
+    public ResponseEntity<String> usuarioNaoEncontrado(UsuarioNaoEncontrado exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
+    }
+
+    /**
+     * Trata exceções de pagamento não encontrado.
+     *
+     * @param exception PagamentoNaoEncontrado
+     * @return ResponseEntity com status 404 e mensagem da exceção.
+     */
+    @ExceptionHandler(PagamentoNaoEncontrado.class)
+    public ResponseEntity<String> pagamentoNaoEncontradaException(PagamentoNaoEncontrado exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
+    }
+
+    /**
+     * Trata exceções de histórico de transação não encontrado.
+     *
+     * @param exception HistoricoTransacaoNaoEncontrado
+     * @return ResponseEntity com status 404 e mensagem da exceção.
+     */
+    @ExceptionHandler(HistoricoTransacaoNaoEncontrado.class)
+    public ResponseEntity<String> historicoTransacaoNaoEncontradaException(HistoricoTransacaoNaoEncontrado exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
+    }
+
+    /**
+     * Trata exceções de tipo de categoria não encontrado.
+     *
+     * @param exception TiposCategoriasNaoEncontrado
+     * @return ResponseEntity com status 404 e mensagem da exceção.
+     */
+    @ExceptionHandler(TiposCategoriasNaoEncontrado.class)
+    public ResponseEntity<String> tiposCategoriasNaoEncontradaException(TiposCategoriasNaoEncontrado exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
+    }
+
+    /**
+     * Trata exceções de tipo de conta não encontrado.
+     *
+     * @param exception TiposContasNaoEncontrado
+     * @return ResponseEntity com status 404 e mensagem da exceção.
+     */
+    @ExceptionHandler(TiposContasNaoEncontrado.class)
+    public ResponseEntity<String> tiposContasNaoEncontradaException(TiposContasNaoEncontrado exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
+    }
+
+    /**
+     * Trata exceções de subtipo não encontrado ao tentar associar com uma categoria.
+     *
+     * @param exception SubTipoNaoEncontrado
+     * @return ResponseEntity com status 404 e mensagem da exceção.
+     */
+    @ExceptionHandler(SubTipoNaoEncontrado.class)
+    public ResponseEntity<String> subtipoNaoEncontradaException(SubTipoNaoEncontrado exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
+    }
+
+    // ======================== EXCEÇÕES DE CONFLITO ========================
+
+    /**
+     * Trata exceções lançadas quando uma entidade já existe.
+     *
+     * @param exception JaExisteException
+     * @return ResponseEntity com status 409 (CONFLICT) e mensagem da exceção.
      */
     @ExceptionHandler(JaExisteException.class)
-    public ResponseEntity<String> jaExisteException(JaExisteException exception){
+    public ResponseEntity<String> jaExisteException(JaExisteException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(exception.getMessage());
     }
 }

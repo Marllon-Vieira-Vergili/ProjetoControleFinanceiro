@@ -1,55 +1,20 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.restController;
 
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.entities.CategoriaFinanceiraRequest;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
-import com.marllon.vieira.vergili.catalogo_financeiro.services.entities.Interfaces.CategoriaFinanceiraService;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
+/**
+ * Controlador REST responsável por expor os endpoints da API relacionados às categorias financeiras.
+ *
+ * Os métodos que serão adicionados aqui irão permitir operações como criação, atualização,
+ * listagem, busca e exclusão de categorias financeiras, além de associações com outras entidades.
+ */
 @RestController
 @RequestMapping(value = "/api/categoria")
-@Tag(name = "Métodos da Categoria Financeira")
+@Tag(name = "Métodos da Categoria Financeira", description = "Operações relacionadas ao gerenciamento de categorias financeiras, como receitas e despesas.")
 public class CategoriaFinanceiraController {
 
+    // Métodos de manipulação de CategoriaFinanceira serão implementados aqui futuramente.
 
-    @Autowired
-    private CategoriaFinanceiraService categoriaFinanceiraService;
-
-
-    @GetMapping(value = "/obterCategoriaId/{id}")
-    public CategoriaFinanceira encontrarCategoriaPorId(@PathVariable Long id){
-        return categoriaFinanceiraService.encontrarCategoriaPorId(id);
-    }
-
-
-    @GetMapping(value = "/obterTodasCategorias")
-    public List<TiposCategorias> obterTodasCategorias(){
-        return (categoriaFinanceiraService.encontrarTodasCategorias());
-    }
-
-    @GetMapping(value = "/obterCategoria/{tipo}")
-    public List<SubTipoCategoria> encontrarCategoriaPorTipo(@PathVariable TiposCategorias tipo){
-        return categoriaFinanceiraService.encontrarCategoriasPorTipo(tipo);
-    }
-
-    @PostMapping(value = "/adicionarCategoria/{id}")
-    public CategoriaFinanceira adicionarCategoria(@RequestBody CategoriaFinanceiraRequest categoria){
-        return categoriaFinanceiraService.criarCategoria(categoria);
-    }
-
-    @PutMapping(value = "/atualizarCategoria/{id}")
-    public CategoriaFinanceira atualizarCategoria(@PathVariable Long id, @RequestBody CategoriaFinanceiraRequest categoria){
-        return categoriaFinanceiraService.atualizarCategoria(id, categoria);
-    }
-
-
-    @DeleteMapping(value = "/removerCategoriaPorId/{id}")
-    public CategoriaFinanceira removerCategoriaPorId(@PathVariable Long id){
-        return categoriaFinanceiraService.removerCategoria(id);
-    }
 }
