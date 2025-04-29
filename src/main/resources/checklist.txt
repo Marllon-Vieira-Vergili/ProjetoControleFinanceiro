@@ -3,7 +3,7 @@ Checklist Personalizado de Revisão do Backend
 
 1. Organização de Pacotes e Classes
 - [ ] Consolidar o pacote de DTOs: atualmente existem quatro subpacotes (request/entities, request/associations, response/entities, response/associations). Avaliar fundir request/entities + request/associations em um único request e o mesmo para response, reduzindo duplicação.
-- [ ] Remover o subpacote 'entities' dentro de services; usar apenas com.marllon.vieira.vergili.catalogo_financeiro.services.interfaces e .impl.
+- [ ] Remover o subpacote 'entities' dentro de services; usar apenas com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD e .impl.
 - [ ] Renomear o pacote 'enumerator' para 'enums' para seguir convenção Java.
 
 2. DTOs

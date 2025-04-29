@@ -4,9 +4,18 @@ import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira
 import org.mapstruct.Mapper;
 
 /**
- * Mapear para saída de dados em DTO, evitando códigos BOILERPLATE, usando o framework MAPSTRUCT
+ * Mapear para saída de dados em DTO, evitando códigos BOILERPLATE,
+ * usando o framework MAPSTRUCT
+ *
  */
 @Mapper(componentModel = "spring")
 public interface CategoriaFinanceiraMapper {
-    CategoriaFinanceiraResponse retornoValoresCategoria(CategoriaFinanceira categoriaFinanceira);
+
+    /**
+     * @param categoriaFinanceira para obter os dados da entidade
+     * @return CategoriaFinanceiraResponse, para retornar os valores DTO ao usuário
+     *
+     */
+    CategoriaFinanceiraResponse retornarDadosCategoria
+            (CategoriaFinanceira categoriaFinanceira);
 }

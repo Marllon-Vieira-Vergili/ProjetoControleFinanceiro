@@ -10,5 +10,11 @@ import org.mapstruct.Mapper;
  */
 @Mapper(componentModel = "spring")
 public interface HistoricoTransacaoMapper {
-    HistoricoTransacaoResponse retornoValoresHistoricoTransacao(HistoricoTransacao historicoTransacao);
+
+    /**
+     * @param historicoTransacao para obter os dados da entidade
+     * @return HistoricoTransacaoResponse, para retornar os valores DTO ao usuário
+     *
+     */
+    HistoricoTransacaoResponse retornarHistoricoTransacao(HistoricoTransacao historicoTransacao);
 }

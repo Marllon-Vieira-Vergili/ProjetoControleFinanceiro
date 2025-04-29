@@ -1,9 +1,7 @@
-package com.marllon.vieira.vergili.catalogo_financeiro.services.interfaces;
+package com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.ContaUsuarioRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.ContaUsuarioResponse;
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.AssociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.ContaNaoEncontrada;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.ContaUsuario;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas;
@@ -73,118 +71,21 @@ public interface ContaUsuarioService {
     // ======================== OPERAÇÕES ESPECÍFICAS ========================
     /**
      * Verifica se uma conta é do tipo corrente, poupança ou investimento.
+     *
      * @param contaId ID da conta
-     * @return o tipo de conta (enum) correspondente
+     * @return o tipo de conta correspondente
      */
-    TiposContas verificarTipoConta(Long contaId);
+    String verificarTipoConta(Long contaId);
     /**
-     * Verificar se uma conta passada pelo ID tem saldo negativo.
-     * @param contaId ID da conta
+     * Verificar se a conta tem saldo negativo.
      * @return true se a conta possuir saldo negativo
      */
-    boolean seSaldoEstiverNegativo(Long contaId);
+    boolean seSaldoEstiverNegativo(BigDecimal saldo);
     /**
-     * Verificar se uma conta passada pelo ID tem saldo positivo.
-     * @param contaId ID da conta
-     * @return true se a conta possuir saldo negativo
+     * Verificar se a conta tem saldo positivo.
+     * @return true se a conta possuir saldo positivo
      */
-    boolean seSaldoEstiverPositivo(Long contaId);
-
-
-
-    // ======================== MÈTODOS DE ASSOCIAÇÂO E DESASSOCIAÇÂO DESSA ENTIDADE ========================
-
-    /**
-     * Associa um tipo de conta (enum) à conta do usuário.
-     *
-     * @param contaId     identificador da conta.
-     * @param tiposConta  tipo de conta a ser associado.
-     * @throws AssociationErrorException se a conta não for encontrada ou se o tipo já estiver associado.
-     */
-    void associarTipoConta(Long contaId, TiposContas tiposConta);
-
-    /**
-     * Associa uma categoria financeira a uma conta de usuário.
-     *
-     * @param contaId     identificador da conta.
-     * @param categoriaId identificador da categoria financeira.
-     * @throws AssociationErrorException se a conta ou categoria não forem encontradas,
-     *                                   ou se a associação já existir.
-     */
-    void associarContaComCategoria(Long contaId, Long categoriaId);
-
-    /**
-     * Associa um pagamento a uma conta de usuário.
-     *
-     * @param contaId     identificador da conta.
-     * @param pagamentoId identificador do pagamento.
-     * @throws AssociationErrorException se a conta ou pagamento não forem encontrados,
-     *                                   ou se a associação já existir.
-     */
-    void associarContaComPagamentos(Long contaId, Long pagamentoId);
-
-    /**
-     * Associa uma transação a uma conta de usuário.
-     *
-     * @param contaId     identificador da conta.
-     * @param transacaoId identificador da transação.
-     * @throws AssociationErrorException se a conta ou transação não forem encontrados,
-     *                                   ou se a associação já existir.
-     */
-    void associarContaComTransacoes(Long contaId, Long transacaoId);
-
-    /**
-     * Associa um usuário à conta.
-     *
-     * @param contaId   identificador da conta.
-     * @param usuarioId identificador do usuário.
-     * @throws AssociationErrorException se a conta ou usuário não forem encontrados,
-     *                                   ou se a associação já existir.
-     */
-    void associarContaComUsuario(Long contaId, Long usuarioId);
-
-
-    // ================= DESASSOCIAÇÕES =================
-
-    /**
-     * Remove a associação entre uma conta e uma categoria financeira.
-     *
-     * @param contaId     identificador da conta.
-     * @param categoriaId identificador da categoria.
-     * @throws DesassociationErrorException se a conta ou categoria não forem encontrados,
-     *                                      ou se a associação não existir.
-     */
-    void desassociarContaDeCategorias(Long contaId, Long categoriaId);
-
-    /**
-     * Remove a associação entre uma conta e um pagamento.
-     *
-     * @param contaId     identificador da conta.
-     * @param categoriaId identificador do pagamento (verificar se o nome está correto).
-     * @throws DesassociationErrorException se a conta ou pagamento não forem encontrados,
-     *                                      ou se a associação não existir.
-     */
-    void desassociarContaDePagamento(Long contaId, Long categoriaId); // categoriaId deve ser pagamentoId?
-
-    /**
-     * Remove a associação entre uma conta e um histórico de transação.
-     *
-     * @param contaId    identificador da conta.
-     * @param historicoId identificador do histórico.
-     * @throws DesassociationErrorException se a conta ou transação não forem encontrados,
-     *                                      ou se a associação não existir.
-     */
-    void desassociarContaDeHistoricoDeTransacao(Long contaId, Long historicoId);
-
-    /**
-     * Remove a associação entre uma conta e um usuário.
-     *
-     * @param contaId   identificador da conta.
-     * @param usuarioId identificador do usuário.
-     * @throws DesassociationErrorException se a conta ou usuário não forem encontrados,
-     *                                      ou se a associação não existir.
-     */
-    void desassociarContaDeUsuario(Long contaId, Long usuarioId);
+    boolean seSaldoEstiverPositivo(BigDecimal saldo);
 
 
 
@@ -215,7 +116,7 @@ public interface ContaUsuarioService {
      * @param contaId o identificador da conta a ser consultada.
      * @throws RuntimeException ou ContaNotFoundException (personalizada) se a conta não for encontrada.
      */
-    void consultarSaldo(Long contaId);
+    BigDecimal consultarSaldo(Long contaId);
 
 
 
@@ -228,7 +129,12 @@ public interface ContaUsuarioService {
      */
     boolean contaExistePelaID(Long id);
 
-
+    /**
+     * Verifica se o tipo de conta informado pelo usuário existe
+     * @param tipoConta do enum TiposContas
+     * @return true se esse tipo de conta informado existir
+     */
+    boolean tipoContaExiste(TiposContas tipoConta);
 
     /**
      * Verifica se já existe uma conta com os mesmos dados no banco de dados.

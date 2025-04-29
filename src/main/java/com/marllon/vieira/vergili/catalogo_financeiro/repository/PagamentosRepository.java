@@ -1,6 +1,7 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.repository;
 
 import com.marllon.vieira.vergili.catalogo_financeiro.models.Pagamentos;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -51,4 +52,7 @@ public interface PagamentosRepository extends JpaRepository<Pagamentos, Long> {
      */
     @Query("SELECT p FROM Pagamentos p WHERE p.descricao = :descricaoPagamento")
     Pagamentos encontrarPagamentoPelaDescricao(@Param("descricaoPagamento") String descricaoPagamento);
+
+    @Query("SELECT p FROM Pagamentos p WHERE p.categoria = :categoria")
+    List<Pagamentos> encontrarPagamentoPelaCategoria(@Param("categoria") TiposCategorias categoria);
 }

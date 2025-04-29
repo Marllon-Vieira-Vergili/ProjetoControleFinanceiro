@@ -11,5 +11,11 @@ import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface ContaUsuarioMapper {
-    ContaUsuarioResponse retornoValoresContaUsuario(ContaUsuario contaUsuario);
+
+    /**
+     * @param contaUsuario para obter os dados da entidade
+     * @return ContaUsuarioResponse, para retornar os valores DTO ao usuário
+     *
+     */
+    ContaUsuarioResponse retornarDadosContaUsuario(ContaUsuario contaUsuario);
 }

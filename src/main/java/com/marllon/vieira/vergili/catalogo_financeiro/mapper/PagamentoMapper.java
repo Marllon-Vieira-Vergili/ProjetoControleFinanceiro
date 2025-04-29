@@ -9,5 +9,11 @@ import org.mapstruct.Mapper;
  */
 @Mapper(componentModel = "spring")
 public interface PagamentoMapper {
-    PagamentosResponse retornoValoresPagamento(Pagamentos pagamento);
+
+    /**
+     * @param pagamento para obter os dados da entidade
+     * @return PagamentosResponse, para retornar os valores DTO ao usuário
+     *
+     */
+    PagamentosResponse retornarDadosPagamento(Pagamentos pagamento);
 }

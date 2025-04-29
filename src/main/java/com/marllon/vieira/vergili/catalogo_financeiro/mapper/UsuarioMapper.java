@@ -9,5 +9,11 @@ import org.mapstruct.Mapper;
  */
 @Mapper(componentModel = "spring")
 public interface UsuarioMapper {
-    UsuarioResponse retornarValoresUsuario(Usuario usuario);
+
+    /**
+     * @param usuario para obter os dados da entidade
+     * @return UsuarioResponse, para retornar os valores DTO ao usuário
+     *
+     */
+    UsuarioResponse retornarDadosUsuario(Usuario usuario);
 }
