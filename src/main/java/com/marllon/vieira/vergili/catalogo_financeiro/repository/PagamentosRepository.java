@@ -1,6 +1,7 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.repository;
 
 import com.marllon.vieira.vergili.catalogo_financeiro.models.Pagamentos;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -9,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repositório responsável pelas operações de persistência da entidade {@link Pagamentos}.
@@ -16,15 +18,25 @@ import java.util.List;
  */
 public interface PagamentosRepository extends JpaRepository<Pagamentos, Long> {
 
+
     /**
-     * Verifica se já existe um pagamento com a mesma data e descrição.
-     * Evita duplicidade de lançamentos no sistema.
-     *
-     * @param dataPagamento a data do pagamento
+     * Verifica se já existe um pagamento igualmente criado
+     * Útil para evitar duplicidade de pagamentos.
+     * @param valor, o valor do pagamento
+     * @param data a data do pagamento
      * @param descricao a descrição do pagamento
-     * @return true se existir um pagamento com a mesma data e descrição
+     * @param categoria o tipo de categoria do pagamento
+     * @param subTipo o subtipo do pagamento realizado
+     * @return true se existir uma transação com os mesmos valores
+     * COUNT(h) > 0 contará todos os valores da entidade, se for maior que 0 ele ja retornará
      */
-    boolean existsByDataAndDescricao(LocalDate dataPagamento, String descricao);
+
+    @Query("SELECT COUNT(h) > 0 from Pagamentos p WHERE p.valor = :valor AND p.data = :data AND p.descricao =:descricao AND p.categoria = :categoria AND p.subTipo = :subTipo")
+    boolean existTheSameData(@Param("valor") BigDecimal valor,
+                             @Param("data") LocalDate data,
+                             @Param("descricao") String descricao,
+                             @Param("categoria") TiposCategorias categoria,
+                             @Param("subTipo") SubTipoCategoria subTipo);
 
     /**
      * Busca todos os pagamentos realizados em uma determinada data.
@@ -53,6 +65,13 @@ public interface PagamentosRepository extends JpaRepository<Pagamentos, Long> {
     @Query("SELECT p FROM Pagamentos p WHERE p.descricao = :descricaoPagamento")
     Pagamentos encontrarPagamentoPelaDescricao(@Param("descricaoPagamento") String descricaoPagamento);
 
+    /**
+     * Busca um pagamento com base em seu tipo de categoria.
+     *
+     * @param categoria a categoria do pagamento
+     * @return uma lista de {@link Pagamentos} correspondente, ou null se não encontrado
+     */
     @Query("SELECT p FROM Pagamentos p WHERE p.categoria = :categoria")
     List<Pagamentos> encontrarPagamentoPelaCategoria(@Param("categoria") TiposCategorias categoria);
+
 }

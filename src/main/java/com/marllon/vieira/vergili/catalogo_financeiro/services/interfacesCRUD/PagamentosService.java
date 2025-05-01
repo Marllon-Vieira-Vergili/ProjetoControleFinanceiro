@@ -5,8 +5,11 @@ import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.PagamentosRes
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.AssociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.JaExisteException;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.HistoricoTransacaoNaoEncontrado;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.PagamentoNaoEncontrado;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.SubTipoNaoEncontrado;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.HistoricoTransacao;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.Pagamentos;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -104,6 +107,14 @@ public interface PagamentosService  {
     void deletarPagamento(Long id);
 
     // ======================== OPERAÇÕES ESPECÍFICAS ========================
+
+    /**
+     * EvitarCódigo BOILERPLATE, INSTANCIANDO EM TODOS OS MÈTODOS de verificação
+     *
+     * @param id ID do pagamento criado
+     * @throws PagamentoNaoEncontrado se não for encontrado o pagamento pela id
+     */
+    Pagamentos getPagamentoById(Long id);
 
     /**
      * Consulta o valor total dos pagamentos de uma conta.

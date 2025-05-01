@@ -11,34 +11,6 @@ import java.math.BigDecimal;
 public interface PagamentosAssociation {
 
 
-    // ======================== OPERAÇÕES ESPECÍFICAS ========================
-
-    /**
-     * Consulta o valor total dos pagamentos de uma conta.
-     *
-     * @param contaId ID da conta.
-     * @return Valor total dos pagamentos.
-     */
-    BigDecimal consultarValorPagamento(Long contaId);
-
-    /**
-     * Verifica se o pagamento é uma despesa.
-     *
-     * @param pagamentoId ID do pagamento.
-     * @return true se for despesa.
-     * @throws PagamentoNaoEncontrado caso o pagamento não exista.
-     */
-    boolean sePagamentoForDespesa(Long pagamentoId);
-
-    /**
-     * Verifica se o pagamento é uma receita.
-     *
-     * @param pagamentoId ID do pagamento.
-     * @return true se for receita.
-     * @throws PagamentoNaoEncontrado caso o pagamento não exista.
-     */
-    boolean sePagamentoForReceita(Long pagamentoId);
-
     // ======================== MÉTODOS DE ASSOCIAÇÃO E DESASSOCIAÇÃO ========================
 
     /**

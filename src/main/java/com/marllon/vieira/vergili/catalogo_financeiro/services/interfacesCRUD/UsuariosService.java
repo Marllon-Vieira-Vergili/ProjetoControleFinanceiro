@@ -7,7 +7,10 @@ import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.UsuarioRespon
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.AssociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.HistoricoTransacaoNaoEncontrado;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.UsuarioNaoEncontrado;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.HistoricoTransacao;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.Usuario;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -72,6 +75,14 @@ public interface UsuariosService {
     void deletarUsuario(Long id);
 
     // ======================== OPERAÇÕES ESPECÍFICAS ========================
+
+    /**
+     * EvitarCódigo BOILERPLATE, INSTANCIANDO EM TODOS OS MÈTODOS de verificação
+     *
+     * @param id ID do usuário
+     * @throws UsuarioNaoEncontrado se não for encontrado o usuário pela id.
+     */
+    Usuario getUsuarioById(Long id);
 
     /**
      * Retorna todas as contas associadas a um usuário específico.

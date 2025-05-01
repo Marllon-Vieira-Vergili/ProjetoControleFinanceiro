@@ -97,6 +97,15 @@ public interface CategoriaFinanceiraService {
      */
     boolean tipoCategoriaExiste(TiposCategorias tipoCategoria);
 
+
+    /**
+     * EvitarCódigo BOILERPLATE, INSTANCIANDO EM TODOS OS MÈTODOS de verificação
+     *
+     * @param id ID da categoria.
+     * @throws CategoriaNaoEncontrada se não for encontrado a categoria pela id.
+     */
+    CategoriaFinanceira getCategoriaById(Long id);
+
     /**
      * Verifica se já existe uma categoria com os mesmos dados fornecidos (exceto o ID) no banco de dados.
      *

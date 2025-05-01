@@ -163,8 +163,7 @@ public class PagamentosImpl implements PagamentosService {
     @Override
     public PagamentosResponse encontrarPagamentoPorid(Long id) {
 
-        Pagamentos pagamentoEncontrado = pagamentosRepository.findById(id).orElseThrow(()
-                ->new PagamentoNaoEncontrado("Nenhum pagamento foi encontrado com essa id!"));
+        Pagamentos pagamentoEncontrado = getPagamentoById(id);
 
         return pagamentoMapper.retornarDadosPagamento(pagamentoEncontrado);
     }
@@ -226,8 +225,7 @@ public class PagamentosImpl implements PagamentosService {
     @Override
     public PagamentosResponse atualizarPagamento(Long id, PagamentosRequest request) {
 
-        Pagamentos pagamentoEncontrado = pagamentosRepository.findById(id).orElseThrow(()
-                -> new PagamentoNaoEncontrado("Não foi encontrado nenhum pagamento com essa id"));
+        Pagamentos pagamentoEncontrado = getPagamentoById(id);
 
         if(request.data().isBefore(LocalDate.now()) ||
                 request.data().isAfter(LocalDate.now().plusMonths(1).withDayOfMonth(1))){
@@ -313,8 +311,7 @@ public class PagamentosImpl implements PagamentosService {
     @Override
     public void deletarPagamento(Long id) {
 
-        Pagamentos pagamentoSerRemovido = pagamentosRepository.findById(id).orElseThrow(() ->
-                new ContaNaoEncontrada("Não foi encontrado nenhum pagamento com essa id informada"));
+        Pagamentos pagamentoSerRemovido = getPagamentoById(id);
 
         try{
             pagamentosAssociation.desassociarPagamentoConta(id, pagamentoSerRemovido.getContaRelacionada().getId());
@@ -351,6 +348,12 @@ public class PagamentosImpl implements PagamentosService {
     }
 
     @Override
+    public Pagamentos getPagamentoById(Long id) {
+        return pagamentosRepository.findById(id).orElseThrow(()
+                ->new UsuarioNaoEncontrado("Não foi encontrado nenhum pagamento com essa id: " + id +  " informada"));
+    }
+
+    @Override
     public BigDecimal consultarValorPagamento(Long contaId) {
 
         Pagamentos pagamentoEncontrado = pagamentosRepository.findById(contaId).orElseThrow(() ->
@@ -382,11 +385,8 @@ public class PagamentosImpl implements PagamentosService {
 
     @Override
     public boolean jaExisteUmPagamentoIgual(PagamentosRequest pagamentoRequest) {
-        return pagamentosRepository.findAll().stream().anyMatch(pagamento ->
-                pagamento.getValor().equals(pagamentoRequest.valor()) &&
-                        pagamento.getData().equals(pagamentoRequest.data()) &&
-                        pagamento.getDescricao().equals(pagamentoRequest.descricao())&&
-                        pagamento.getCategoria().equals(pagamentoRequest.tipoCategoria())&&
-                pagamento.getSubTipo().equals(pagamentoRequest.subTipoCategoria()));
+        return pagamentosRepository.existTheSameData(pagamentoRequest.valor(),
+                pagamentoRequest.data(),pagamentoRequest.descricao(),pagamentoRequest.tipoCategoria(),
+                pagamentoRequest.subTipoCategoria());
     }
 }

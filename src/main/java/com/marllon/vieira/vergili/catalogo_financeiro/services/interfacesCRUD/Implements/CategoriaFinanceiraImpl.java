@@ -7,7 +7,6 @@ import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.Desassoc
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.CategoriaNaoEncontrada;
 import com.marllon.vieira.vergili.catalogo_financeiro.mapper.CategoriaFinanceiraMapper;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.ContaUsuario;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.HistoricoTransacao;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.Pagamentos;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
@@ -77,8 +76,7 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
     public Optional<CategoriaFinanceiraResponse> encontrarCategoriaPorId(Long id) {
 
         //Encontrar a categoria já criada pela ID
-        CategoriaFinanceira categoriaEncontradaPelaId = categoriaFinanceiraRepository.findById(id)
-                .orElseThrow(() -> new CategoriaNaoEncontrada("A categoria com a id: " + id + " não foi encontrada"));
+        CategoriaFinanceira categoriaEncontradaPelaId = getCategoriaById(id);
 
         return Optional.ofNullable(categoriaFinanceiraMapper.retornarDadosCategoria(categoriaEncontradaPelaId));
     }
@@ -87,8 +85,7 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
     public List<CategoriaFinanceiraResponse> encontrarCategoriaCriadaPeloSubTipo(Long id, SubTipoCategoria subTipo) {
 
         //Encontrar a categoria já criada pela ID
-        CategoriaFinanceira categoriaEncontradaPelaId = categoriaFinanceiraRepository.findById(id)
-                .orElseThrow(() -> new CategoriaNaoEncontrada("A categoria com a id: " + id + " não foi encontrada"));
+        CategoriaFinanceira categoriaEncontradaPelaId = getCategoriaById(id);
 
         //Verificar se essa categoria contem um subtipo associado
         if (categoriaEncontradaPelaId.getSubTipo().equals(subTipo)) {
@@ -127,9 +124,7 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
         //Encontrar a categoria pela id
 
 
-        CategoriaFinanceira categoriaAtualizada = categoriaFinanceiraRepository.findById(idCategoria)
-               .orElseThrow(() -> new CategoriaNaoEncontrada("A categoria com a id: " + idCategoria + " não foi encontrada"));
-
+        CategoriaFinanceira categoriaAtualizada = getCategoriaById(idCategoria);
         //Obter os novos dados
         categoriaAtualizada.setTiposCategorias(novosDados.tipoCategoria());
         categoriaAtualizada.setSubTipo(novosDados.subtipo());
@@ -162,8 +157,7 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
     public void deletarCategoria(Long id) {
 
         //Desassociar a categoria antes de deletá-la
-        CategoriaFinanceira idEncontrado = categoriaFinanceiraRepository.
-                findById(id).orElseThrow(() ->new CategoriaNaoEncontrada("Categoria não foi encontrada"));
+        CategoriaFinanceira idEncontrado = getCategoriaById(id);
 
             if(seCategoriaForDespesa()){
                 categoriaFinanceiraAssociation.desassociarCategoriaCriadaComDespesa(idEncontrado.getId());
@@ -205,8 +199,6 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
             throw new DesassociationErrorException("Erro ao desassociar de Histórico transações relacionados:  " + e.getMessage());
         }
 
-
-
         //Deletar a categoria Financeira
         categoriaFinanceiraRepository.deleteById(id);
     }
@@ -245,5 +237,11 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
         List<CategoriaFinanceira> todasCategoriasEncontradas = categoriaFinanceiraRepository.findAll();
             return todasCategoriasEncontradas.stream().anyMatch(categoriaFinanceira ->
                     categoriaFinanceira.equals(dadosCategoria));
+    }
+
+    @Override
+    public CategoriaFinanceira getCategoriaById(Long id) {
+        return categoriaFinanceiraRepository.findById(id).orElseThrow(()
+                -> new CategoriaNaoEncontrada("Não foi encontrado nenhuma categoria com essa id " + id +  " informada"));
     }
 }

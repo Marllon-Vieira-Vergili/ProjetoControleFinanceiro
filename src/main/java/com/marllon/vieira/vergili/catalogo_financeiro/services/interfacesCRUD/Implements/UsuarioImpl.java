@@ -7,6 +7,7 @@ import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.UsuarioRespon
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.ContaNaoEncontrada;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.UsuarioNaoEncontrado;
+import com.marllon.vieira.vergili.catalogo_financeiro.mapper.ContaUsuarioMapper;
 import com.marllon.vieira.vergili.catalogo_financeiro.mapper.UsuarioMapper;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas;
@@ -19,13 +20,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Service
 public class UsuarioImpl implements UsuariosService {
 
     @Autowired
@@ -36,6 +38,9 @@ public class UsuarioImpl implements UsuariosService {
 
     @Autowired
     private ContaUsuarioRepository contaUsuarioRepository;
+
+    @Autowired
+    private ContaUsuarioMapper contaUsuarioMapper;
 
     @Autowired
     private UsuariosAssociation usuariosAssociation;
@@ -67,8 +72,7 @@ public class UsuarioImpl implements UsuariosService {
     @Override
     public Optional<UsuarioResponse> buscarUsuarioPorId(Long id) {
 
-        Usuario usuarioEncontrado = usuarioRepository.findById(id).orElseThrow(()
-                -> new UsuarioNaoEncontrado("Usuário não encontrado com essa id"));
+        Usuario usuarioEncontrado = getUsuarioById(id);
 
         return Optional.ofNullable(usuarioMapper.retornarDadosUsuario(usuarioEncontrado));
     }
@@ -113,8 +117,7 @@ public class UsuarioImpl implements UsuariosService {
     @Override
     public void deletarUsuario(Long id) {
 
-        Usuario usuarioSerRemovido = usuarioRepository.findById(id).orElseThrow(() ->
-                new ContaNaoEncontrada("Não foi encontrado nenhum usuario com essa id informada"));
+        Usuario usuarioSerRemovido = getUsuarioById(id);
 
 
         try{
@@ -156,22 +159,49 @@ public class UsuarioImpl implements UsuariosService {
     }
 
     @Override
+    public Usuario getUsuarioById(Long id) {
+        return usuarioRepository.findById(id).orElseThrow(()
+                ->new UsuarioNaoEncontrado("Não foi encontrado nenhum usuário com essa id: " + id +  " informada"));
+    }
+
+    @Override
     public List<ContaUsuarioResponse> buscarContasAssociadas(Long usuarioId) {
-        return List.of();
+
+        Usuario usuarioEncontrado = getUsuarioById(usuarioId);
+
+        List<ContaUsuario> contasUsuario = usuarioEncontrado.getContasRelacionadas();
+
+
+        return contasUsuario.stream().map(contaUsuarioMapper::retornarDadosContaUsuario).toList();
     }
 
     @Override
     public boolean usuarioTemContaTipo(Long usuarioId, TiposContas tipoConta) {
+
+        Usuario usuarioEncontrado = usuarioRepository.findById(usuarioId).orElseThrow(()
+                -> new UsuarioNaoEncontrado("Usuário com essa id informada não foi encontrado!"));
+
+        for(ContaUsuario contasPercorridas: usuarioEncontrado.getContasRelacionadas()){
+            TiposContas tiposDeContas = contasPercorridas.getTipoConta();
+            if(tiposDeContas.name().equalsIgnoreCase(tipoConta.name())){
+                return true;
+            }
+        }
         return false;
     }
 
     @Override
     public boolean existePelaId(Long id) {
-        return false;
+
+        Usuario usuarioEncontrado = usuarioRepository.findById(id).orElseThrow(()
+                -> new UsuarioNaoEncontrado("Usuário com essa id informada não foi encontrado!"));
+
+        return usuarioEncontrado.getId() != null;
     }
 
     @Override
     public boolean existeUsuarioIgual(UsuarioRequest usuario) {
-        return false;
+        return usuarioRepository.existsByNomeAndEmailAndTelefone(usuario.nome(),
+                usuario.email(), usuario.telefone());
     }
 }

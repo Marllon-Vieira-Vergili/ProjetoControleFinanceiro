@@ -5,11 +5,10 @@ import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.Associat
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.JaExisteException;
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.CategoriaNaoEncontrada;
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.HistoricoTransacaoNaoEncontrado;
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.TiposCategoriasNaoEncontrado;
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.UsuarioNaoEncontrado;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.ContaUsuario;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.HistoricoTransacao;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;
@@ -26,15 +25,6 @@ public interface HistoricoTransacaoService {
 
     // ======================== OPERAÇÕES CRUD BÁSICAS ========================
 
-    /**
-     * Cria uma nova transação no histórico.
-     *
-     * @param request dados da transação a ser criada.
-     * @return representação da transação criada.
-     * @throws DadosInvalidosException se não for possível criar a transação com os dados fornecidos.
-     * @throws JaExisteException se já existir uma transação idêntica no banco de dados.
-     */
-    HistoricoTransacaoResponse criarTransacao(HistoricoTransacaoRequest request);
 
     /**
      * Busca uma transação pelo ID.
@@ -55,14 +45,7 @@ public interface HistoricoTransacaoService {
      */
     List<HistoricoTransacaoResponse> encontrarTransacaoPorData(LocalDate data);
 
-    /**
-     * Atualiza os dados de uma transação existente, (SE necessário..), casos muitos específicos
-     * @param request dados atualizados da transação.
-     * @return representação da transação atualizada.
-     * @throws DadosInvalidosException se não for possível atualizar a transação com os dados fornecidos.
-     * @throws JaExisteException se já existir uma transação idêntica no banco de dados.
-     */
-    HistoricoTransacaoResponse atualizarHistoricoTransacao(HistoricoTransacaoRequest request);
+
 
     /**
      * Lista todas as transações paginadas.
@@ -84,12 +67,12 @@ public interface HistoricoTransacaoService {
     /**
      * Retorna uma lista de históricos de transação filtrados por tipo (ex: RECEITA ou DESPESA).
      *
-     * @param tipo Tipo da transação (ex: "RECEITA" ou "DESPESA").
+     * @param tiposCategoria Tipo da transação (ex: "RECEITA" ou "DESPESA").
      * @return Lista de objetos {@link HistoricoTransacaoResponse} que correspondem ao tipo especificado.
      * @throws TiposCategoriasNaoEncontrado se o tipo fornecido não for válido.
      * @throws HistoricoTransacaoNaoEncontrado se não houver históricos para o tipo especificado.
      */
-    List<HistoricoTransacaoResponse> encontrarHistoricoTransacaoPorTipo(String tipo);
+    List<HistoricoTransacaoResponse> encontrarHistoricoTransacaoPorTipo(TiposCategorias tiposCategoria);
 
     /**
      * Retorna uma lista de históricos de transação associados a uma categoria específica.
@@ -102,13 +85,6 @@ public interface HistoricoTransacaoService {
     List<HistoricoTransacaoResponse> encontrarHistoricoTransacaoPorCategoria(Long categoriaId);
 
 
-    /**
-     * Remove uma transação do histórico.
-     * @param id identificador da transação a ser removida.
-     * @throws HistoricoTransacaoNaoEncontrado se não for encontrado o histórico de atualização
-     */
-    void deletarHistoricoTransacao(Long id);
-
 
     // ======================== OPERAÇÕES ESPECÍFICAS ========================
 
@@ -118,11 +94,20 @@ public interface HistoricoTransacaoService {
      * @param contaId identificador da conta.
      * @return somatório da transação.
      */
-    BigDecimal consultarValorTransacao(Long contaId);
+    BigDecimal consultarValorTotalTransacoes(Long contaId);
 
 
 
     // ======================== VALIDAÇÕES ========================
+
+
+    /**
+     * EvitarCódigo BOILERPLATE, INSTANCIANDO EM TODOS OS MÈTODOS de verificação
+     *
+     * @param id ID da do histórico de transação
+     * @throws HistoricoTransacaoNaoEncontrado se não for encontrado o histórico pela id.
+     */
+   HistoricoTransacao getHistoricoTransacaoById(Long id);
 
     /**
      * Verifica se uma transação existe a partir do seu ID.
@@ -130,13 +115,13 @@ public interface HistoricoTransacaoService {
      * @param id identificador da transação.
      * @return true se a transação existir, false caso contrário.
      */
-    boolean validacaoExistePelaID(Long id);
+    boolean transacaoExistePelaID(Long id);
 
     /**
      * Verifica se já existe uma transação idêntica vinculada a uma conta.
      *
-     * @param contaUsuario conta a ser verificada.
+     * @param historicoTransacao historico a ser verificado.
      * @return true se houver duplicidade, false caso contrário.
      */
-    boolean JaExisteUmaTransacaoIgual(ContaUsuario contaUsuario);
+    boolean jaExisteUmaTransacaoIgual(HistoricoTransacaoRequest historicoTransacao);
 }

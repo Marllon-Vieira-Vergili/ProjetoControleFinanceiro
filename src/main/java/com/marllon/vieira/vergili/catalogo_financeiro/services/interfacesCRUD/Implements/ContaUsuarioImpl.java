@@ -87,8 +87,7 @@ public class ContaUsuarioImpl implements ContaUsuarioService {
     @Override
     public Optional<ContaUsuarioResponse> encontrarContaPorId(Long id) {
 
-        ContaUsuario contaEncontrada = contaRepository.findById(id).orElseThrow(() ->
-                new ContaNaoEncontrada("Não foi encontrado nenhuma conta com essa ID"));
+        ContaUsuario contaEncontrada = getContaById(id);
 
         return Optional.ofNullable(contaUsuarioMapper.retornarDadosContaUsuario(contaEncontrada));
     }
@@ -125,8 +124,7 @@ public class ContaUsuarioImpl implements ContaUsuarioService {
         //Encontrar a conta pela id
 
 
-        ContaUsuario contaEncontrada = contaRepository.findById(id).orElseThrow(()->
-                        new ContaNaoEncontrada("Essa conta com esta id não foi encontrada!"));
+        ContaUsuario contaEncontrada = getContaById(id);
 
         //Obter os novos dados
         contaEncontrada.setNome(request.nome());
@@ -165,8 +163,8 @@ public class ContaUsuarioImpl implements ContaUsuarioService {
     @Override
     public void deletarConta(Long id) {
 
-        ContaUsuario contaSerRemovida = contaRepository.findById(id).orElseThrow(() ->
-                new ContaNaoEncontrada("Não foi encontrado nenhuma conta com essa id informada"));
+        ContaUsuario contaSerRemovida = getContaById(id);
+
 
         try{
             contaUsuarioAssociation.desassociarContaDeTipoConta(id,contaSerRemovida.getTipoConta());
@@ -213,8 +211,7 @@ public class ContaUsuarioImpl implements ContaUsuarioService {
     @Override
     public String verificarTipoConta(Long contaId) {
 
-        ContaUsuario contaUsuario = contaRepository.findById(contaId).orElseThrow(()
-                -> new ContaNaoEncontrada("Nenhuma conta foi encontrada com essa id informada"));
+        ContaUsuario contaUsuario = getContaById(contaId);
 
         if(contaUsuario.getTipoConta() != null){
             return contaUsuario.getTipoConta().name();
@@ -273,6 +270,12 @@ public class ContaUsuarioImpl implements ContaUsuarioService {
     public boolean contaExistePelaID(Long id) {
         Optional<ContaUsuario> contaEncontrada = contaRepository.findById(id);
         return contaEncontrada.isPresent();
+    }
+
+    @Override
+    public ContaUsuario getContaById(Long id) {
+        return contaRepository.findById(id).orElseThrow(()
+                ->new ContaNaoEncontrada("Nenhuma conta de usuário foi encontrada com essa id informada!"));
     }
 
     @Override

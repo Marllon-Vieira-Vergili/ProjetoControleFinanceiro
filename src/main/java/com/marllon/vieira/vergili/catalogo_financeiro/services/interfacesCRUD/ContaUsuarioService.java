@@ -2,7 +2,9 @@ package com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.ContaUsuarioRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.ContaUsuarioResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.CategoriaNaoEncontrada;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.ContaNaoEncontrada;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.ContaUsuario;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas;
 import jakarta.persistence.EntityNotFoundException;
@@ -128,6 +130,16 @@ public interface ContaUsuarioService {
      * @return true se a conta existir
      */
     boolean contaExistePelaID(Long id);
+
+
+
+    /**
+     * EvitarCódigo BOILERPLATE, INSTANCIANDO EM TODOS OS MÈTODOS de verificação
+     *
+     * @param id ID da conta usuario
+     * @throws ContaNaoEncontrada se não for encontrado a conta pela id.
+     */
+    ContaUsuario getContaById(Long id);
 
     /**
      * Verifica se o tipo de conta informado pelo usuário existe

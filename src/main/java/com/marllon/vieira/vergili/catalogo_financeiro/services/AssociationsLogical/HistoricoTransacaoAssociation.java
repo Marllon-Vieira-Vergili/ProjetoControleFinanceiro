@@ -53,10 +53,10 @@ public interface HistoricoTransacaoAssociation {
      * Desassocia um pagamento de uma transação.
      *
      * @param transacaoId identificador da transação.
-     * @param usuarioId identificador do usuário (caso necessário para validação).
+     * @param pagamentoId identificador do pagaamento(caso necessário para validação).
      *@throws DesassociationErrorException se a desassociação não for bem-sucedida.
      */
-    void desassociarTransacaoDePagamento(Long transacaoId, Long usuarioId);
+    void desassociarTransacaoDePagamento(Long transacaoId, Long pagamentoId);
 
     /**
      * Desassocia uma conta de uma transação.
