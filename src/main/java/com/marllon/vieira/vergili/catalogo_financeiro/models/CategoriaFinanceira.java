@@ -25,7 +25,7 @@ import java.util.List;
 @Setter(AccessLevel.PUBLIC)
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 @AllArgsConstructor(access = AccessLevel.PUBLIC)
-@EqualsAndHashCode(of = "tiposCategorias")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(of = {"id", "contaRelacionada"})
 public class CategoriaFinanceira {
 
@@ -36,6 +36,7 @@ public class CategoriaFinanceira {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
+    @EqualsAndHashCode.Include
     private Long id;
 
 

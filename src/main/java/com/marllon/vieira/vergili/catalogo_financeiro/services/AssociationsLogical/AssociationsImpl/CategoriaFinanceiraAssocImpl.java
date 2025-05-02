@@ -10,14 +10,19 @@ import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategori
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.CategoriaFinanceiraAssociation;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.*;
+import jakarta.transaction.Transactional;
+import lombok.EqualsAndHashCode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 
 import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias.DESPESA;
 import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias.RECEITA;
 
-public class CategoriaFinanceiraImpl implements CategoriaFinanceiraAssociation {
+@Service
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+public class CategoriaFinanceiraAssocImpl implements CategoriaFinanceiraAssociation {
 
 
     @Autowired
@@ -53,6 +58,7 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraAssociation {
 
 
     @Override
+    @Transactional
     public void associarCategoriaComConta(Long categoriaId, Long contaId) {
 
         CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.getCategoriaById(categoriaId);
@@ -75,6 +81,7 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraAssociation {
     }
 
     @Override
+    @Transactional
     public void associarCategoriaComPagamento(Long categoriaId, Long pagamentoId) {
 
         CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.getCategoriaById(categoriaId);
@@ -106,6 +113,7 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraAssociation {
     }
 
     @Override
+    @Transactional
     public void associarCategoriaComTransacao(Long categoriaId, Long transacaoId) {
 
         CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.getCategoriaById(categoriaId);
@@ -133,6 +141,7 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraAssociation {
     }
 
     @Override
+    @Transactional
     public void associarCategoriaComUsuario(Long categoriaId, Long usuarioId) {
 
         CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.getCategoriaById(categoriaId);
@@ -161,6 +170,7 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraAssociation {
 
 
     @Override
+    @Transactional
     public void associarSubTipoCategoriaComDespesa(TiposCategorias tipoCategoriaDespesa,
                                                    SubTipoCategoria subTipoDespesa) {
 
@@ -184,6 +194,7 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraAssociation {
     }
 
     @Override
+    @Transactional
     public void associarSubTipoCategoriaComReceita(TiposCategorias tipoCategoriaReceita,
                                                    SubTipoCategoria subTipoReceita) {
 
@@ -211,6 +222,7 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraAssociation {
 
 
     @Override
+    @Transactional
     public void desassociarCategoriaAConta(Long categoriaId, Long contaId) {
 
         CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.getCategoriaById(categoriaId);
@@ -231,6 +243,7 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraAssociation {
     }
 
     @Override
+    @Transactional
     public void desassociarCategoriaAPagamento(Long categoriaId, Long pagamentoId) {
 
         CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.getCategoriaById(categoriaId);
@@ -256,6 +269,7 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraAssociation {
     }
 
     @Override
+    @Transactional
     public void desassociarCategoriaTransacao(Long categoriaId, Long transacaoId) {
 
         CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.getCategoriaById(categoriaId);
@@ -280,6 +294,7 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraAssociation {
     }
 
     @Override
+    @Transactional
     public void desassociarCategoriaUsuario(Long categoriaId, Long usuarioId) {
 
         CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.getCategoriaById(categoriaId);
@@ -303,6 +318,7 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraAssociation {
     }
 
     @Override
+    @Transactional
     public void desassociarCategoriaCriadaComDespesa(Long categoriaId) {
 
 //Obter o id da categoria
@@ -328,6 +344,7 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraAssociation {
 
 
     @Override
+    @Transactional
     public void desassociarCategoriaCriadaComReceita(Long categoriaId) {
 
         //Obter o id da categoria
@@ -350,4 +367,6 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraAssociation {
             throw new DesassociationErrorException("Não foi possível desassociar uma categoria de uma receita");
         }
     }
+
+
 }

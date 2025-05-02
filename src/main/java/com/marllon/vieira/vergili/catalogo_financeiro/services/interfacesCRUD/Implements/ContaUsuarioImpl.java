@@ -167,12 +167,6 @@ public class ContaUsuarioImpl implements ContaUsuarioService {
 
 
         try{
-            contaUsuarioAssociation.desassociarContaDeTipoConta(id,contaSerRemovida.getTipoConta());
-        }catch (DesassociationErrorException e){
-            throw new DesassociationErrorException("Erro ao desassociar do tipo de conta ");
-        }
-
-        try{
             contaUsuarioAssociation.desassociarContaDeUsuario(id, contaSerRemovida.getUsuarioRelacionado().getId());
 
         } catch (DesassociationErrorException e) {
@@ -181,7 +175,7 @@ public class ContaUsuarioImpl implements ContaUsuarioService {
 
         try{
             for(CategoriaFinanceira categoriaEncontrada: contaSerRemovida.getCategoriasRelacionadas()){
-                contaUsuarioAssociation.desassociarContaDeCategorias(id, categoriaEncontrada.getId());
+                contaUsuarioAssociation.desassociarContaDeCategoria(id, categoriaEncontrada.getId());
             }
         }catch (DesassociationErrorException e){
             throw new DesassociationErrorException("Erro ao desassociar de Categorias Financeiras:  " + e.getMessage());

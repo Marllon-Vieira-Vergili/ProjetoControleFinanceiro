@@ -24,13 +24,14 @@ import java.util.NoSuchElementException;
 @Setter(AccessLevel.PUBLIC)
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 @AllArgsConstructor(access = AccessLevel.PUBLIC)
-@EqualsAndHashCode(of = {"valor", "data", "descricao", "categorias"})
+@EqualsAndHashCode(of = {"valor", "data", "descricao", "categorias", "subTipo"})
 @ToString(of = {"id", "valor", "data", "descricao", "categorias"})
 public class HistoricoTransacao {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @NotNull(message = "O valor da transação deve possuir um valor!")

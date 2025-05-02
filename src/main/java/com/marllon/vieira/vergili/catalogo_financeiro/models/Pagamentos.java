@@ -24,13 +24,14 @@ import java.util.List;
 @Setter(AccessLevel.PUBLIC)
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 @AllArgsConstructor(access = AccessLevel.PUBLIC)
-@EqualsAndHashCode(of = {"valor", "data", "descricao", "categoria"})
+@EqualsAndHashCode(of = {"valor", "data", "descricao", "categoria", "subTipo"})
 @ToString(of = {"id","valor", "data", "descricao", "categoria"})
 public class Pagamentos{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id",nullable = false)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(name = "valor",nullable = false)

@@ -34,7 +34,7 @@ public interface UsuariosAssociation {
      * @param contaId ID da conta
      * @throws AssociationErrorException em caso de falha na associação
      */
-    void associarUsuarioComConta(Long usuarioid, Long contaId);
+    void associarUsuarioComConta(Long usuarioId, Long contaId);
 
     /**
      * Associa um usuário a uma categoria financeira.

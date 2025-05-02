@@ -6,12 +6,16 @@ import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.PagamentosAssociation;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.*;
+import jakarta.transaction.Transactional;
+import lombok.EqualsAndHashCode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 
-
-public class PagamentosImpl implements PagamentosAssociation {
+@Service
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+public class PagamentosAssociationImpl implements PagamentosAssociation {
 
     @Autowired
     private PagamentosRepository pagamentosRepository;
@@ -45,6 +49,7 @@ public class PagamentosImpl implements PagamentosAssociation {
 
 
     @Override
+    @Transactional
     public void associarPagamentoComUsuario(Long pagamentoId, Long usuarioId) {
 
         Pagamentos pagamentoEncontrado = pagamentosService.getPagamentoById(pagamentoId);
@@ -71,6 +76,7 @@ public class PagamentosImpl implements PagamentosAssociation {
     }
 
     @Override
+    @Transactional
     public void associarPagamentoATransacao(Long pagamentoId, Long transacaoId) {
 
         Pagamentos pagamentoEncontrado = pagamentosService.getPagamentoById(pagamentoId);
@@ -105,6 +111,7 @@ public class PagamentosImpl implements PagamentosAssociation {
     }
 
     @Override
+    @Transactional
     public void associarPagamentoComConta(Long pagamentoId, Long contaId) {
 
         Pagamentos pagamentoEncontrado = pagamentosService.getPagamentoById(pagamentoId);
@@ -138,6 +145,7 @@ public class PagamentosImpl implements PagamentosAssociation {
     }
 
     @Override
+    @Transactional
     public void associarPagamentoComCategoria(Long pagamentoId, Long categoriaId) {
 
         Pagamentos pagamentoEncontrado = pagamentosService.getPagamentoById(pagamentoId);
@@ -169,6 +177,7 @@ public class PagamentosImpl implements PagamentosAssociation {
     }
 
     @Override
+    @Transactional
     public void desassociarPagamentoUsuario(Long pagamentoId, Long usuarioId) {
         Pagamentos pagamentoEncontrado = pagamentosService.getPagamentoById(pagamentoId);
 
@@ -190,6 +199,7 @@ public class PagamentosImpl implements PagamentosAssociation {
     }
 
     @Override
+    @Transactional
     public void desassociarPagamentoDeTransacao(Long pagamentoId, Long transacaoId) {
 
         Pagamentos pagamentoEncontrado = pagamentosService.getPagamentoById(pagamentoId);
@@ -211,6 +221,7 @@ public class PagamentosImpl implements PagamentosAssociation {
     }
 
     @Override
+    @Transactional
     public void desassociarPagamentoConta(Long pagamentoId, Long contaId) {
         Pagamentos pagamentoEncontrado = pagamentosService.getPagamentoById(pagamentoId);
         ContaUsuario contaEncontrada = contaUsuarioService.getContaById(contaId);
@@ -231,11 +242,12 @@ public class PagamentosImpl implements PagamentosAssociation {
     }
 
     @Override
+    @Transactional
     public void desassociarPagamentoCategoria(Long pagamentoId, Long categoriaId) {
         Pagamentos pagamentoEncontrado = pagamentosService.getPagamentoById(pagamentoId);
         CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.getCategoriaById(categoriaId);
 
-        if(!categoriaEncontrada.getPagamentosRelacionados().contains(pagamentoEncontrado)||
+        if(!categoriaEncontrada.getPagamentosRelacionados().contains(pagamentoEncontrado) ||
         !pagamentoEncontrado.getCategoriasRelacionadas().contains(categoriaEncontrada)){
             throw new DesassociationErrorException("a id desse pagamento " + pagamentoId + " " +
                     "não é associado a essa categoria com esse id: " + categoriaId);

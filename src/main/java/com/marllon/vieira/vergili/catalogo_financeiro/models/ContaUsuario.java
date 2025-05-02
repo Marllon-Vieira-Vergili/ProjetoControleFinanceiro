@@ -28,13 +28,14 @@ import java.util.NoSuchElementException;
 @Setter(AccessLevel.PUBLIC)
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 @AllArgsConstructor(access = AccessLevel.PUBLIC)
-@EqualsAndHashCode(of = {"nome", "saldo"})
+@EqualsAndHashCode(of = {"nome", "saldo", "tipoConta"})
 @ToString(of = {"id","nome", "saldo"})
 public class ContaUsuario {
 
     @Id
     @Column(name = "id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(name = "nome", nullable = false)

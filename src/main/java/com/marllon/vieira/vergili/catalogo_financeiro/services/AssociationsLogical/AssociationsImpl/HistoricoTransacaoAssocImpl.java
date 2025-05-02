@@ -6,11 +6,16 @@ import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.HistoricoTransacaoAssociation;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.*;
+import jakarta.transaction.Transactional;
+import lombok.EqualsAndHashCode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 
-public class HistoricoTransacaoImpl implements HistoricoTransacaoAssociation {
+@Service
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+public class HistoricoTransacaoAssocImpl implements HistoricoTransacaoAssociation {
 
     @Autowired
     private PagamentosRepository pagamentosRepository;
@@ -44,6 +49,7 @@ public class HistoricoTransacaoImpl implements HistoricoTransacaoAssociation {
 
 
     @Override
+    @Transactional
     public void associarTransacaoComPagamento(Long transacaoId, Long pagamentoId) {
         HistoricoTransacao transacaoEncontrada = historicoTransacaoService.getHistoricoTransacaoById(transacaoId);
         Pagamentos pagamentoEncontrado = pagamentosService.getPagamentoById(pagamentoId);
@@ -74,6 +80,7 @@ public class HistoricoTransacaoImpl implements HistoricoTransacaoAssociation {
     }
 
     @Override
+    @Transactional
     public void associarTransacaoComConta(Long transacaoId, Long contaId) {
         HistoricoTransacao transacaoEncontrada = historicoTransacaoService.getHistoricoTransacaoById(transacaoId);
         ContaUsuario contaEncontrada = contaUsuarioService.getContaById(contaId);
@@ -91,24 +98,70 @@ public class HistoricoTransacaoImpl implements HistoricoTransacaoAssociation {
     }
 
     @Override
+    @Transactional
     public void associarTransacaoComUsuario(Long transacaoId, Long usuarioId) {
         HistoricoTransacao transacaoEncontrada = historicoTransacaoService.getHistoricoTransacaoById(transacaoId);
         Usuario usuarioEncontrado = usuariosService.getUsuarioById(usuarioId);
+
+
+        //Verificar do lado do usuário quanto a transações se a lista não está vazia
+        if(usuarioEncontrado.getTransacoesRelacionadas() == null){
+            usuarioEncontrado.setTransacoesRelacionadas(new ArrayList<>());
+        }
+
+        //Verificar de ambos os lados se já não possui essa associação feita
+        if(transacaoEncontrada.getUsuarioRelacionado().getId().equals(usuarioEncontrado.getId())
+                ||usuarioEncontrado.getTransacoesRelacionadas().contains(transacaoEncontrada)){
+            throw new AssociationErrorException("Essa transação com o id: " + transacaoId + " ja está associado" +
+                    " a esse usuário " + usuarioId);
+        }
+
+        //Senão.. associar
+        usuarioEncontrado.getTransacoesRelacionadas().add(transacaoEncontrada);
+        transacaoEncontrada.setUsuarioRelacionado(usuarioEncontrado);
+
+        //Realizar o salvamento
+        usuarioRepository.save(usuarioEncontrado);
+        historicoTransacaoRepository.save(transacaoEncontrada);
     }
 
     @Override
+    @Transactional
     public void associarTransacaoComCategoria(Long transacaoId, Long categoriaId) {
         HistoricoTransacao transacaoEncontrada = historicoTransacaoService.getHistoricoTransacaoById(transacaoId);
         CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.getCategoriaById(categoriaId);
+
+        //Verificar se ambas as listas de transação e categorias não serão inicializadas vazia
+        if(transacaoEncontrada.getCategoriasRelacionadas() == null){
+            transacaoEncontrada.setCategoriasRelacionadas(new ArrayList<>());
+        }
+        if(categoriaEncontrada.getTransacoesRelacionadas() == null){
+            categoriaEncontrada.setTransacoesRelacionadas(new ArrayList<>());
+        }
+
+        //Verificar se em ambos os lados já não possui essa associação realizada
+        if(categoriaEncontrada.getTransacoesRelacionadas().contains(transacaoEncontrada) ||
+                transacaoEncontrada.getCategoriasRelacionadas().contains(categoriaEncontrada)){
+            throw new AssociationErrorException("Essa transação com o id: " + transacaoId + " ja está associado" +
+                    " a essa categoria " + categoriaId);
+        }
+        //Senão... associar em ambos os lados
+        transacaoEncontrada.getCategoriasRelacionadas().add(categoriaEncontrada);
+        categoriaEncontrada.getTransacoesRelacionadas().add(transacaoEncontrada);
+
+        //Realizar o salvamento em ambos os lados
+        historicoTransacaoRepository.save(transacaoEncontrada);
+        categoriaFinanceiraRepository.save(categoriaEncontrada);
     }
 
     @Override
+    @Transactional
     public void desassociarTransacaoDePagamento(Long transacaoId, Long pagamentoId) {
         HistoricoTransacao transacaoEncontrada = historicoTransacaoService.getHistoricoTransacaoById(transacaoId);
         Pagamentos pagamentoEncontrado = pagamentosService.getPagamentoById(pagamentoId);
 
         //Verificar se essa transação está associado a essa conta
-        if(!pagamentoEncontrado.getTransacoesRelacionadas().contains(transacaoEncontrada) &&
+        if(!pagamentoEncontrado.getTransacoesRelacionadas().contains(transacaoEncontrada) ||
                 !transacaoEncontrada.getPagamentosRelacionados().contains(pagamentoEncontrado)){
             throw new DesassociationErrorException("a id desse histórico de transacao " + transacaoId + " " +
                     "não é associado a esse pagamento com essa id: " + pagamentoId);
@@ -124,6 +177,7 @@ public class HistoricoTransacaoImpl implements HistoricoTransacaoAssociation {
     }
 
     @Override
+    @Transactional
     public void desassociarTransacaoDeConta(Long transacaoId, Long contaId) {
         HistoricoTransacao transacaoEncontrada = historicoTransacaoService.getHistoricoTransacaoById(transacaoId);
         ContaUsuario contaEncontrada = contaUsuarioService.getContaById(contaId);
@@ -145,6 +199,7 @@ public class HistoricoTransacaoImpl implements HistoricoTransacaoAssociation {
     }
 
     @Override
+    @Transactional
     public void desassociarTransacaoDeUsuario(Long transacaoId, Long usuarioId) {
         HistoricoTransacao transacaoEncontrada = historicoTransacaoService.getHistoricoTransacaoById(transacaoId);
         Usuario usuarioEncontrado = usuariosService.getUsuarioById(usuarioId);
@@ -166,6 +221,7 @@ public class HistoricoTransacaoImpl implements HistoricoTransacaoAssociation {
     }
 
     @Override
+    @Transactional
     public void desassociarTransacaoDeCategoria(Long transacaoId, Long categoriaId) {
         HistoricoTransacao transacaoEncontrada = historicoTransacaoService.getHistoricoTransacaoById(transacaoId);
         CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.getCategoriaById(categoriaId);

@@ -11,14 +11,7 @@ public interface ContaUsuarioAssociation {
 
     // ======================== MÈTODOS DE ASSOCIAÇÂO E DESASSOCIAÇÂO DESSA ENTIDADE ========================
 
-    /**
-     * Associa um tipo de conta (enum) à conta do usuário.
-     *
-     * @param contaId     identificador da conta.
-     * @param tiposConta  tipo de conta a ser associado.
-     * @throws AssociationErrorException se a conta não for encontrada ou se o tipo já estiver associado.
-     */
-    void associarTipoConta(Long contaId, TiposContas tiposConta);
+
 
     /**
      * Associa uma categoria financeira a uma conta de usuário.
@@ -38,7 +31,7 @@ public interface ContaUsuarioAssociation {
      * @throws AssociationErrorException se a conta ou pagamento não forem encontrados,
      *                                   ou se a associação já existir.
      */
-    void associarContaComPagamentos(Long contaId, Long pagamentoId);
+    void associarContaComPagamento(Long contaId, Long pagamentoId);
 
     /**
      * Associa uma transação a uma conta de usuário.
@@ -48,7 +41,7 @@ public interface ContaUsuarioAssociation {
      * @throws AssociationErrorException se a conta ou transação não forem encontrados,
      *                                   ou se a associação já existir.
      */
-    void associarContaComTransacoes(Long contaId, Long transacaoId);
+    void associarContaComTransacao(Long contaId, Long transacaoId);
 
     /**
      * Associa um usuário à conta.
@@ -71,17 +64,17 @@ public interface ContaUsuarioAssociation {
      * @throws DesassociationErrorException se a conta ou categoria não forem encontrados,
      *                                      ou se a associação não existir.
      */
-    void desassociarContaDeCategorias(Long contaId, Long categoriaId);
+    void desassociarContaDeCategoria(Long contaId, Long categoriaId);
 
     /**
      * Remove a associação entre uma conta e um pagamento.
      *
      * @param contaId     identificador da conta.
-     * @param categoriaId identificador do pagamento (verificar se o nome está correto).
+     * @param pagamentoId identificador do pagamento.
      * @throws DesassociationErrorException se a conta ou pagamento não forem encontrados,
      *                                      ou se a associação não existir.
      */
-    void desassociarContaDePagamento(Long contaId, Long categoriaId); // categoriaId deve ser pagamentoId?
+    void desassociarContaDePagamento(Long contaId, Long pagamentoId);
 
     /**
      * Remove a associação entre uma conta e um histórico de transação.
@@ -93,15 +86,7 @@ public interface ContaUsuarioAssociation {
      */
     void desassociarContaDeHistoricoDeTransacao(Long contaId, Long historicoId);
 
-    /**
-     * Remove a associação entre uma conta e um tipo de conta
-     *
-     * @param contaid    identificador da conta.
-     * @param tiposContas o tipo de conta encontrado
-     * @throws DesassociationErrorException se a conta ou transação não forem encontrados,
-     *                                      ou se a associação não existir.
-     */
-    void desassociarContaDeTipoConta(Long contaid, TiposContas tiposContas);
+
 
     /**
      * Remove a associação entre uma conta e um usuário.
