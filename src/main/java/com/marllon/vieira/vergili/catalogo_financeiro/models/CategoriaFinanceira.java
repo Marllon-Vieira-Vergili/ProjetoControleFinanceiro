@@ -1,13 +1,8 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models;
 
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.JaExisteException;
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.SubTipoNaoEncontrado;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.hibernate.ObjectNotFoundException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,10 +45,6 @@ public class CategoriaFinanceira {
     @Enumerated(EnumType.STRING)
     private SubTipoCategoria subTipo;
 
-    //Construtor dos enum
-    public CategoriaFinanceira(TiposCategorias categoria, SubTipoCategoria subTipoCategoria) {
-
-    }
 
 
     //----------------------------------------RELACIONAMENTOS--------------------------------------------------------//
@@ -64,8 +55,7 @@ public class CategoriaFinanceira {
      * qualquer conta(corrente, poupança, etc..)
      *
      */
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH,
-            CascadeType.PERSIST, CascadeType.DETACH, CascadeType.MERGE})
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH, CascadeType.DETACH, CascadeType.MERGE})
     @JoinColumn(name = "conta_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_categoria_conta"))
     //Categoria será associada a id da conta
     private ContaUsuario contaRelacionada;

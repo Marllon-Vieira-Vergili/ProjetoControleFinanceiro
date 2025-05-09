@@ -5,8 +5,8 @@ import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInv
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.SubTipoNaoEncontrado;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.SubTipoCategoria;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.TiposCategorias;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.CategoriaFinanceiraAssociation;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.*;
@@ -17,8 +17,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 
-import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias.DESPESA;
-import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias.RECEITA;
+import static com.marllon.vieira.vergili.catalogo_financeiro.models.TiposCategorias.DESPESA;
+import static com.marllon.vieira.vergili.catalogo_financeiro.models.TiposCategorias.RECEITA;
 
 @Service
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)

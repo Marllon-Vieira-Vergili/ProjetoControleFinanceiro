@@ -1,6 +1,6 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc;
 
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.TiposCategorias;
 
 import java.util.Arrays;
 

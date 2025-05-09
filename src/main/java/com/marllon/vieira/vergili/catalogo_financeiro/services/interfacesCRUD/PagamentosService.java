@@ -2,22 +2,17 @@ package com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD;
 
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.PagamentosRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.PagamentosResponse;
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.AssociationErrorException;
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.JaExisteException;
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.HistoricoTransacaoNaoEncontrado;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.PagamentoNaoEncontrado;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.SubTipoNaoEncontrado;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.HistoricoTransacao;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.Pagamentos;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.TiposCategorias;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 
 public interface PagamentosService  {

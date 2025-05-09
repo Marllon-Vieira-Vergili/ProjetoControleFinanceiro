@@ -1,8 +1,6 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -24,7 +22,7 @@ import java.util.List;
 @Setter(AccessLevel.PUBLIC)
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 @AllArgsConstructor(access = AccessLevel.PUBLIC)
-@EqualsAndHashCode(of = {"valor", "data", "descricao", "categoria", "subTipo"})
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(of = {"id","valor", "data", "descricao", "categoria"})
 public class Pagamentos{
 
@@ -48,16 +46,6 @@ public class Pagamentos{
     @Column(name = "descricao", length = 255,nullable = false)
     @NotBlank(message = "O campo descrição não pode ficar vazio!")
     private String descricao;
-
-    @Column(name = "categoria",nullable = false)
-    @NotNull(message = "O campo de categoria não pode ser null!")
-    @Enumerated(EnumType.STRING)
-    private TiposCategorias categoria;
-
-    @NotNull(message = "O campo SubtTipo não pode ser nulo")
-    @Column(name = "subtipo_pagamento",nullable = false)
-    @Enumerated(EnumType.STRING)
-    private SubTipoCategoria subTipo;
 
 
     //RELACIONAMENTOS

@@ -11,7 +11,7 @@ import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira
 import com.marllon.vieira.vergili.catalogo_financeiro.models.ContaUsuario;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.HistoricoTransacao;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.Pagamentos;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.TiposContas;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.ContaUsuarioRepository;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.ContaUsuarioAssociation;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.ContaUsuarioService;
@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas.CONTA_CORRENTE;
+import static com.marllon.vieira.vergili.catalogo_financeiro.models.TiposContas.CONTA_CORRENTE;
 
 @Service
 public class ContaUsuarioImpl implements ContaUsuarioService {

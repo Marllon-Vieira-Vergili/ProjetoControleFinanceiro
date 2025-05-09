@@ -1,7 +1,7 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.repository;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.SubTipoCategoria;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.TiposCategorias;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

@@ -2,10 +2,8 @@ package com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogi
 
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.AssociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.CategoriaNaoEncontrada;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.SubTipoCategoria;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.TiposCategorias;
 
 public interface CategoriaFinanceiraAssociation {
 

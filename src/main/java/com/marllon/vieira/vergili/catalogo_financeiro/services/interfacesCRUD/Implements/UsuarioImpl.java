@@ -10,7 +10,7 @@ import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.Usu
 import com.marllon.vieira.vergili.catalogo_financeiro.mapper.ContaUsuarioMapper;
 import com.marllon.vieira.vergili.catalogo_financeiro.mapper.UsuarioMapper;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.TiposContas;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.ContaUsuarioRepository;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.UsuarioRepository;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.UsuariosAssociation;

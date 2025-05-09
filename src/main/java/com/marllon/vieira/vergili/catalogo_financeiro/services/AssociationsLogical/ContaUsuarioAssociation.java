@@ -2,7 +2,6 @@ package com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogi
 
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.AssociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas;
 
 public interface ContaUsuarioAssociation {
 

@@ -1,6 +1,7 @@
-package com.marllon.vieira.vergili.catalogo_financeiro.models.enums;
+package com.marllon.vieira.vergili.catalogo_financeiro.models;
 
-import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.AssociationErrorException;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.CategoriaNaoEncontrada;
 import lombok.AccessLevel;
 import lombok.Getter;
 
@@ -32,19 +33,19 @@ public enum TiposCategorias {
 
 
     //Criando um método para buscar a categoria pelo numero dela(se necessário)
-    public static Optional<TiposCategorias> buscarCategoriasPeloNumero(int valor){
-        for(TiposCategorias tipoCategoria: TiposCategorias.values()){
-            if(tipoCategoria.getValor() == valor){
-                return Optional.of(tipoCategoria);
+    public static TiposCategorias buscarCategoriasPeloNumero(int valor) {
+        for (TiposCategorias tipoCategoria : TiposCategorias.values()) {
+            if (valor == tipoCategoria.getValor()) {
+                return tipoCategoria;
             }
         }
-        return Optional.empty();
+        throw new CategoriaNaoEncontrada("Não foi encontrada nenhuma categoria com essa id atrelado a ela");
     }
 
     //Criando um método para buscar a categoria pelo nome dela(se necessario)
-    public static Optional<TiposCategorias> buscarCategoriasPeloNome(String nome){
+    public static Optional<TiposCategorias> buscarCategoriasPeloNome(TiposCategorias nome){
         for(TiposCategorias tipoCategoria: TiposCategorias.values()){
-            if(tipoCategoria.name().equalsIgnoreCase(nome)){
+            if(tipoCategoria.name().equalsIgnoreCase(String.valueOf(nome))){
                 return Optional.of(tipoCategoria);
             }
         }
@@ -72,16 +73,13 @@ public enum TiposCategorias {
                         (RECEITA.name())).toList());
         }
 
-        public static TiposCategorias associarTipoCategoriaASubcategoriaPretendida
+        public static TiposCategorias verificarAssociacaoEntreTipoECategoria
                 (TiposCategorias categoria, SubTipoCategoria subTipoCategoria){
 
-        if(categoria == TiposCategorias.RECEITA && subTipoCategoria.getTiposCategorias() == (TiposCategorias.RECEITA)){
-            return new CategoriaFinanceira(categoria, subTipoCategoria).getTiposCategorias();
-            } else if (categoria == TiposCategorias.DESPESA && subTipoCategoria.getTiposCategorias() ==
-                TiposCategorias.DESPESA) {
-                    return new CategoriaFinanceira(categoria,subTipoCategoria).getTiposCategorias();
+            if(subTipoCategoria.getTiposCategorias().equals(categoria)){
+                return categoria;
             }
-            return categoria;
+            throw new AssociationErrorException("Esse subtipo de Categoria não está associado a essa categoria informada");
         }
     }
 

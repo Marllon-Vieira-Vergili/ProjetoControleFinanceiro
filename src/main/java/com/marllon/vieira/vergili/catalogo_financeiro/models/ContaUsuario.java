@@ -1,19 +1,14 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models;
 
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.JaExisteException;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
-import org.hibernate.ObjectNotFoundException;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 
 /**
@@ -28,7 +23,7 @@ import java.util.NoSuchElementException;
 @Setter(AccessLevel.PUBLIC)
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 @AllArgsConstructor(access = AccessLevel.PUBLIC)
-@EqualsAndHashCode(of = {"nome", "saldo", "tipoConta"})
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(of = {"id","nome", "saldo"})
 public class ContaUsuario {
 

@@ -1,7 +1,5 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -11,7 +9,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 
 /**registrar cada movimentação financeira Gerenciando contas, pagamentos e categorias, (histórico)
@@ -24,7 +21,7 @@ import java.util.NoSuchElementException;
 @Setter(AccessLevel.PUBLIC)
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 @AllArgsConstructor(access = AccessLevel.PUBLIC)
-@EqualsAndHashCode(of = {"valor", "data", "descricao", "categorias", "subTipo"})
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(of = {"id", "valor", "data", "descricao", "categorias"})
 public class HistoricoTransacao {
 
@@ -52,15 +49,6 @@ public class HistoricoTransacao {
             message = "Descrição contém caracteres inválidos!")
     private String descricao;
 
-    @NotNull(message = "O campo de categoria não pode ser null!")
-    @Column(name = "categoria", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private TiposCategorias categorias;
-
-    @NotNull(message = "O campo SubtTipo não pode ser nulo")
-    @Column(name = "subtipo_transacao",nullable = false)
-    @Enumerated(EnumType.STRING)
-    private SubTipoCategoria subTipo;
 
 
     //Relacionamentos

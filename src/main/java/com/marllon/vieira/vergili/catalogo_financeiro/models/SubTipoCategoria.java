@@ -1,4 +1,4 @@
-package com.marllon.vieira.vergili.catalogo_financeiro.models.enums;
+package com.marllon.vieira.vergili.catalogo_financeiro.models;
 import lombok.AccessLevel;
 import lombok.Getter;
 
@@ -21,7 +21,8 @@ public enum SubTipoCategoria {
     LAZER(7,TiposCategorias.DESPESA),
     COMBUSTIVEL(8,TiposCategorias.DESPESA),
     ALIMENTACAO(9,TiposCategorias.DESPESA),
-    EMPRESTIMOS(10,TiposCategorias.DESPESA),
+    DESPESA_ALUGUEL(10,TiposCategorias.DESPESA),
+    EMPRESTIMOS(11, TiposCategorias.DESPESA),
 
 //Receitas
     SALARIO(20,TiposCategorias.RECEITA),
@@ -29,7 +30,7 @@ public enum SubTipoCategoria {
     HERANCA(22,TiposCategorias.RECEITA),
     DIVIDENDOS(23,TiposCategorias.RECEITA),
     RENDA_FIXA(24,TiposCategorias.RECEITA),
-    ALUGUEL(25,TiposCategorias.RECEITA),
+    RENDA_ALUGUEL(25,TiposCategorias.RECEITA),
     OUTROS(26,TiposCategorias.RECEITA);
 
 
@@ -56,14 +57,30 @@ public enum SubTipoCategoria {
     }
 
     //Método customizado para encontrar a opção pelo número(se necessário)
-    public static Optional<SubTipoCategoria> encontrarSubTipoCategoriaPeloNumero(int numero){
+    public static SubTipoCategoria encontrarSubTipoCategoriaPeloNumero(int numero){
         for(SubTipoCategoria subtipoEncontrado: SubTipoCategoria.values()){
             if(subtipoEncontrado.getValor() == numero){
-                return Optional.of(subtipoEncontrado);
+                return subtipoEncontrado;
             }
         }
-        return Optional.empty();
+        return null;
     }
-
-
+    //Método para retornar valores RECEITA
+    public boolean isTipoCategoriaReceita(){
+        for(SubTipoCategoria subtipoEncontrado: SubTipoCategoria.values()){
+            if(subtipoEncontrado.getTiposCategorias().equals(TiposCategorias.RECEITA)){
+                return true;
+            }
+        }
+        return false;
+    }
+    //Método para retornar valores DESPESA
+    public boolean isTipoCategoriaDespesa(){
+        for(SubTipoCategoria subtipoEncontrado: SubTipoCategoria.values()){
+            if(subtipoEncontrado.getTiposCategorias().equals(TiposCategorias.DESPESA)){
+                return true;
+            }
+        }
+        return false;
+    }
 }

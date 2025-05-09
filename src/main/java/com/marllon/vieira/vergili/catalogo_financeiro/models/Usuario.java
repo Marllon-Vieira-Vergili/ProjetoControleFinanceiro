@@ -25,7 +25,7 @@ import java.util.NoSuchElementException;
 @Setter(AccessLevel.PUBLIC)
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 @AllArgsConstructor(access = AccessLevel.PUBLIC)
-@EqualsAndHashCode(of = {"id"})
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(of = {"id", "nome", "telefone"})
 public class Usuario {
 

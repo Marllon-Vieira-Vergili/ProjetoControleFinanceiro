@@ -1,9 +1,8 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.DTO.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
-import jakarta.persistence.Column;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.SubTipoCategoria;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.TiposCategorias;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Min;
@@ -45,6 +44,15 @@ public record PagamentosRequest(
 
                                 @NotNull(message = "O campo SubtTipo não pode ser nulos")
                                 @Enumerated(EnumType.STRING)
-                                SubTipoCategoria subTipoCategoria) {
+                                SubTipoCategoria subTipoCategoria,
+
+                                @NotNull(message = "O campo id da categoria não pode ser nulo")
+                                Long idCategoriaFinanceira,
+
+                                @NotNull(message = "O campo id do usuário criado não pode ser nulo")
+                                Long idUsuarioCriado,
+
+                                @NotNull(message = "O campo id da conta do usuário criada não pode ser nulo!")
+                                Long idContaUsuario){
 }
 

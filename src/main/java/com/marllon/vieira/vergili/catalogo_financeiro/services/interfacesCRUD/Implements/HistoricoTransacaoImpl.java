@@ -9,12 +9,11 @@ import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.His
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.UsuarioNaoEncontrado;
 import com.marllon.vieira.vergili.catalogo_financeiro.mapper.HistoricoTransacaoMapper;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.TiposCategorias;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.HistoricoTransacaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -24,10 +23,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias.DESPESA;
-import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias.RECEITA;
+import static com.marllon.vieira.vergili.catalogo_financeiro.models.TiposCategorias.DESPESA;
+import static com.marllon.vieira.vergili.catalogo_financeiro.models.TiposCategorias.RECEITA;
 
 @Service
 public class HistoricoTransacaoImpl implements HistoricoTransacaoService {
@@ -83,13 +81,17 @@ public class HistoricoTransacaoImpl implements HistoricoTransacaoService {
         if(todosHistoricosEncontrados.isEmpty()){
             throw new NoSuchElementException("Não há nenhum elemento de histórico de transação salvo");
         }
-
+/*
         return new PageImpl<>(todosHistoricosEncontrados.stream().map(historico
                 -> new HistoricoTransacaoResponse(historico.getId(),
                 historico.getValor(),
                 historico.getData(),
                 historico.getDescricao(), historico.getCategorias())).collect(Collectors.toList()));
+
+ */
+        return null;
     }
+
 
     @Override
     public List<HistoricoTransacaoResponse> encontrarHistoricoTransacaoPorUsuario(Long usuarioId) {

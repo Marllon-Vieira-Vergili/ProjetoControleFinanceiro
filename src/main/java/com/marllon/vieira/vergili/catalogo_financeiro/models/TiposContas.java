@@ -1,8 +1,9 @@
-package com.marllon.vieira.vergili.catalogo_financeiro.models.enums;
+package com.marllon.vieira.vergili.catalogo_financeiro.models;
 import lombok.AccessLevel;
 import lombok.Getter;
 
-import java.util.NoSuchElementException;
+import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -40,9 +41,9 @@ public enum TiposContas {
     }
 
     //Criando um método para buscar o tipo de conta pelo nome dela(se necessario)
-    public static boolean buscarTipoContaPeloNome(String nome){
+    public static boolean buscarTipoContaPeloNome(TiposContas conta){
         for(TiposContas tiposContas: TiposContas.values()){
-            if(tiposContas.name().equals(nome)){
+            if(tiposContas.name().equals(conta.name())){
                 return true;
             }
         }
@@ -50,10 +51,7 @@ public enum TiposContas {
     }
 
     //Metodo para mostrar todos os tipos de contas
-    public static String todosTiposValidos(){
-        for(TiposContas tiposContas: TiposContas.values()){
-            return tiposContas.name();
+    public static List<TiposContas> todosTiposValidos(){
+            return Arrays.asList(TiposContas.values());
         }
-        throw new NoSuchElementException("Nenhum tipo de conta encontrado");
     }
-}

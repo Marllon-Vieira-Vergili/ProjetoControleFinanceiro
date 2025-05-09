@@ -1,14 +1,9 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.HistoricoTransacaoRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.HistoricoTransacaoResponse;
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.AssociationErrorException;
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.JaExisteException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.*;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.ContaUsuario;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.HistoricoTransacao;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.TiposCategorias;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;

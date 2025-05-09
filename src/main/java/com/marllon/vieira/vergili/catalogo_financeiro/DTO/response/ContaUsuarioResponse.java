@@ -1,7 +1,7 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.DTO.response;
 
 
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.TiposContas;
 import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;

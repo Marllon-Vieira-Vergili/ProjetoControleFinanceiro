@@ -2,18 +2,20 @@ package com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.I
 
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.CategoriaFinanceiraRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.CategoriaFinanceiraResponse;
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.PagamentosResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.JaExisteException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.CategoriaNaoEncontrada;
 import com.marllon.vieira.vergili.catalogo_financeiro.mapper.CategoriaFinanceiraMapper;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.HistoricoTransacao;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.Pagamentos;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.SubTipoCategoria;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.TiposCategorias;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.CategoriaFinanceiraRepository;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.CategoriaFinanceiraAssociation;
-import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.CategoriaFinanceiraService;
+import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -25,8 +27,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias.DESPESA;
-import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias.RECEITA;
+import static com.marllon.vieira.vergili.catalogo_financeiro.models.TiposCategorias.DESPESA;
+import static com.marllon.vieira.vergili.catalogo_financeiro.models.TiposCategorias.RECEITA;
 
 @Service
 public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
@@ -37,6 +39,18 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
 
     @Autowired
     private CategoriaFinanceiraAssociation categoriaFinanceiraAssociation;
+
+    @Autowired
+    private ContaUsuarioService contaUsuarioService;
+
+    @Autowired
+    private UsuariosService usuariosService;
+
+    @Autowired
+    private PagamentosService pagamentosService;
+
+    @Autowired
+    private HistoricoTransacaoService historicoTransacaoService;
 
     @Autowired
     private CategoriaFinanceiraMapper categoriaFinanceiraMapper;
@@ -63,10 +77,18 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
             }
         }
 
+        //Verificar se já existe uma categoria já criada igual
+        if(jaExisteUmaCategoriaIgual(categoriaNova)){
+            throw new JaExisteException("Já existe uma categoria igual criada");
+        }
 
         //Salvar a categoria financeira
         categoriaFinanceiraRepository.save(categoriaNova);
 
+        //Associar a categoria aos pagamentos
+        List<PagamentosResponse> pagamentoEncontrado = pagamentosService.encontrarPagamentosPelaCategoriaCriada(categoriaNova.getId());
+        categoriaFinanceiraAssociation.associarCategoriaComPagamento(categoriaNova.getId(), pagamentoEncontrado.stream().map(
+                PagamentosResponse::id).count());
 
         //Retornar ao usuário
         return categoriaFinanceiraMapper.retornarDadosCategoria(categoriaNova);
@@ -208,7 +230,7 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
 
         //Verificar se o tipo é despesa
         Optional<TiposCategorias> tiposCategorias =
-                TiposCategorias.buscarCategoriasPeloNome(DESPESA.name());
+                TiposCategorias.buscarCategoriasPeloNome(DESPESA);
         //Se tiver presente, retornar
         return tiposCategorias.isPresent();
     }
@@ -219,7 +241,7 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService {
 
         //Verificar se o tipo é receita
         Optional<TiposCategorias> tiposCategorias =
-                TiposCategorias.buscarCategoriasPeloNome(RECEITA.name());
+                TiposCategorias.buscarCategoriasPeloNome(RECEITA);
 
         return tiposCategorias.isPresent();
     }

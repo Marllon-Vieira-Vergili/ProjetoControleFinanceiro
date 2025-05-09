@@ -4,14 +4,10 @@ import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.ContaUsuarioRe
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.UsuarioRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.ContaUsuarioResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.UsuarioResponse;
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.AssociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.HistoricoTransacaoNaoEncontrado;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.UsuarioNaoEncontrado;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.HistoricoTransacao;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.Usuario;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.TiposContas;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

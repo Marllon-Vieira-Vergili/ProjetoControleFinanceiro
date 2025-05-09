@@ -2,24 +2,25 @@ package com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.I
 
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.PagamentosRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.PagamentosResponse;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.AssociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.mapper.PagamentoMapper;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.HistoricoTransacao;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.Pagamentos;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.Usuario;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.TiposCategorias;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.CategoriaFinanceiraRepository;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.HistoricoTransacaoRepository;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.PagamentosRepository;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.UsuarioRepository;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.PagamentosAssociation;
+import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.CategoriaFinanceiraService;
+import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.ContaUsuarioService;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.PagamentosService;
+import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.UsuariosService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import javax.management.RuntimeErrorException;
@@ -30,8 +31,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias.DESPESA;
-import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias.RECEITA;
+import static com.marllon.vieira.vergili.catalogo_financeiro.models.TiposCategorias.DESPESA;
+import static com.marllon.vieira.vergili.catalogo_financeiro.models.TiposCategorias.RECEITA;
 
 public class PagamentosImpl implements PagamentosService {
 
@@ -53,10 +54,25 @@ public class PagamentosImpl implements PagamentosService {
     @Autowired
     private CategoriaFinanceiraRepository categoriaFinanceiraRepository;
 
+    @Autowired
+    private CategoriaFinanceiraService categoriaFinanceiraService;
+
+    @Autowired
+    private ContaUsuarioService contaUsuarioService;
+
+    @Autowired
+    private UsuariosService usuarioService;
+
     @Override
+    @Transactional
     public PagamentosResponse criarRecebimento(PagamentosRequest request) {
 
+        //Verificar se os id's das associações existem
+        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.getCategoriaById(request.idCategoriaFinanceira());
+        ContaUsuario contaEncontrada = contaUsuarioService.getContaById(request.idContaUsuario());
+        Usuario usuarioEncontrado = usuarioService.getUsuarioById(request.idUsuarioCriado());
 
+        //Validação dos dados digitados pelo usuário
         if(request.data().isBefore(LocalDate.now()) ||
                 request.data().isAfter(LocalDate.now().plusMonths(1).withDayOfMonth(1))){
             throw new DadosInvalidosException("Por favor, digite uma data válida, de até 1 mês a frente!");
@@ -70,7 +86,7 @@ public class PagamentosImpl implements PagamentosService {
             throw new IllegalArgumentException("Não é possível criar novo recebimento, pois ja existe um recebimento igual criado!");
         }
 
-
+        //Criação do novo recebimento
         Pagamentos novoRecebimento;
         try {
             //Criar um novo valor
@@ -78,8 +94,6 @@ public class PagamentosImpl implements PagamentosService {
             novoRecebimento.setValor(request.valor());
             novoRecebimento.setData(request.data());
             novoRecebimento.setDescricao(request.descricao());
-            novoRecebimento.setCategoria(request.tipoCategoria());
-            novoRecebimento.setSubTipo(request.subTipoCategoria());
         }catch (RuntimeErrorException e){
             throw new RuntimeErrorException(new Error("Não foi possível criar o novo pagamento " + e.getTargetError()));
         }
@@ -91,23 +105,44 @@ public class PagamentosImpl implements PagamentosService {
             novoHistorico.setValor(novoRecebimento.getValor());
             novoHistorico.setData(novoRecebimento.getData());
             novoHistorico.setDescricao(novoRecebimento.getDescricao());
-            novoHistorico.setCategorias(novoRecebimento.getCategoria());
-            novoHistorico.setSubTipo(novoRecebimento.getSubTipo());
+
         } catch (RuntimeException e) {
             throw new RuntimeErrorException(new Error("Não foi possível criar um histórico de transação deste novo pagamento " + e.getCause()));
         }
 
-
-        //Salvar o pagamento e o histórico de pagamento
+        //Salvar o recebimento, para gerar a id, e depois realizar as associacoes
         pagamentosRepository.save(novoRecebimento);
         historicoTransacaoRepository.save(novoHistorico);
 
+        //Associar o recebimento ao histórico
+        novoRecebimento.getTransacoesRelacionadas().add(novoHistorico);
+        novoHistorico.getPagamentosRelacionados().add(novoRecebimento);
+
+
+        //Associar o Recebimento a uma categoria
+        if(sePagamentoForReceita() && request.tipoCategoria() == (RECEITA) &&
+                request.subTipoCategoria().isTipoCategoriaReceita()
+        && categoriaEncontrada.getTiposCategorias() == (RECEITA) &&
+                categoriaEncontrada.getSubTipo().isTipoCategoriaReceita()){
+            pagamentosAssociation.associarPagamentoComCategoria(novoRecebimento.getId(),categoriaEncontrada.getId());
+
+        }else{
+            throw new AssociationErrorException("Por favor, é necessário criar uma categoria antes");
+        }
+
+        //Associar o recebimento a uma conta de usuário
+        pagamentosAssociation.associarPagamentoComConta(novoRecebimento.getId(), request.idContaUsuario());
+
+        //Associar o recebimento a um usuário
+        pagamentosAssociation.associarPagamentoComUsuario(novoRecebimento.getId(), request.idUsuarioCriado());
 
 
         return pagamentoMapper.retornarDadosPagamento(novoRecebimento);
+
     }
 
     @Override
+    @Transactional
     public PagamentosResponse criarPagamento(PagamentosRequest request) {
 
         if(request.data().isBefore(LocalDate.now()) ||
@@ -131,8 +166,7 @@ public class PagamentosImpl implements PagamentosService {
             novoPagamento.setValor(request.valor());
             novoPagamento.setData(request.data());
             novoPagamento.setDescricao(request.descricao());
-            novoPagamento.setCategoria(request.tipoCategoria());
-            novoPagamento.setSubTipo(request.subTipoCategoria());
+
         }catch (RuntimeErrorException e){
             throw new RuntimeErrorException(new Error("Não foi possível criar o novo pagamento " + e.getTargetError()));
         }
@@ -144,8 +178,7 @@ public class PagamentosImpl implements PagamentosService {
             novoHistorico.setValor(novoPagamento.getValor());
             novoHistorico.setData(novoPagamento.getData());
             novoHistorico.setDescricao(novoPagamento.getDescricao());
-            novoHistorico.setCategorias(novoPagamento.getCategoria());
-            novoHistorico.setSubTipo(novoPagamento.getSubTipo());
+
         } catch (RuntimeException e) {
             throw new RuntimeErrorException(new Error("Não foi possível criar um histórico de transação deste novo pagamento " + e.getCause()));
         }
@@ -223,6 +256,7 @@ public class PagamentosImpl implements PagamentosService {
     }
 
     @Override
+    @Transactional
     public PagamentosResponse atualizarPagamento(Long id, PagamentosRequest request) {
 
         Pagamentos pagamentoEncontrado = getPagamentoById(id);
@@ -248,8 +282,7 @@ public class PagamentosImpl implements PagamentosService {
                 pagamentoEncontrado.setValor(request.valor());
                 pagamentoEncontrado.setData(request.data());
                 pagamentoEncontrado.setDescricao(request.descricao());
-                pagamentoEncontrado.setCategoria(request.tipoCategoria());
-                pagamentoEncontrado.setSubTipo(request.subTipoCategoria());
+
             }
 
         }catch (RuntimeErrorException e){
@@ -270,8 +303,7 @@ public class PagamentosImpl implements PagamentosService {
                 historicoPercorrido.setValor(pagamentoEncontrado.getValor());
                 historicoPercorrido.setData(pagamentoEncontrado.getData());
                 historicoPercorrido.setDescricao(pagamentoEncontrado.getDescricao());
-                historicoPercorrido.setCategorias(pagamentoEncontrado.getCategoria());
-                historicoPercorrido.setSubTipo(pagamentoEncontrado.getSubTipo());
+
 
                 historicoTransacaoRepository.save(historicoPercorrido);
             }
@@ -295,6 +327,7 @@ public class PagamentosImpl implements PagamentosService {
         if(todosPagamentosEncontrados.isEmpty()){
             throw new CategoriaNaoEncontrada("Não há nenhuma categoria salva na base de dados");
         }
+        /*
         List<PagamentosResponse> pagamentosResponses=
                 todosPagamentosEncontrados.stream()
                         .map(pagamentos -> new
@@ -304,8 +337,10 @@ public class PagamentosImpl implements PagamentosService {
                                 pagamentos.getDescricao(),
                                 pagamentos.getCategoria())).toList();
 
-        return new PageImpl<>(pagamentosResponses);
+         */
 
+        //return new PageImpl<>(pagamentosResponses);
+        return null;
     }
 
     @Override
@@ -367,7 +402,7 @@ public class PagamentosImpl implements PagamentosService {
 
         //Verificar se o tipo é despesa
         Optional<TiposCategorias> tiposCategorias =
-                TiposCategorias.buscarCategoriasPeloNome(DESPESA.name());
+                TiposCategorias.buscarCategoriasPeloNome(DESPESA);
         //Se tiver presente, retornar
         return tiposCategorias.isPresent();
     }
@@ -377,7 +412,7 @@ public class PagamentosImpl implements PagamentosService {
 
         //Verificar se o tipo é despesa
         Optional<TiposCategorias> tiposCategorias =
-                TiposCategorias.buscarCategoriasPeloNome(RECEITA.name());
+                TiposCategorias.buscarCategoriasPeloNome(RECEITA);
         //Se tiver presente, retornar
         return tiposCategorias.isPresent();
     }
