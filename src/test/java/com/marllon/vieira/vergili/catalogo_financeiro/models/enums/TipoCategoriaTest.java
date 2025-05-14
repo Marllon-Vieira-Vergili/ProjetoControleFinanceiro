@@ -1,7 +1,5 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models.enums;
 
-import com.marllon.vieira.vergili.catalogo_financeiro.models.SubTipoCategoria;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.TiposCategorias;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
@@ -9,7 +7,7 @@ import org.junit.jupiter.params.provider.*;
 import java.util.List;
 import java.util.Optional;
 
-import static com.marllon.vieira.vergili.catalogo_financeiro.models.SubTipoCategoria.*;
+import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.MethodName.class)

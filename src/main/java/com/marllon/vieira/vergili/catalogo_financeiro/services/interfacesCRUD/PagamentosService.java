@@ -6,7 +6,7 @@ import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.JaExiste
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.PagamentoNaoEncontrado;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.SubTipoNaoEncontrado;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.Pagamentos;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.TiposCategorias;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -42,7 +42,7 @@ public interface PagamentosService  {
      * @param id ID do pagamento.
      * @return PagamentosResponse contendo o pagamento encontrado
      */
-    PagamentosResponse encontrarPagamentoPorid(Long id);
+    Pagamentos encontrarPagamentoPorid(Long id);
 
     /**
      * Busca pagamentos por data.
@@ -58,7 +58,7 @@ public interface PagamentosService  {
      * @param categoriaId do id da categoria pretendida
      * @return Lista de pagamentos.
      */
-    List<PagamentosResponse> encontrarPagamentosPelaCategoriaCriada(Long categoriaId);
+    //List<PagamentosResponse> encontrarPagamentosPelaCategoriaCriada(Long categoriaId);
 
     /**
      * Busca pagamentos por usuário.
@@ -103,13 +103,6 @@ public interface PagamentosService  {
 
     // ======================== OPERAÇÕES ESPECÍFICAS ========================
 
-    /**
-     * EvitarCódigo BOILERPLATE, INSTANCIANDO EM TODOS OS MÈTODOS de verificação
-     *
-     * @param id ID do pagamento criado
-     * @throws PagamentoNaoEncontrado se não for encontrado o pagamento pela id
-     */
-    Pagamentos getPagamentoById(Long id);
 
     /**
      * Consulta o valor total dos pagamentos de uma conta.

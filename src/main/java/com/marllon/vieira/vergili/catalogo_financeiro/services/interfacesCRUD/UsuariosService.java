@@ -7,7 +7,7 @@ import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.UsuarioRespon
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.UsuarioNaoEncontrado;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.Usuario;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.TiposContas;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -33,10 +33,10 @@ public interface UsuariosService {
      * Busca um usuário pelo seu ID.
      *
      * @param id identificador único do usuário
-     * @return {@code Optional<UsuarioResponse>} com os dados, se encontrado
+     * @return {@code UsuarioResponse com os dados, se encontrado
      * @throws UsuarioNaoEncontrado se nenhum usuário for localizado
      */
-    Optional<UsuarioResponse> buscarUsuarioPorId(Long id);
+    Usuario encontrarUsuarioPorId(Long id);
 
     /**
      * Busca usuários que contenham o nome especificado.
@@ -72,13 +72,6 @@ public interface UsuariosService {
 
     // ======================== OPERAÇÕES ESPECÍFICAS ========================
 
-    /**
-     * EvitarCódigo BOILERPLATE, INSTANCIANDO EM TODOS OS MÈTODOS de verificação
-     *
-     * @param id ID do usuário
-     * @throws UsuarioNaoEncontrado se não for encontrado o usuário pela id.
-     */
-    Usuario getUsuarioById(Long id);
 
     /**
      * Retorna todas as contas associadas a um usuário específico.

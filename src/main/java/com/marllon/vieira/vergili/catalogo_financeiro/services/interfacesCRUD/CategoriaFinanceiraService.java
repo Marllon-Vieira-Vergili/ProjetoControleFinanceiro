@@ -4,8 +4,8 @@ import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.CategoriaFina
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.CategoriaNaoEncontrada;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.SubTipoCategoria;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.TiposCategorias;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import java.util.List;
@@ -28,10 +28,10 @@ public interface CategoriaFinanceiraService {
      * Busca uma categoria financeira pelo seu ID.
      *
      * @param id O ID da categoria a ser buscada.
-     * @return Retorna um Optional com a categoria encontrada ou vazio caso não encontre.
+     * @return Retorna a categoria encontrada ou vazio caso não encontre.
      * @throws CategoriaNaoEncontrada se os dados digitados forem inválidos.
      */
-    Optional<CategoriaFinanceiraResponse> encontrarCategoriaPorId(Long id);
+    CategoriaFinanceira encontrarCategoriaPorId(Long id);
 
     /**
      * Encontra as categorias financeiras de um determinado subtipo.
@@ -96,13 +96,6 @@ public interface CategoriaFinanceiraService {
     boolean tipoCategoriaExiste(TiposCategorias tipoCategoria);
 
 
-    /**
-     * EvitarCódigo BOILERPLATE, INSTANCIANDO EM TODOS OS MÈTODOS de verificação
-     *
-     * @param id ID da categoria.
-     * @throws CategoriaNaoEncontrada se não for encontrado a categoria pela id.
-     */
-    CategoriaFinanceira getCategoriaById(Long id);
 
     /**
      * Verifica se já existe uma categoria com os mesmos dados fornecidos (exceto o ID) no banco de dados.

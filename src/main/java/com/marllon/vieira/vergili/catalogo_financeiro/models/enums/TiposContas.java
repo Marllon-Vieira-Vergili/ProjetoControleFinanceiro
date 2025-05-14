@@ -1,4 +1,4 @@
-package com.marllon.vieira.vergili.catalogo_financeiro.models;
+package com.marllon.vieira.vergili.catalogo_financeiro.models.enums;
 import lombok.AccessLevel;
 import lombok.Getter;
 

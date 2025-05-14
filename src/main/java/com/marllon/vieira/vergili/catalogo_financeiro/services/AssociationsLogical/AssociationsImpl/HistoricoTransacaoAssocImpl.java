@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 
 @Service
+@Transactional
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class HistoricoTransacaoAssocImpl implements HistoricoTransacaoAssociation {
 
@@ -49,10 +50,9 @@ public class HistoricoTransacaoAssocImpl implements HistoricoTransacaoAssociatio
 
 
     @Override
-    @Transactional
     public void associarTransacaoComPagamento(Long transacaoId, Long pagamentoId) {
-        HistoricoTransacao transacaoEncontrada = historicoTransacaoService.getHistoricoTransacaoById(transacaoId);
-        Pagamentos pagamentoEncontrado = pagamentosService.getPagamentoById(pagamentoId);
+        HistoricoTransacao transacaoEncontrada = historicoTransacaoService.encontrarTransacaoPorid(transacaoId);
+        Pagamentos pagamentoEncontrado = pagamentosService.encontrarPagamentoPorid(pagamentoId);
 
         //Verificar se a lista de pagamentos relacionados a transação não está nula
         if(transacaoEncontrada.getPagamentosRelacionados() == null){
@@ -80,10 +80,9 @@ public class HistoricoTransacaoAssocImpl implements HistoricoTransacaoAssociatio
     }
 
     @Override
-    @Transactional
     public void associarTransacaoComConta(Long transacaoId, Long contaId) {
-        HistoricoTransacao transacaoEncontrada = historicoTransacaoService.getHistoricoTransacaoById(transacaoId);
-        ContaUsuario contaEncontrada = contaUsuarioService.getContaById(contaId);
+        HistoricoTransacao transacaoEncontrada = historicoTransacaoService.encontrarTransacaoPorid(transacaoId);
+        ContaUsuario contaEncontrada = contaUsuarioService.encontrarContaPorId(contaId);
 
         //Se do lado da conta relacionado as transações, estiver vazio a lista, instanciar uma nova lista
         if(contaEncontrada.getTransacoesRelacionadas() ==null){
@@ -98,10 +97,9 @@ public class HistoricoTransacaoAssocImpl implements HistoricoTransacaoAssociatio
     }
 
     @Override
-    @Transactional
     public void associarTransacaoComUsuario(Long transacaoId, Long usuarioId) {
-        HistoricoTransacao transacaoEncontrada = historicoTransacaoService.getHistoricoTransacaoById(transacaoId);
-        Usuario usuarioEncontrado = usuariosService.getUsuarioById(usuarioId);
+        HistoricoTransacao transacaoEncontrada = historicoTransacaoService.encontrarTransacaoPorid(transacaoId);
+        Usuario usuarioEncontrado = usuariosService.encontrarUsuarioPorId(usuarioId);
 
 
         //Verificar do lado do usuário quanto a transações se a lista não está vazia
@@ -126,10 +124,9 @@ public class HistoricoTransacaoAssocImpl implements HistoricoTransacaoAssociatio
     }
 
     @Override
-    @Transactional
     public void associarTransacaoComCategoria(Long transacaoId, Long categoriaId) {
-        HistoricoTransacao transacaoEncontrada = historicoTransacaoService.getHistoricoTransacaoById(transacaoId);
-        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.getCategoriaById(categoriaId);
+        HistoricoTransacao transacaoEncontrada = historicoTransacaoService.encontrarTransacaoPorid(transacaoId);
+        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.encontrarCategoriaPorId(categoriaId);
 
         //Verificar se ambas as listas de transação e categorias não serão inicializadas vazia
         if(transacaoEncontrada.getCategoriasRelacionadas() == null){
@@ -155,10 +152,9 @@ public class HistoricoTransacaoAssocImpl implements HistoricoTransacaoAssociatio
     }
 
     @Override
-    @Transactional
     public void desassociarTransacaoDePagamento(Long transacaoId, Long pagamentoId) {
-        HistoricoTransacao transacaoEncontrada = historicoTransacaoService.getHistoricoTransacaoById(transacaoId);
-        Pagamentos pagamentoEncontrado = pagamentosService.getPagamentoById(pagamentoId);
+        HistoricoTransacao transacaoEncontrada = historicoTransacaoService.encontrarTransacaoPorid(transacaoId);
+        Pagamentos pagamentoEncontrado = pagamentosService.encontrarPagamentoPorid(pagamentoId);
 
         //Verificar se essa transação está associado a essa conta
         if(!pagamentoEncontrado.getTransacoesRelacionadas().contains(transacaoEncontrada) ||
@@ -177,10 +173,9 @@ public class HistoricoTransacaoAssocImpl implements HistoricoTransacaoAssociatio
     }
 
     @Override
-    @Transactional
     public void desassociarTransacaoDeConta(Long transacaoId, Long contaId) {
-        HistoricoTransacao transacaoEncontrada = historicoTransacaoService.getHistoricoTransacaoById(transacaoId);
-        ContaUsuario contaEncontrada = contaUsuarioService.getContaById(contaId);
+        HistoricoTransacao transacaoEncontrada = historicoTransacaoService.encontrarTransacaoPorid(transacaoId);
+        ContaUsuario contaEncontrada = contaUsuarioService.encontrarContaPorId(contaId);
 
         //Verificar se essa transação está associado a essa conta
         if(!transacaoEncontrada.getContaRelacionada().equals(contaEncontrada) ||
@@ -199,10 +194,9 @@ public class HistoricoTransacaoAssocImpl implements HistoricoTransacaoAssociatio
     }
 
     @Override
-    @Transactional
     public void desassociarTransacaoDeUsuario(Long transacaoId, Long usuarioId) {
-        HistoricoTransacao transacaoEncontrada = historicoTransacaoService.getHistoricoTransacaoById(transacaoId);
-        Usuario usuarioEncontrado = usuariosService.getUsuarioById(usuarioId);
+        HistoricoTransacao transacaoEncontrada = historicoTransacaoService.encontrarTransacaoPorid(transacaoId);
+        Usuario usuarioEncontrado = usuariosService.encontrarUsuarioPorId(usuarioId);
 
         //Verificar se essa transação está associado a essa categoria
         if(!transacaoEncontrada.getUsuarioRelacionado().equals(usuarioEncontrado) ||
@@ -221,10 +215,9 @@ public class HistoricoTransacaoAssocImpl implements HistoricoTransacaoAssociatio
     }
 
     @Override
-    @Transactional
     public void desassociarTransacaoDeCategoria(Long transacaoId, Long categoriaId) {
-        HistoricoTransacao transacaoEncontrada = historicoTransacaoService.getHistoricoTransacaoById(transacaoId);
-        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.getCategoriaById(categoriaId);
+        HistoricoTransacao transacaoEncontrada = historicoTransacaoService.encontrarTransacaoPorid(transacaoId);
+        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.encontrarCategoriaPorId(categoriaId);
 
         //Verificar se essa transação está associado a essa categoria
         if(!categoriaEncontrada.getTransacoesRelacionadas().contains(transacaoEncontrada) ||

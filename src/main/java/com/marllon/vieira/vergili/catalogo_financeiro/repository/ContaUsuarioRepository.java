@@ -1,9 +1,12 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.repository;
+
 import com.marllon.vieira.vergili.catalogo_financeiro.models.ContaUsuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Repositório responsável pelas operações de persistência da entidade {@link ContaUsuario}.
@@ -30,7 +33,7 @@ public interface ContaUsuarioRepository extends JpaRepository<ContaUsuario, Long
      * @return a {@link ContaUsuario} correspondente, ou null se não for encontrada
      */
     @Query("SELECT c FROM ContaUsuario c WHERE c.nome = :nome")
-    ContaUsuario encontrarContaPeloNome(@Param("nome") String nome);
+    List<ContaUsuario> encontrarContaPeloNome(@Param("nome") String nome);
 
     /**
      * Busca uma conta com base no saldo exato.
@@ -40,7 +43,7 @@ public interface ContaUsuarioRepository extends JpaRepository<ContaUsuario, Long
      * @return a {@link ContaUsuario} correspondente, ou null se não for encontrada
      */
     @Query("SELECT c FROM ContaUsuario c WHERE c.saldo = :saldo")
-    ContaUsuario encontrarContaPeloSaldo(@Param("saldo") BigDecimal saldo);
+    List<ContaUsuario> encontrarContaPeloSaldo(@Param("saldo") BigDecimal saldo);
 
     /**
      * Busca uma conta com base no tipo de conta (ex: CORRENTE, POUPANÇA).
@@ -49,5 +52,5 @@ public interface ContaUsuarioRepository extends JpaRepository<ContaUsuario, Long
      * @return a {@link ContaUsuario} correspondente, ou null se não for encontrada
      */
     @Query("SELECT c FROM ContaUsuario c WHERE c.tipoConta = :tipo")
-    ContaUsuario encontrarpeloTipoDeConta(@Param("tipo") String tipoConta);
+    List<ContaUsuario> encontrarPeloTipoDeConta(@Param("tipo") String tipoConta);
 }

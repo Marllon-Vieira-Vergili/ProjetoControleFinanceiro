@@ -1,6 +1,6 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.DTO.request;
 
-import com.marllon.vieira.vergili.catalogo_financeiro.models.TiposContas;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;

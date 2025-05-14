@@ -3,7 +3,7 @@ import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.HistoricoTrans
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.HistoricoTransacaoResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.HistoricoTransacao;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.TiposCategorias;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;
@@ -28,7 +28,7 @@ public interface HistoricoTransacaoService {
      * @return transação encontrada, se existir.
      * @throws HistoricoTransacaoNaoEncontrado se não for encontrada a transação.
      */
-    Optional<HistoricoTransacaoResponse> encontrarTransacaoPorid(Long id);
+    HistoricoTransacao encontrarTransacaoPorid(Long id);
 
     /**
      * Retorna uma lista de transações realizadas em uma data específica.
@@ -96,21 +96,8 @@ public interface HistoricoTransacaoService {
     // ======================== VALIDAÇÕES ========================
 
 
-    /**
-     * EvitarCódigo BOILERPLATE, INSTANCIANDO EM TODOS OS MÈTODOS de verificação
-     *
-     * @param id ID da do histórico de transação
-     * @throws HistoricoTransacaoNaoEncontrado se não for encontrado o histórico pela id.
-     */
-   HistoricoTransacao getHistoricoTransacaoById(Long id);
 
-    /**
-     * Verifica se uma transação existe a partir do seu ID.
-     *
-     * @param id identificador da transação.
-     * @return true se a transação existir, false caso contrário.
-     */
-    boolean transacaoExistePelaID(Long id);
+
 
     /**
      * Verifica se já existe uma transação idêntica vinculada a uma conta.

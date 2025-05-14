@@ -1,6 +1,7 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -46,6 +47,7 @@ public class Pagamentos{
     @Column(name = "descricao", length = 255,nullable = false)
     @NotBlank(message = "O campo descrição não pode ficar vazio!")
     private String descricao;
+
 
 
     //RELACIONAMENTOS

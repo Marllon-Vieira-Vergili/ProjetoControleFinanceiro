@@ -1,5 +1,6 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models;
 
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -81,7 +82,7 @@ public class ContaUsuario {
      */
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH,
             CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name = "usuarios_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_conta_usuario"))
+    @JoinColumn(name = "usuario_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_conta_usuario"))
     private Usuario usuarioRelacionado;
 
 

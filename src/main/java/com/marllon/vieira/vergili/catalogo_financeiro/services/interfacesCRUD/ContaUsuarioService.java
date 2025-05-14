@@ -4,7 +4,7 @@ import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.ContaUsuarioR
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.ContaNaoEncontrada;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.ContaUsuario;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.TiposContas;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -29,10 +29,10 @@ public interface ContaUsuarioService {
     /**
      * Busca uma conta pelo ID
      * @param id ID da conta
-     * @return Optional contendo a conta encontrada, ou retornar uma exception
+     * @return  contendo a conta encontrada, ou retornar uma exception
      * @throws ContaNaoEncontrada se não for encontrada a conta
      */
-    Optional<ContaUsuarioResponse> encontrarContaPorId(Long id);
+    ContaUsuario encontrarContaPorId(Long id);
 
     /**
      * Listar todas as contas pelo nome encontrado, pois pode ter várias contas com o mesmo nome
@@ -122,22 +122,7 @@ public interface ContaUsuarioService {
 
     // ======================== VALIDAÇÕES ========================
 
-    /**
-     * Verifica se uma conta existe pelo ID
-     * @param id ID da conta
-     * @return true se a conta existir
-     */
-    boolean contaExistePelaID(Long id);
 
-
-
-    /**
-     * EvitarCódigo BOILERPLATE, INSTANCIANDO EM TODOS OS MÈTODOS de verificação
-     *
-     * @param id ID da conta usuario
-     * @throws ContaNaoEncontrada se não for encontrado a conta pela id.
-     */
-    ContaUsuario getContaById(Long id);
 
     /**
      * Verifica se o tipo de conta informado pelo usuário existe

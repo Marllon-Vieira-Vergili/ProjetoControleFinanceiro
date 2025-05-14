@@ -1,5 +1,7 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models;
 
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;

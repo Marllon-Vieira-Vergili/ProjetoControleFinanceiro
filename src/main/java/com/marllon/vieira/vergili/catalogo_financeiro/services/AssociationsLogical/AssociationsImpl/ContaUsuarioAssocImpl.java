@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 
 @Service
+@Transactional
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class ContaUsuarioAssocImpl implements ContaUsuarioAssociation {
 
@@ -50,10 +51,9 @@ public class ContaUsuarioAssocImpl implements ContaUsuarioAssociation {
 
 
     @Override
-    @Transactional
     public void associarContaComCategoria(Long contaId, Long categoriaId) {
-        ContaUsuario contaEncontrada = contaUsuarioService.getContaById(contaId);
-        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.getCategoriaById(categoriaId);
+        ContaUsuario contaEncontrada = contaUsuarioService.encontrarContaPorId(contaId);
+        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.encontrarCategoriaPorId(categoriaId);
 
         if(contaEncontrada.getCategoriasRelacionadas() == null){
             contaEncontrada.setCategoriasRelacionadas(new ArrayList<>());
@@ -74,10 +74,9 @@ public class ContaUsuarioAssocImpl implements ContaUsuarioAssociation {
     }
 
     @Override
-    @Transactional
     public void associarContaComPagamento(Long contaId, Long pagamentoId) {
-        ContaUsuario contaEncontrada = contaUsuarioService.getContaById(contaId);
-        Pagamentos pagamentoEncontrado = pagamentosService.getPagamentoById(pagamentoId);
+        ContaUsuario contaEncontrada = contaUsuarioService.encontrarContaPorId(contaId);
+        Pagamentos pagamentoEncontrado = pagamentosService.encontrarPagamentoPorid(pagamentoId);
 
         if(contaEncontrada.getPagamentosRelacionados() == null){
             contaEncontrada.setPagamentosRelacionados(new ArrayList<>());
@@ -97,10 +96,9 @@ public class ContaUsuarioAssocImpl implements ContaUsuarioAssociation {
     }
 
     @Override
-    @Transactional
     public void associarContaComTransacao(Long contaId, Long transacaoId) {
-        ContaUsuario contaEncontrada = contaUsuarioService.getContaById(contaId);
-        HistoricoTransacao historicoEncontrado = historicoTransacaoService.getHistoricoTransacaoById(transacaoId);
+        ContaUsuario contaEncontrada = contaUsuarioService.encontrarContaPorId(contaId);
+        HistoricoTransacao historicoEncontrado = historicoTransacaoService.encontrarTransacaoPorid(transacaoId);
 
         if(contaEncontrada.getTransacoesRelacionadas() == null){
             contaEncontrada.setTransacoesRelacionadas(new ArrayList<>());
@@ -120,10 +118,9 @@ public class ContaUsuarioAssocImpl implements ContaUsuarioAssociation {
     }
 
     @Override
-    @Transactional
     public void associarContaComUsuario(Long contaId, Long usuarioId) {
-        ContaUsuario contaEncontrada = contaUsuarioService.getContaById(contaId);
-        Usuario usuarioEncontrado = usuariosService.getUsuarioById(usuarioId);
+        ContaUsuario contaEncontrada = contaUsuarioService.encontrarContaPorId(contaId);
+        Usuario usuarioEncontrado = usuariosService.encontrarUsuarioPorId(usuarioId);
 
         if(contaEncontrada.getUsuarioRelacionado().getId().equals(usuarioEncontrado.getId())
                 ||usuarioEncontrado.getContasRelacionadas().contains(contaEncontrada)){
@@ -140,10 +137,9 @@ public class ContaUsuarioAssocImpl implements ContaUsuarioAssociation {
     }
 
     @Override
-    @Transactional
     public void desassociarContaDeCategoria(Long contaId, Long categoriaId) {
-        ContaUsuario contaEncontrada = contaUsuarioService.getContaById(contaId);
-        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.getCategoriaById(categoriaId);
+        ContaUsuario contaEncontrada = contaUsuarioService.encontrarContaPorId(contaId);
+        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.encontrarCategoriaPorId(categoriaId);
 
         if(contaEncontrada.getCategoriasRelacionadas() == null){
             contaEncontrada.setCategoriasRelacionadas(new ArrayList<>());
@@ -163,10 +159,9 @@ public class ContaUsuarioAssocImpl implements ContaUsuarioAssociation {
     }
 
     @Override
-    @Transactional
     public void desassociarContaDePagamento(Long contaId, Long pagamentoId) {
-        ContaUsuario contaEncontrada = contaUsuarioService.getContaById(contaId);
-        Pagamentos pagamentoEncontrado = pagamentosService.getPagamentoById(pagamentoId);
+        ContaUsuario contaEncontrada = contaUsuarioService.encontrarContaPorId(contaId);
+        Pagamentos pagamentoEncontrado = pagamentosService.encontrarPagamentoPorid(pagamentoId);
 
         if(!contaEncontrada.getPagamentosRelacionados().contains(pagamentoEncontrado)
                 ||!pagamentoEncontrado.getContaRelacionada().getId().equals(contaEncontrada.getId())){
@@ -183,10 +178,9 @@ public class ContaUsuarioAssocImpl implements ContaUsuarioAssociation {
     }
 
     @Override
-    @Transactional
     public void desassociarContaDeHistoricoDeTransacao(Long contaId, Long historicoId) {
-        ContaUsuario contaEncontrada = contaUsuarioService.getContaById(contaId);
-        HistoricoTransacao historicoEncontrado = historicoTransacaoService.getHistoricoTransacaoById(historicoId);
+        ContaUsuario contaEncontrada = contaUsuarioService.encontrarContaPorId(contaId);
+        HistoricoTransacao historicoEncontrado = historicoTransacaoService.encontrarTransacaoPorid(historicoId);
 
         if(!contaEncontrada.getTransacoesRelacionadas().contains(historicoEncontrado)
                 ||!historicoEncontrado.getContaRelacionada().getId().equals(contaEncontrada.getId())){
@@ -206,10 +200,9 @@ public class ContaUsuarioAssocImpl implements ContaUsuarioAssociation {
 
 
     @Override
-    @Transactional
     public void desassociarContaDeUsuario(Long contaId, Long usuarioId) {
-        ContaUsuario contaEncontrada = contaUsuarioService.getContaById(contaId);
-        Usuario usuarioEncontrado = usuariosService.getUsuarioById(usuarioId);
+        ContaUsuario contaEncontrada = contaUsuarioService.encontrarContaPorId(contaId);
+        Usuario usuarioEncontrado = usuariosService.encontrarUsuarioPorId(usuarioId);
 
         if(!contaEncontrada.getUsuarioRelacionado().getId().equals(usuarioEncontrado.getId())
                 ||!usuarioEncontrado.getContasRelacionadas().contains(contaEncontrada)){

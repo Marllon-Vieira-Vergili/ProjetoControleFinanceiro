@@ -1,6 +1,5 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models.enums;
 
-import com.marllon.vieira.vergili.catalogo_financeiro.models.TiposContas;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
@@ -9,8 +8,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 
-import static com.marllon.vieira.vergili.catalogo_financeiro.models.TiposContas.buscarTipoContaPeloNome;
-import static com.marllon.vieira.vergili.catalogo_financeiro.models.TiposContas.todosTiposValidos;
+import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas.buscarTipoContaPeloNome;
+import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas.todosTiposValidos;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

@@ -1,7 +1,7 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.DTO.request;
 
-import com.marllon.vieira.vergili.catalogo_financeiro.models.SubTipoCategoria;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.TiposCategorias;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotNull;

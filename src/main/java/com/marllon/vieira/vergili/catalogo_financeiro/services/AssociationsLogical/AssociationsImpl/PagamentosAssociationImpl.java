@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 
 @Service
+@Transactional
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class PagamentosAssociationImpl implements PagamentosAssociation {
 
@@ -49,11 +50,10 @@ public class PagamentosAssociationImpl implements PagamentosAssociation {
 
 
     @Override
-    @Transactional
     public void associarPagamentoComUsuario(Long pagamentoId, Long usuarioId) {
 
-        Pagamentos pagamentoEncontrado = pagamentosService.getPagamentoById(pagamentoId);
-        Usuario usuarioEncontrado = usuariosService.getUsuarioById(usuarioId);
+        Pagamentos pagamentoEncontrado = pagamentosService.encontrarPagamentoPorid(pagamentoId);
+        Usuario usuarioEncontrado = usuariosService.encontrarUsuarioPorId(usuarioId);
 
         //Se a lista de pagamentos relacionados for nula... instanciar uma nova lista de array
         if(usuarioEncontrado.getPagamentosRelacionados() == null){
@@ -76,11 +76,10 @@ public class PagamentosAssociationImpl implements PagamentosAssociation {
     }
 
     @Override
-    @Transactional
     public void associarPagamentoATransacao(Long pagamentoId, Long transacaoId) {
 
-        Pagamentos pagamentoEncontrado = pagamentosService.getPagamentoById(pagamentoId);
-        HistoricoTransacao historicoEncontrado = historicoTransacaoService.getHistoricoTransacaoById(transacaoId);
+        Pagamentos pagamentoEncontrado = pagamentosService.encontrarPagamentoPorid(pagamentoId);
+        HistoricoTransacao historicoEncontrado = historicoTransacaoService.encontrarTransacaoPorid(transacaoId);
 
         //Se a lista de pagamentos relacionados for nula... instanciar uma nova lista de array
         if(pagamentoEncontrado.getTransacoesRelacionadas() == null){
@@ -111,11 +110,10 @@ public class PagamentosAssociationImpl implements PagamentosAssociation {
     }
 
     @Override
-    @Transactional
     public void associarPagamentoComConta(Long pagamentoId, Long contaId) {
 
-        Pagamentos pagamentoEncontrado = pagamentosService.getPagamentoById(pagamentoId);
-        ContaUsuario contaEncontrada = contaUsuarioService.getContaById(contaId);
+        Pagamentos pagamentoEncontrado = pagamentosService.encontrarPagamentoPorid(pagamentoId);
+        ContaUsuario contaEncontrada = contaUsuarioService.encontrarContaPorId(contaId);
 
         //Verificar do lado da conta, se a lista de arrays não está vazia, se tiver, criar
         if(contaEncontrada.getPagamentosRelacionados().isEmpty()){
@@ -145,11 +143,10 @@ public class PagamentosAssociationImpl implements PagamentosAssociation {
     }
 
     @Override
-    @Transactional
     public void associarPagamentoComCategoria(Long pagamentoId, Long categoriaId) {
 
-        Pagamentos pagamentoEncontrado = pagamentosService.getPagamentoById(pagamentoId);
-        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.getCategoriaById(categoriaId);
+        Pagamentos pagamentoEncontrado = pagamentosService.encontrarPagamentoPorid(pagamentoId);
+        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.encontrarCategoriaPorId(categoriaId);
 
         //Se do lado de pagamentos, a lista de arrays for vazia, instanciar um novo array list
         if(pagamentoEncontrado.getCategoriasRelacionadas() == null){
@@ -177,11 +174,10 @@ public class PagamentosAssociationImpl implements PagamentosAssociation {
     }
 
     @Override
-    @Transactional
     public void desassociarPagamentoUsuario(Long pagamentoId, Long usuarioId) {
-        Pagamentos pagamentoEncontrado = pagamentosService.getPagamentoById(pagamentoId);
+        Pagamentos pagamentoEncontrado = pagamentosService.encontrarPagamentoPorid(pagamentoId);
 
-        Usuario usuarioEncontrado = usuariosService.getUsuarioById(usuarioId);
+        Usuario usuarioEncontrado = usuariosService.encontrarUsuarioPorId(usuarioId);
 
         if (!pagamentoEncontrado.getUsuarioRelacionado().getId().equals(usuarioEncontrado.getId())
                 ||!usuarioEncontrado.getPagamentosRelacionados().contains(pagamentoEncontrado)){
@@ -199,11 +195,10 @@ public class PagamentosAssociationImpl implements PagamentosAssociation {
     }
 
     @Override
-    @Transactional
     public void desassociarPagamentoDeTransacao(Long pagamentoId, Long transacaoId) {
 
-        Pagamentos pagamentoEncontrado = pagamentosService.getPagamentoById(pagamentoId);
-        HistoricoTransacao historicoEncontrado = historicoTransacaoService.getHistoricoTransacaoById(transacaoId);
+        Pagamentos pagamentoEncontrado = pagamentosService.encontrarPagamentoPorid(pagamentoId);
+        HistoricoTransacao historicoEncontrado = historicoTransacaoService.encontrarTransacaoPorid(transacaoId);
 
         if (!pagamentoEncontrado.getTransacoesRelacionadas().contains(historicoEncontrado) ||
         !historicoEncontrado.getPagamentosRelacionados().contains(pagamentoEncontrado)){
@@ -221,10 +216,9 @@ public class PagamentosAssociationImpl implements PagamentosAssociation {
     }
 
     @Override
-    @Transactional
     public void desassociarPagamentoConta(Long pagamentoId, Long contaId) {
-        Pagamentos pagamentoEncontrado = pagamentosService.getPagamentoById(pagamentoId);
-        ContaUsuario contaEncontrada = contaUsuarioService.getContaById(contaId);
+        Pagamentos pagamentoEncontrado = pagamentosService.encontrarPagamentoPorid(pagamentoId);
+        ContaUsuario contaEncontrada = contaUsuarioService.encontrarContaPorId(contaId);
 
         if(!contaEncontrada.getPagamentosRelacionados().contains(pagamentoEncontrado)||
         !pagamentoEncontrado.getContaRelacionada().getId().equals(contaEncontrada.getId())){
@@ -242,10 +236,9 @@ public class PagamentosAssociationImpl implements PagamentosAssociation {
     }
 
     @Override
-    @Transactional
     public void desassociarPagamentoCategoria(Long pagamentoId, Long categoriaId) {
-        Pagamentos pagamentoEncontrado = pagamentosService.getPagamentoById(pagamentoId);
-        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.getCategoriaById(categoriaId);
+        Pagamentos pagamentoEncontrado = pagamentosService.encontrarPagamentoPorid(pagamentoId);
+        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.encontrarCategoriaPorId(categoriaId);
 
         if(!categoriaEncontrada.getPagamentosRelacionados().contains(pagamentoEncontrado) ||
         !pagamentoEncontrado.getCategoriasRelacionadas().contains(categoriaEncontrada)){

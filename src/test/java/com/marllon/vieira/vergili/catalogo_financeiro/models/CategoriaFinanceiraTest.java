@@ -5,8 +5,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import static com.marllon.vieira.vergili.catalogo_financeiro.models.SubTipoCategoria.ALIMENTACAO;
-import static com.marllon.vieira.vergili.catalogo_financeiro.models.TiposCategorias.DESPESA;
+import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria.ALIMENTACAO;
+import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias.DESPESA;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**

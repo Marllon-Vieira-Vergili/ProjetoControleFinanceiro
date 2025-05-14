@@ -1,5 +1,5 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.TiposContas;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas;
 import java.util.Arrays;
 
 public class TiposContasNaoEncontrado extends RuntimeException {
