@@ -29,6 +29,7 @@ import java.util.List;
 public class ContaUsuario {
 
     @Id
+    @Setter(AccessLevel.NONE) //Não gerar setter para ID
     @Column(name = "id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include

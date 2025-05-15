@@ -5,9 +5,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.cglib.core.Local;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 
@@ -25,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * * encontrarPagamentoPeloValor(Retorna Lista de Pagamento), encontrarPagamentoPelaDescricao(Lista Pagamento)
  */
 @DataJpaTest
-@TestPropertySource(value = "/teste-config.properties")
+@TestPropertySource(value = "/application-test.properties")
 public class PagamentoRepositoryTest {
 
 

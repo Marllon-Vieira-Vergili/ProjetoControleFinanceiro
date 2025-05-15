@@ -2,10 +2,10 @@ package com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogi
 
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.AssociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.PagamentosAssociation;
-import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.*;
 import jakarta.transaction.Transactional;
 import lombok.EqualsAndHashCode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,44 +33,26 @@ public class PagamentosAssociationImpl implements PagamentosAssociation {
     @Autowired
     private CategoriaFinanceiraRepository categoriaFinanceiraRepository;
 
-    @Autowired
-    private CategoriaFinanceiraService categoriaFinanceiraService;
-
-    @Autowired
-    private ContaUsuarioService contaUsuarioService;
-
-    @Autowired
-    private PagamentosService pagamentosService;
-
-    @Autowired
-    private HistoricoTransacaoService historicoTransacaoService;
-
-    @Autowired
-    private UsuariosService usuariosService;
-
-
     @Override
     public void associarPagamentoComUsuario(Long pagamentoId, Long usuarioId) {
 
-        Pagamentos pagamentoEncontrado = pagamentosService.encontrarPagamentoPorid(pagamentoId);
-        Usuario usuarioEncontrado = usuariosService.encontrarUsuarioPorId(usuarioId);
+        Pagamentos pagamentoEncontrado = pagamentosRepository.findById(pagamentoId)
+                .orElseThrow(() -> new PagamentoNaoEncontrado("Pagamento não encontrado"));
+        Usuario usuarioEncontrado = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new UsuarioNaoEncontrado("Usuário não encontrado"));
 
-        //Se a lista de pagamentos relacionados for nula... instanciar uma nova lista de array
-        if(usuarioEncontrado.getPagamentosRelacionados() == null){
+        if (usuarioEncontrado.getPagamentosRelacionados() == null) {
             usuarioEncontrado.setPagamentosRelacionados(new ArrayList<>());
         }
 
-        //Verificar ambos os lados se já não possuem essa associação
-        if(pagamentoEncontrado.getUsuarioRelacionado().getId().equals(usuarioEncontrado.getId()) || usuarioEncontrado.getPagamentosRelacionados().contains(pagamentoEncontrado)){
-            throw new AssociationErrorException("Esse pagamento com essa id: " + pagamentoId + " ja está associado a " +
-                    " esse usuário: " + usuarioId);
+        if (pagamentoEncontrado.getUsuarioRelacionado() != null &&
+                pagamentoEncontrado.getUsuarioRelacionado().getId().equals(usuarioId)) {
+            throw new AssociationErrorException("Esse pagamento já está associado a esse usuário");
         }
 
-        //associar
         usuarioEncontrado.getPagamentosRelacionados().add(pagamentoEncontrado);
         pagamentoEncontrado.setUsuarioRelacionado(usuarioEncontrado);
 
-        //Salvar para ambos os lados das entidades
         pagamentosRepository.save(pagamentoEncontrado);
         usuarioRepository.save(usuarioEncontrado);
     }
@@ -78,66 +60,49 @@ public class PagamentosAssociationImpl implements PagamentosAssociation {
     @Override
     public void associarPagamentoATransacao(Long pagamentoId, Long transacaoId) {
 
-        Pagamentos pagamentoEncontrado = pagamentosService.encontrarPagamentoPorid(pagamentoId);
-        HistoricoTransacao historicoEncontrado = historicoTransacaoService.encontrarTransacaoPorid(transacaoId);
+        Pagamentos pagamentoEncontrado = pagamentosRepository.findById(pagamentoId)
+                .orElseThrow(() -> new PagamentoNaoEncontrado("Pagamento não encontrado"));
+        HistoricoTransacao historicoEncontrado = historicoTransacaoRepository.findById(transacaoId)
+                .orElseThrow(() -> new HistoricoTransacaoNaoEncontrado("Transação não encontrada"));
 
-        //Se a lista de pagamentos relacionados for nula... instanciar uma nova lista de array
-        if(pagamentoEncontrado.getTransacoesRelacionadas() == null){
+        if (pagamentoEncontrado.getTransacoesRelacionadas() == null) {
             pagamentoEncontrado.setTransacoesRelacionadas(new ArrayList<>());
         }
-        //Se do outro lado também for nulo, instanciar uma lista de arrays
-        if(historicoEncontrado.getPagamentosRelacionados() == null){
+        if (historicoEncontrado.getPagamentosRelacionados() == null) {
             historicoEncontrado.setPagamentosRelacionados(new ArrayList<>());
         }
 
-        //Verificar se esse pagamento ja não está associado a essa transação
-        if(pagamentoEncontrado.getTransacoesRelacionadas().contains(historicoEncontrado)
-                || historicoEncontrado.getPagamentosRelacionados().contains(pagamentoEncontrado)){
-            throw new AssociationErrorException("Esse pagamento com essa id: " + pagamentoId + " ja está associado a " +
-                    " essa transação: " + transacaoId);
+        if (pagamentoEncontrado.getTransacoesRelacionadas().contains(historicoEncontrado)) {
+            throw new AssociationErrorException("Pagamento já associado à transação");
         }
 
-
-        //Realizar a associação para ambos
-       pagamentoEncontrado.getTransacoesRelacionadas().add(historicoEncontrado);
+        pagamentoEncontrado.getTransacoesRelacionadas().add(historicoEncontrado);
         historicoEncontrado.getPagamentosRelacionados().add(pagamentoEncontrado);
 
-        //Salvar em ambos os lados as associações
         pagamentosRepository.save(pagamentoEncontrado);
         historicoTransacaoRepository.save(historicoEncontrado);
-
-
     }
 
     @Override
     public void associarPagamentoComConta(Long pagamentoId, Long contaId) {
 
-        Pagamentos pagamentoEncontrado = pagamentosService.encontrarPagamentoPorid(pagamentoId);
-        ContaUsuario contaEncontrada = contaUsuarioService.encontrarContaPorId(contaId);
+        Pagamentos pagamentoEncontrado = pagamentosRepository.findById(pagamentoId)
+                .orElseThrow(() -> new PagamentoNaoEncontrado("Pagamento não encontrado"));
+        ContaUsuario contaEncontrada = contaUsuarioRepository.findById(contaId)
+                .orElseThrow(() -> new ContaNaoEncontrada("Conta não encontrada"));
 
-        //Verificar do lado da conta, se a lista de arrays não está vazia, se tiver, criar
-        if(contaEncontrada.getPagamentosRelacionados().isEmpty()){
+        if (contaEncontrada.getPagamentosRelacionados() == null) {
             contaEncontrada.setPagamentosRelacionados(new ArrayList<>());
         }
 
-        //Verificar se não possui nenhum pagamento a conta associada
-        if(!pagamentoEncontrado.getContaRelacionada().getId().equals(contaEncontrada.getId())
-                ||contaEncontrada.getPagamentosRelacionados().contains(pagamentoEncontrado)){
-            throw new AssociationErrorException("Esse pagamento com essa id: " + pagamentoId + " ja está associado a " +
-                    " essa conta: " + contaId);
+        if (pagamentoEncontrado.getContaRelacionada() != null &&
+                pagamentoEncontrado.getContaRelacionada().getId().equals(contaId)) {
+            throw new AssociationErrorException("Esse pagamento já está associado a essa conta");
         }
 
-        //Verificar se esse pagamento já não possui outra conta de usuario associado
-        if(!pagamentoEncontrado.getContaRelacionada().getId()
-                .equals(contaEncontrada.getUsuarioRelacionado().getId())){
-            throw new AssociationErrorException("Pagamento: " + pagamentoId + " já está associado a outra conta");
-        }
-
-        //Senão.. associar em ambos os lados
         pagamentoEncontrado.setContaRelacionada(contaEncontrada);
         contaEncontrada.getPagamentosRelacionados().add(pagamentoEncontrado);
 
-        //Salvar em ambos os lados
         pagamentosRepository.save(pagamentoEncontrado);
         contaUsuarioRepository.save(contaEncontrada);
     }
@@ -145,51 +110,45 @@ public class PagamentosAssociationImpl implements PagamentosAssociation {
     @Override
     public void associarPagamentoComCategoria(Long pagamentoId, Long categoriaId) {
 
-        Pagamentos pagamentoEncontrado = pagamentosService.encontrarPagamentoPorid(pagamentoId);
-        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.encontrarCategoriaPorId(categoriaId);
+        Pagamentos pagamentoEncontrado = pagamentosRepository.findById(pagamentoId)
+                .orElseThrow(() -> new PagamentoNaoEncontrado("Pagamento não encontrado"));
+        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaId)
+                .orElseThrow(() -> new CategoriaNaoEncontrada("Categoria não encontrada"));
 
-        //Se do lado de pagamentos, a lista de arrays for vazia, instanciar um novo array list
-        if(pagamentoEncontrado.getCategoriasRelacionadas() == null){
+        if (pagamentoEncontrado.getCategoriasRelacionadas() == null) {
             pagamentoEncontrado.setCategoriasRelacionadas(new ArrayList<>());
         }
-        //Se do outro lado também for nulo..
-        if(categoriaEncontrada.getPagamentosRelacionados() == null){
-           categoriaEncontrada.setPagamentosRelacionados(new ArrayList<>());
+        if (categoriaEncontrada.getPagamentosRelacionados() == null) {
+            categoriaEncontrada.setPagamentosRelacionados(new ArrayList<>());
         }
 
-        //Verificar se já não estão associados
-        if(pagamentoEncontrado.getCategoriasRelacionadas().contains(categoriaEncontrada)||
-        !categoriaEncontrada.getPagamentosRelacionados().contains(pagamentoEncontrado)){
-            throw new AssociationErrorException("Esse pagamento com essa id: " + pagamentoId + " ja está associado a " +
-                    " essa categoria criada: " + categoriaId);
+        if (pagamentoEncontrado.getCategoriasRelacionadas().contains(categoriaEncontrada)) {
+            throw new AssociationErrorException("Esse pagamento já está associado a essa categoria");
         }
 
-        //Senao... associar dos 2 lados
         pagamentoEncontrado.getCategoriasRelacionadas().add(categoriaEncontrada);
         categoriaEncontrada.getPagamentosRelacionados().add(pagamentoEncontrado);
 
-        //Salvar as alterações e persistir no banco de dados
         pagamentosRepository.save(pagamentoEncontrado);
         categoriaFinanceiraRepository.save(categoriaEncontrada);
     }
 
     @Override
     public void desassociarPagamentoUsuario(Long pagamentoId, Long usuarioId) {
-        Pagamentos pagamentoEncontrado = pagamentosService.encontrarPagamentoPorid(pagamentoId);
 
-        Usuario usuarioEncontrado = usuariosService.encontrarUsuarioPorId(usuarioId);
+        Pagamentos pagamentoEncontrado = pagamentosRepository.findById(pagamentoId)
+                .orElseThrow(() -> new PagamentoNaoEncontrado("Pagamento não encontrado"));
+        Usuario usuarioEncontrado = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new UsuarioNaoEncontrado("Usuário não encontrado"));
 
-        if (!pagamentoEncontrado.getUsuarioRelacionado().getId().equals(usuarioEncontrado.getId())
-                ||!usuarioEncontrado.getPagamentosRelacionados().contains(pagamentoEncontrado)){
-            throw new DesassociationErrorException("a id desse pagamento " + pagamentoId + " " +
-                    "não é associado a esse usuário com essa id: " + usuarioId);
+        if (pagamentoEncontrado.getUsuarioRelacionado() == null ||
+                !pagamentoEncontrado.getUsuarioRelacionado().getId().equals(usuarioId)) {
+            throw new DesassociationErrorException("Pagamento não está associado a esse usuário");
         }
 
-        //Senão.. desassociar em ambos os lados
         pagamentoEncontrado.setUsuarioRelacionado(null);
         usuarioEncontrado.getPagamentosRelacionados().remove(pagamentoEncontrado);
 
-        //Salvar em ambos os lados
         usuarioRepository.save(usuarioEncontrado);
         pagamentosRepository.save(pagamentoEncontrado);
     }
@@ -197,60 +156,57 @@ public class PagamentosAssociationImpl implements PagamentosAssociation {
     @Override
     public void desassociarPagamentoDeTransacao(Long pagamentoId, Long transacaoId) {
 
-        Pagamentos pagamentoEncontrado = pagamentosService.encontrarPagamentoPorid(pagamentoId);
-        HistoricoTransacao historicoEncontrado = historicoTransacaoService.encontrarTransacaoPorid(transacaoId);
+        Pagamentos pagamentoEncontrado = pagamentosRepository.findById(pagamentoId)
+                .orElseThrow(() -> new PagamentoNaoEncontrado("Pagamento não encontrado"));
+        HistoricoTransacao historicoEncontrado = historicoTransacaoRepository.findById(transacaoId)
+                .orElseThrow(() -> new HistoricoTransacaoNaoEncontrado("Transação não encontrada"));
 
-        if (!pagamentoEncontrado.getTransacoesRelacionadas().contains(historicoEncontrado) ||
-        !historicoEncontrado.getPagamentosRelacionados().contains(pagamentoEncontrado)){
-            throw new DesassociationErrorException("a id desse pagamento " + pagamentoId + " " +
-                    "não é associado a esse histórico de transação com essa id: " + transacaoId);
+        if (!pagamentoEncontrado.getTransacoesRelacionadas().contains(historicoEncontrado)) {
+            throw new DesassociationErrorException("Pagamento não está associado a essa transação");
         }
 
-        //Desassociar de ambos os lados
         pagamentoEncontrado.getTransacoesRelacionadas().remove(historicoEncontrado);
         historicoEncontrado.getPagamentosRelacionados().remove(pagamentoEncontrado);
 
-        //Salvar e persistir os dados em ambos lados
         pagamentosRepository.save(pagamentoEncontrado);
         historicoTransacaoRepository.save(historicoEncontrado);
     }
 
     @Override
     public void desassociarPagamentoConta(Long pagamentoId, Long contaId) {
-        Pagamentos pagamentoEncontrado = pagamentosService.encontrarPagamentoPorid(pagamentoId);
-        ContaUsuario contaEncontrada = contaUsuarioService.encontrarContaPorId(contaId);
 
-        if(!contaEncontrada.getPagamentosRelacionados().contains(pagamentoEncontrado)||
-        !pagamentoEncontrado.getContaRelacionada().getId().equals(contaEncontrada.getId())){
-            throw new DesassociationErrorException("a id desse pagamento " + pagamentoId + " " +
-                    "não é associado a essa conta com esse id: " + contaId);
+        Pagamentos pagamentoEncontrado = pagamentosRepository.findById(pagamentoId)
+                .orElseThrow(() -> new PagamentoNaoEncontrado("Pagamento não encontrado"));
+        ContaUsuario contaEncontrada = contaUsuarioRepository.findById(contaId)
+                .orElseThrow(() -> new ContaNaoEncontrada("Conta não encontrada"));
+
+        if (pagamentoEncontrado.getContaRelacionada() == null ||
+                !pagamentoEncontrado.getContaRelacionada().getId().equals(contaId)) {
+            throw new DesassociationErrorException("Pagamento não está associado a essa conta");
         }
 
-        //Desassociar de ambos os lados
         pagamentoEncontrado.setContaRelacionada(null);
         contaEncontrada.getPagamentosRelacionados().remove(pagamentoEncontrado);
 
-        //Salvar e persistir os dados em ambos os lados
         pagamentosRepository.save(pagamentoEncontrado);
         contaUsuarioRepository.save(contaEncontrada);
     }
 
     @Override
     public void desassociarPagamentoCategoria(Long pagamentoId, Long categoriaId) {
-        Pagamentos pagamentoEncontrado = pagamentosService.encontrarPagamentoPorid(pagamentoId);
-        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.encontrarCategoriaPorId(categoriaId);
 
-        if(!categoriaEncontrada.getPagamentosRelacionados().contains(pagamentoEncontrado) ||
-        !pagamentoEncontrado.getCategoriasRelacionadas().contains(categoriaEncontrada)){
-            throw new DesassociationErrorException("a id desse pagamento " + pagamentoId + " " +
-                    "não é associado a essa categoria com esse id: " + categoriaId);
+        Pagamentos pagamentoEncontrado = pagamentosRepository.findById(pagamentoId)
+                .orElseThrow(() -> new PagamentoNaoEncontrado("Pagamento não encontrado"));
+        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaId)
+                .orElseThrow(() -> new CategoriaNaoEncontrada("Categoria não encontrada"));
+
+        if (!pagamentoEncontrado.getCategoriasRelacionadas().contains(categoriaEncontrada)) {
+            throw new DesassociationErrorException("Pagamento não está associado a essa categoria");
         }
 
-        //Desassociar de ambos os lados
         pagamentoEncontrado.getCategoriasRelacionadas().remove(categoriaEncontrada);
         categoriaEncontrada.getPagamentosRelacionados().remove(pagamentoEncontrado);
 
-        //Salvar e persistir os dados em ambos os lados
         pagamentosRepository.save(pagamentoEncontrado);
         categoriaFinanceiraRepository.save(categoriaEncontrada);
     }

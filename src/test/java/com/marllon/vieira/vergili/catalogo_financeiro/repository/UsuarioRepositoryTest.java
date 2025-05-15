@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * * encontrarUsuarioPeloEmail(Retorna Usuario), encontrarUsuarioPeloTelefone(retorna Usuario)
  */
 @DataJpaTest
-@TestPropertySource("/teste-config.properties")
+@TestPropertySource("/application-test.properties")
 public class UsuarioRepositoryTest {
 
     @Autowired

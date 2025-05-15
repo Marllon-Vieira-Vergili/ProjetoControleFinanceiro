@@ -14,23 +14,6 @@ public class ContaUsuarioTest {
 
     ContaUsuario contausuario;
 
-    /*
-    @Column(name = "nome", nullable = false)
-    @NotBlank(message = "O campo do nome não pode ficar vazio!")
-    @Pattern(regexp = "^[a-zA-ZáàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ ]+$",
-            message = "Números e caracteres especiais como (@ ! # $ % & *) não são aceitos!")
-    private String nome;
-
-    @Column(name = "saldo", nullable = false)
-    @NotNull(message = "O campo do saldo na conta não pode ser nulo!")
-    private BigDecimal saldo;
-
-
-    @Column(name = "tipo_conta", nullable = false)
-    @NotNull(message = "O campo TipoConta não pode ser nulo")
-    @Enumerated(EnumType.STRING)
-    private TiposContas tipoConta;
-     */
 
     @BeforeEach()
     public void instanciarUmaConta(){

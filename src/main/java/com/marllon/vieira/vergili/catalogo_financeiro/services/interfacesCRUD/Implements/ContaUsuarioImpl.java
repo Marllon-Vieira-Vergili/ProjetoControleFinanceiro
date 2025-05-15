@@ -11,11 +11,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ContaUsuarioImpl implements ContaUsuarioService {
-
 
     @Override
     public ContaUsuarioResponse criarConta(ContaUsuarioRequest request) {
@@ -76,8 +74,6 @@ public class ContaUsuarioImpl implements ContaUsuarioService {
     public BigDecimal consultarSaldo(Long contaId) {
         return null;
     }
-
-
 
     @Override
     public boolean tipoContaExiste(TiposContas tipoConta) {

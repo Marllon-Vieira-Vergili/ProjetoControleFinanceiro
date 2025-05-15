@@ -10,13 +10,10 @@ import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.Us
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UsuarioImpl implements UsuariosService {
-
 
     @Override
     public UsuarioResponse criarUsuario(UsuarioRequest usuario, ContaUsuarioRequest conta) {

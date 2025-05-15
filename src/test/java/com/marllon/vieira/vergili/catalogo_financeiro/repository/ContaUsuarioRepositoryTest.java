@@ -2,23 +2,17 @@ package com.marllon.vieira.vergili.catalogo_financeiro.repository;
 
 
 import com.marllon.vieira.vergili.catalogo_financeiro.models.ContaUsuario;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 
-import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -29,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 
 @DataJpaTest
-@TestPropertySource(value = "/teste-config.properties")
+@TestPropertySource(value = "/application-test.properties")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class ContaUsuarioRepositoryTest {
 

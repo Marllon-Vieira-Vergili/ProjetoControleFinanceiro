@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *Métodos: encontrarPorTipoCategoria,encontrarPorSubtipoCategoria, findByTipoAndSubtipo
  *
  */
-@TestPropertySource("/teste-config.properties")
+@TestPropertySource("/application-test.properties")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DataJpaTest
 public class CategoriaFinanceiraRepositoryTest{

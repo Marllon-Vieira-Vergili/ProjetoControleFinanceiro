@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class HistoricoTransacaoImpl implements HistoricoTransacaoService {
@@ -50,7 +49,6 @@ public class HistoricoTransacaoImpl implements HistoricoTransacaoService {
     public BigDecimal consultarValorTotalTransacoes(Long contaId) {
         return null;
     }
-
 
     @Override
     public boolean jaExisteUmaTransacaoIgual(HistoricoTransacaoRequest historicoTransacao) {

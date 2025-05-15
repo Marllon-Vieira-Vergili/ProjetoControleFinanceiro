@@ -24,10 +24,11 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 @AllArgsConstructor(access = AccessLevel.PUBLIC)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@ToString(of = {"id","valor", "data", "descricao", "categoria"})
+@ToString(of = {"id","valor", "data", "descricao"})
 public class Pagamentos{
 
     @Id
+    @Setter(AccessLevel.NONE) //Não gerar setter para ID
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id",nullable = false)
     @EqualsAndHashCode.Include

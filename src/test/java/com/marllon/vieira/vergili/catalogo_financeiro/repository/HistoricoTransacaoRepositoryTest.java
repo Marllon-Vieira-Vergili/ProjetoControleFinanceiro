@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * * encontrarTransacoesPeloValor(Retorna Lista de valores), encontrarpeloTipoDeConta(ContaUsuario)
  */
 @DataJpaTest
-@TestPropertySource("/teste-config.properties")
+@TestPropertySource("/application-test.properties")
 
 public class HistoricoTransacaoRepositoryTest {
 

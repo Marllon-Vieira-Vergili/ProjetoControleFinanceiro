@@ -2,18 +2,18 @@ package com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogi
 
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.AssociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.HistoricoTransacaoAssociation;
-import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.*;
 import jakarta.transaction.Transactional;
 import lombok.EqualsAndHashCode;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 
-@Service
+@Component
 @Transactional
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class HistoricoTransacaoAssocImpl implements HistoricoTransacaoAssociation {
@@ -33,206 +33,170 @@ public class HistoricoTransacaoAssocImpl implements HistoricoTransacaoAssociatio
     @Autowired
     private CategoriaFinanceiraRepository categoriaFinanceiraRepository;
 
-    @Autowired
-    private CategoriaFinanceiraService categoriaFinanceiraService;
-
-    @Autowired
-    private ContaUsuarioService contaUsuarioService;
-
-    @Autowired
-    private PagamentosService pagamentosService;
-
-    @Autowired
-    private HistoricoTransacaoService historicoTransacaoService;
-
-    @Autowired
-    private UsuariosService usuariosService;
-
-
     @Override
     public void associarTransacaoComPagamento(Long transacaoId, Long pagamentoId) {
-        HistoricoTransacao transacaoEncontrada = historicoTransacaoService.encontrarTransacaoPorid(transacaoId);
-        Pagamentos pagamentoEncontrado = pagamentosService.encontrarPagamentoPorid(pagamentoId);
+        HistoricoTransacao transacaoEncontrada = historicoTransacaoRepository.findById(transacaoId)
+                .orElseThrow(() -> new HistoricoTransacaoNaoEncontrado("Transação não encontrada com id: " + transacaoId));
+        Pagamentos pagamentoEncontrado = pagamentosRepository.findById(pagamentoId)
+                .orElseThrow(() -> new PagamentoNaoEncontrado("Pagamento não encontrado com id: " + pagamentoId));
 
-        //Verificar se a lista de pagamentos relacionados a transação não está nula
-        if(transacaoEncontrada.getPagamentosRelacionados() == null){
+        if (transacaoEncontrada.getPagamentosRelacionados() == null) {
             transacaoEncontrada.setPagamentosRelacionados(new ArrayList<>());
         }
-
-        //Verificar do outro lado também
-        if(pagamentoEncontrado.getTransacoesRelacionadas() == null){
+        if (pagamentoEncontrado.getTransacoesRelacionadas() == null) {
             pagamentoEncontrado.setTransacoesRelacionadas(new ArrayList<>());
         }
 
-        //Se ja estiver uma transação associado a esse pagamento
-        if(transacaoEncontrada.getPagamentosRelacionados().contains(pagamentoEncontrado) ||
-        pagamentoEncontrado.getTransacoesRelacionadas().contains(transacaoEncontrada)){
-            throw new AssociationErrorException("Essa transação com o id: " + transacaoId + " ja está associado" +
-                    " a este pagamento " + pagamentoId);
+        if (transacaoEncontrada.getPagamentosRelacionados().contains(pagamentoEncontrado)
+                || pagamentoEncontrado.getTransacoesRelacionadas().contains(transacaoEncontrada)) {
+            throw new AssociationErrorException("Essa transação com o id: " + transacaoId + " já está associada a este pagamento " + pagamentoId);
         }
-                //Realizar a associação dos 2 lados
-                transacaoEncontrada.getPagamentosRelacionados().add(pagamentoEncontrado);
-                pagamentoEncontrado.getTransacoesRelacionadas().add(transacaoEncontrada);
 
-        //Salvar em ambos os lados
+        transacaoEncontrada.getPagamentosRelacionados().add(pagamentoEncontrado);
+        pagamentoEncontrado.getTransacoesRelacionadas().add(transacaoEncontrada);
+
         historicoTransacaoRepository.save(transacaoEncontrada);
         pagamentosRepository.save(pagamentoEncontrado);
     }
 
     @Override
     public void associarTransacaoComConta(Long transacaoId, Long contaId) {
-        HistoricoTransacao transacaoEncontrada = historicoTransacaoService.encontrarTransacaoPorid(transacaoId);
-        ContaUsuario contaEncontrada = contaUsuarioService.encontrarContaPorId(contaId);
+        HistoricoTransacao transacaoEncontrada = historicoTransacaoRepository.findById(transacaoId)
+                .orElseThrow(() -> new HistoricoTransacaoNaoEncontrado("Transação não encontrada com id: " + transacaoId));
+        ContaUsuario contaEncontrada = contaUsuarioRepository.findById(contaId)
+                .orElseThrow(() -> new ContaNaoEncontrada("Conta não encontrada com id: " + contaId));
 
-        //Se do lado da conta relacionado as transações, estiver vazio a lista, instanciar uma nova lista
-        if(contaEncontrada.getTransacoesRelacionadas() ==null){
+        if (contaEncontrada.getTransacoesRelacionadas() == null) {
             contaEncontrada.setTransacoesRelacionadas(new ArrayList<>());
         }
-        //Verificar se essa transação encontrada não possui uma conta relacionada
-        if(transacaoEncontrada.getContaRelacionada() == null && contaEncontrada.getTransacoesRelacionadas()
-                .contains(transacaoEncontrada)){
-            throw new AssociationErrorException("Essa transação com o id: " + transacaoId + " ja está associado" +
-                    " a essa conta " + contaId);
+        if (transacaoEncontrada.getContaRelacionada() == null && contaEncontrada.getTransacoesRelacionadas().contains(transacaoEncontrada)) {
+            throw new AssociationErrorException("Essa transação com o id: " + transacaoId + " já está associada a essa conta " + contaId);
         }
     }
 
     @Override
     public void associarTransacaoComUsuario(Long transacaoId, Long usuarioId) {
-        HistoricoTransacao transacaoEncontrada = historicoTransacaoService.encontrarTransacaoPorid(transacaoId);
-        Usuario usuarioEncontrado = usuariosService.encontrarUsuarioPorId(usuarioId);
+        HistoricoTransacao transacaoEncontrada = historicoTransacaoRepository.findById(transacaoId)
+                .orElseThrow(() -> new HistoricoTransacaoNaoEncontrado("Transação não encontrada com id: " + transacaoId));
+        Usuario usuarioEncontrado = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new UsuarioNaoEncontrado("Usuário não encontrado com id: " + usuarioId));
 
-
-        //Verificar do lado do usuário quanto a transações se a lista não está vazia
-        if(usuarioEncontrado.getTransacoesRelacionadas() == null){
+        if (usuarioEncontrado.getTransacoesRelacionadas() == null) {
             usuarioEncontrado.setTransacoesRelacionadas(new ArrayList<>());
         }
 
-        //Verificar de ambos os lados se já não possui essa associação feita
-        if(transacaoEncontrada.getUsuarioRelacionado().getId().equals(usuarioEncontrado.getId())
-                ||usuarioEncontrado.getTransacoesRelacionadas().contains(transacaoEncontrada)){
-            throw new AssociationErrorException("Essa transação com o id: " + transacaoId + " ja está associado" +
-                    " a esse usuário " + usuarioId);
+        if ((transacaoEncontrada.getUsuarioRelacionado() != null &&
+                transacaoEncontrada.getUsuarioRelacionado().getId().equals(usuarioEncontrado.getId()))
+                || usuarioEncontrado.getTransacoesRelacionadas().contains(transacaoEncontrada)) {
+            throw new AssociationErrorException("Essa transação com o id: " + transacaoId + " já está associada a esse usuário " + usuarioId);
         }
 
-        //Senão.. associar
         usuarioEncontrado.getTransacoesRelacionadas().add(transacaoEncontrada);
         transacaoEncontrada.setUsuarioRelacionado(usuarioEncontrado);
 
-        //Realizar o salvamento
         usuarioRepository.save(usuarioEncontrado);
         historicoTransacaoRepository.save(transacaoEncontrada);
     }
 
     @Override
     public void associarTransacaoComCategoria(Long transacaoId, Long categoriaId) {
-        HistoricoTransacao transacaoEncontrada = historicoTransacaoService.encontrarTransacaoPorid(transacaoId);
-        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.encontrarCategoriaPorId(categoriaId);
+        HistoricoTransacao transacaoEncontrada = historicoTransacaoRepository.findById(transacaoId)
+                .orElseThrow(() -> new HistoricoTransacaoNaoEncontrado("Transação não encontrada com id: " + transacaoId));
+        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaId)
+                .orElseThrow(() -> new CategoriaNaoEncontrada("Categoria não encontrada com id: " + categoriaId));
 
-        //Verificar se ambas as listas de transação e categorias não serão inicializadas vazia
-        if(transacaoEncontrada.getCategoriasRelacionadas() == null){
+        if (transacaoEncontrada.getCategoriasRelacionadas() == null) {
             transacaoEncontrada.setCategoriasRelacionadas(new ArrayList<>());
         }
-        if(categoriaEncontrada.getTransacoesRelacionadas() == null){
+        if (categoriaEncontrada.getTransacoesRelacionadas() == null) {
             categoriaEncontrada.setTransacoesRelacionadas(new ArrayList<>());
         }
 
-        //Verificar se em ambos os lados já não possui essa associação realizada
-        if(categoriaEncontrada.getTransacoesRelacionadas().contains(transacaoEncontrada) ||
-                transacaoEncontrada.getCategoriasRelacionadas().contains(categoriaEncontrada)){
-            throw new AssociationErrorException("Essa transação com o id: " + transacaoId + " ja está associado" +
-                    " a essa categoria " + categoriaId);
+        if (categoriaEncontrada.getTransacoesRelacionadas().contains(transacaoEncontrada)
+                || transacaoEncontrada.getCategoriasRelacionadas().contains(categoriaEncontrada)) {
+            throw new AssociationErrorException("Essa transação com o id: " + transacaoId + " já está associada a essa categoria " + categoriaId);
         }
-        //Senão... associar em ambos os lados
+
         transacaoEncontrada.getCategoriasRelacionadas().add(categoriaEncontrada);
         categoriaEncontrada.getTransacoesRelacionadas().add(transacaoEncontrada);
 
-        //Realizar o salvamento em ambos os lados
         historicoTransacaoRepository.save(transacaoEncontrada);
         categoriaFinanceiraRepository.save(categoriaEncontrada);
     }
 
     @Override
     public void desassociarTransacaoDePagamento(Long transacaoId, Long pagamentoId) {
-        HistoricoTransacao transacaoEncontrada = historicoTransacaoService.encontrarTransacaoPorid(transacaoId);
-        Pagamentos pagamentoEncontrado = pagamentosService.encontrarPagamentoPorid(pagamentoId);
+        HistoricoTransacao transacaoEncontrada = historicoTransacaoRepository.findById(transacaoId)
+                .orElseThrow(() -> new HistoricoTransacaoNaoEncontrado("Transação não encontrada com id: " + transacaoId));
+        Pagamentos pagamentoEncontrado = pagamentosRepository.findById(pagamentoId)
+                .orElseThrow(() -> new PagamentoNaoEncontrado("Pagamento não encontrado com id: " + pagamentoId));
 
-        //Verificar se essa transação está associado a essa conta
-        if(!pagamentoEncontrado.getTransacoesRelacionadas().contains(transacaoEncontrada) ||
-                !transacaoEncontrada.getPagamentosRelacionados().contains(pagamentoEncontrado)){
-            throw new DesassociationErrorException("a id desse histórico de transacao " + transacaoId + " " +
-                    "não é associado a esse pagamento com essa id: " + pagamentoId);
+        if (!pagamentoEncontrado.getTransacoesRelacionadas().contains(transacaoEncontrada)
+                || !transacaoEncontrada.getPagamentosRelacionados().contains(pagamentoEncontrado)) {
+            throw new DesassociationErrorException("A transação " + transacaoId + " não está associada ao pagamento " + pagamentoId);
         }
 
-        //Senao.. realizar a desassociacao
         transacaoEncontrada.getPagamentosRelacionados().remove(pagamentoEncontrado);
         pagamentoEncontrado.getTransacoesRelacionadas().remove(transacaoEncontrada);
 
-        //Realizar e salvar as alterações
         historicoTransacaoRepository.save(transacaoEncontrada);
         pagamentosRepository.save(pagamentoEncontrado);
     }
 
     @Override
     public void desassociarTransacaoDeConta(Long transacaoId, Long contaId) {
-        HistoricoTransacao transacaoEncontrada = historicoTransacaoService.encontrarTransacaoPorid(transacaoId);
-        ContaUsuario contaEncontrada = contaUsuarioService.encontrarContaPorId(contaId);
+        HistoricoTransacao transacaoEncontrada = historicoTransacaoRepository.findById(transacaoId)
+                .orElseThrow(() -> new HistoricoTransacaoNaoEncontrado("Transação não encontrada com id: " + transacaoId));
+        ContaUsuario contaEncontrada = contaUsuarioRepository.findById(contaId)
+                .orElseThrow(() -> new ContaNaoEncontrada("Conta não encontrada com id: " + contaId));
 
-        //Verificar se essa transação está associado a essa conta
-        if(!transacaoEncontrada.getContaRelacionada().equals(contaEncontrada) ||
-                !contaEncontrada.getTransacoesRelacionadas().contains(transacaoEncontrada)){
-                throw new DesassociationErrorException("a id desse histórico de transacao " + transacaoId + " " +
-                        "não é associado a essa conta com essa id: " + contaId);
+        if (!transacaoEncontrada.getContaRelacionada().equals(contaEncontrada)
+                || !contaEncontrada.getTransacoesRelacionadas().contains(transacaoEncontrada)) {
+            throw new DesassociationErrorException("A transação " + transacaoId + " não está associada à conta " + contaId);
         }
 
-        //Desassociar de ambos os lados
         contaEncontrada.getTransacoesRelacionadas().remove(transacaoEncontrada);
         transacaoEncontrada.setContaRelacionada(null);
 
-        //Salvar os valores, persistindo os dados
         contaUsuarioRepository.save(contaEncontrada);
         historicoTransacaoRepository.save(transacaoEncontrada);
     }
 
     @Override
     public void desassociarTransacaoDeUsuario(Long transacaoId, Long usuarioId) {
-        HistoricoTransacao transacaoEncontrada = historicoTransacaoService.encontrarTransacaoPorid(transacaoId);
-        Usuario usuarioEncontrado = usuariosService.encontrarUsuarioPorId(usuarioId);
+        HistoricoTransacao transacaoEncontrada = historicoTransacaoRepository.findById(transacaoId)
+                .orElseThrow(() -> new HistoricoTransacaoNaoEncontrado("Transação não encontrada com id: " + transacaoId));
+        Usuario usuarioEncontrado = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new UsuarioNaoEncontrado("Usuário não encontrado com id: " + usuarioId));
 
-        //Verificar se essa transação está associado a essa categoria
-        if(!transacaoEncontrada.getUsuarioRelacionado().equals(usuarioEncontrado) ||
-                !usuarioEncontrado.getTransacoesRelacionadas().contains(transacaoEncontrada)){
-            throw new DesassociationErrorException("a id desse histórico de transacao " + transacaoId + " " +
-                    "não é associado a esse usuário com esse id: " + usuarioId);
+        if (!transacaoEncontrada.getUsuarioRelacionado().equals(usuarioEncontrado)
+                || !usuarioEncontrado.getTransacoesRelacionadas().contains(transacaoEncontrada)) {
+            throw new DesassociationErrorException("A transação " + transacaoId + " não está associada ao usuário " + usuarioId);
         }
 
-        //Senao.. desassociar de ambos os lados
         transacaoEncontrada.setUsuarioRelacionado(null);
         usuarioEncontrado.getTransacoesRelacionadas().remove(transacaoEncontrada);
 
-        //Salvar de ambos os lados
         usuarioRepository.save(usuarioEncontrado);
         historicoTransacaoRepository.save(transacaoEncontrada);
     }
 
     @Override
     public void desassociarTransacaoDeCategoria(Long transacaoId, Long categoriaId) {
-        HistoricoTransacao transacaoEncontrada = historicoTransacaoService.encontrarTransacaoPorid(transacaoId);
-        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.encontrarCategoriaPorId(categoriaId);
+        HistoricoTransacao transacaoEncontrada = historicoTransacaoRepository.findById(transacaoId)
+                .orElseThrow(() -> new HistoricoTransacaoNaoEncontrado("Transação não encontrada com id: " + transacaoId));
+        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaId)
+                .orElseThrow(() -> new CategoriaNaoEncontrada("Categoria não encontrada com id: " + categoriaId));
 
-        //Verificar se essa transação está associado a essa categoria
-        if(!categoriaEncontrada.getTransacoesRelacionadas().contains(transacaoEncontrada) ||
-                !transacaoEncontrada.getCategoriasRelacionadas().contains(categoriaEncontrada)){
-            throw new DesassociationErrorException("a id desse histórico de transacao " + transacaoId + " " +
-                    "não é associado a essa categoria com esse id: " + categoriaId);
+        if (!categoriaEncontrada.getTransacoesRelacionadas().contains(transacaoEncontrada)
+                || !transacaoEncontrada.getCategoriasRelacionadas().contains(categoriaEncontrada)) {
+            throw new DesassociationErrorException("A transação " + transacaoId + " não está associada à categoria " + categoriaId);
         }
 
-        //Senao.. desassociar de ambos os lados
         transacaoEncontrada.getCategoriasRelacionadas().remove(categoriaEncontrada);
         categoriaEncontrada.getTransacoesRelacionadas().remove(transacaoEncontrada);
 
-        //Salvar de ambos os lados
         categoriaFinanceiraRepository.save(categoriaEncontrada);
         historicoTransacaoRepository.save(transacaoEncontrada);
-
     }
 }

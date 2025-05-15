@@ -16,13 +16,14 @@ public interface CategoriaFinanceiraService {
     // ======================== OPERAÇÕES CRUD BÁSICAS ========================
 
     /**
-     * Cria uma nova categoria financeira no sistema.
+     * Cria uma nova categoria financeira no sistema e ja associar.
      *
      * @param request DTO contendo os dados necessários para a criação.
      * @return Retorna um DTO com os dados da categoria criada.
      * @throws DadosInvalidosException se os dados digitados forem inválidos.
      */
-    CategoriaFinanceiraResponse criarCategoriaFinanceira(CategoriaFinanceiraRequest request);
+    CategoriaFinanceiraResponse criarCategoriaFinanceira(CategoriaFinanceiraRequest request
+            ,Long pagamentoId,Long historicoTransacaoId, Long contaUsuarioId, Long usuarioId);
 
     /**
      * Busca uma categoria financeira pelo seu ID.
@@ -31,16 +32,17 @@ public interface CategoriaFinanceiraService {
      * @return Retorna a categoria encontrada ou vazio caso não encontre.
      * @throws CategoriaNaoEncontrada se os dados digitados forem inválidos.
      */
-    CategoriaFinanceira encontrarCategoriaPorId(Long id);
+    CategoriaFinanceiraResponse encontrarCategoriaPorId(Long id);
 
     /**
      * Encontra as categorias financeiras de um determinado subtipo.
      *
      * @param subTipo O subtipo da categoria (ex: Despesa, Receita).
      * @return Retorna uma lista de categorias financeiras com o subtipo informado.
-     * @throws CategoriaNaoEncontrada se não for encontrado a categoria pela SubCategoria
+     * @throws CategoriaNaoEncontrada se não for encontrado categorias pela SubCategoria
      */
-    List<CategoriaFinanceiraResponse> encontrarCategoriaCriadaPeloSubTipo(Long id, SubTipoCategoria subTipo);
+    List<CategoriaFinanceiraResponse> encontrarCategoriasCriadaPeloSubTipo
+    (SubTipoCategoria subTipo);
 
     /**
      * Lista todas as categorias financeiras, com suporte a paginação.

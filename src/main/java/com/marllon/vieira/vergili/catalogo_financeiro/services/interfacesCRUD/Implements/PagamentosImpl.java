@@ -15,6 +15,7 @@ import java.util.List;
 
 @Service
 public class PagamentosImpl implements PagamentosService {
+
     @Override
     public PagamentosResponse criarRecebimento(PagamentosRequest request) {
         return null;

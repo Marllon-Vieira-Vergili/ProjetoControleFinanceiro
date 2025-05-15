@@ -1,71 +1,59 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.AssociationsImpl;
 
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.CategoriaFinanceiraResponse;
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.UsuarioResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.AssociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.SubTipoNaoEncontrado;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.CategoriaFinanceiraAssociation;
-import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.*;
 import jakarta.transaction.Transactional;
 import lombok.EqualsAndHashCode;
+import org.hibernate.validator.internal.util.stereotypes.Lazy;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Optional;
 
 import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias.DESPESA;
 import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias.RECEITA;
-
-@Service
+@Component
 @Transactional
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class CategoriaFinanceiraAssocImpl implements CategoriaFinanceiraAssociation {
 
 
     @Autowired
+    @Lazy
     private PagamentosRepository pagamentosRepository;
 
     @Autowired
+    @Lazy
     private ContaUsuarioRepository contaUsuarioRepository;
 
     @Autowired
+    @Lazy
     private UsuarioRepository usuarioRepository;
 
     @Autowired
+    @Lazy
     private HistoricoTransacaoRepository historicoTransacaoRepository;
 
     @Autowired
+    @Lazy
     private CategoriaFinanceiraRepository categoriaFinanceiraRepository;
-
-    @Autowired
-    private CategoriaFinanceiraService categoriaFinanceiraService;
-
-    @Autowired
-    private ContaUsuarioService contaUsuarioService;
-
-    @Autowired
-    private PagamentosService pagamentosService;
-
-    @Autowired
-    private HistoricoTransacaoService historicoTransacaoService;
-
-    @Autowired
-    private UsuariosService usuariosService;
-
 
 
     @Override
     public void associarCategoriaComConta(Long categoriaId, Long contaId) {
 
-        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.encontrarCategoriaPorId(categoriaId);
-        ContaUsuario contaUsuarioEncontrada = contaUsuarioService.encontrarContaPorId(contaId);
+        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaId)
+                .orElseThrow(() -> new CategoriaNaoEncontrada("Categoria não foi encontrada com essa id informada"));
+
+        ContaUsuario contaUsuarioEncontrada = contaUsuarioRepository.findById(contaId)
+                .orElseThrow(() -> new ContaNaoEncontrada("Conta não foi encontrada com essa id informada"));
 
         if(categoriaEncontrada.getContaRelacionada() == null ||
                 !contaUsuarioEncontrada.getCategoriasRelacionadas().contains(categoriaEncontrada)){
@@ -86,9 +74,10 @@ public class CategoriaFinanceiraAssocImpl implements CategoriaFinanceiraAssociat
     @Override
     public void associarCategoriaComPagamento(Long categoriaId, Long pagamentoId) {
 
-        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.encontrarCategoriaPorId(categoriaId);
-
-        Pagamentos pagamentoEncontrado = pagamentosService.encontrarPagamentoPorid(pagamentoId);
+        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaId)
+                .orElseThrow(() -> new CategoriaNaoEncontrada("Categoria não foi encontrada com essa id informada"));
+        Pagamentos pagamentoEncontrado = pagamentosRepository.findById(pagamentoId)
+                .orElseThrow(() -> new PagamentoNaoEncontrado("Pagamento não foi encontrada com essa id informada"));
 
         if(categoriaEncontrada.getPagamentosRelacionados() == null){
             categoriaEncontrada.setPagamentosRelacionados(new ArrayList<>());
@@ -117,9 +106,10 @@ public class CategoriaFinanceiraAssocImpl implements CategoriaFinanceiraAssociat
     @Override
     public void associarCategoriaComTransacao(Long categoriaId, Long transacaoId) {
 
-        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.encontrarCategoriaPorId(categoriaId);
-
-        HistoricoTransacao transacaoEncontrada = historicoTransacaoService.encontrarTransacaoPorid(transacaoId);
+        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaId)
+                .orElseThrow(() -> new CategoriaNaoEncontrada("Categoria não foi encontrada com essa id informada"));
+        HistoricoTransacao transacaoEncontrada = historicoTransacaoRepository.findById(transacaoId)
+                .orElseThrow(() -> new HistoricoTransacaoNaoEncontrado("Historico transação não foi encontrada com essa id informada"));
 
         if(categoriaEncontrada.getTransacoesRelacionadas() == null){
             categoriaEncontrada.setTransacoesRelacionadas(new ArrayList<>());
@@ -144,9 +134,10 @@ public class CategoriaFinanceiraAssocImpl implements CategoriaFinanceiraAssociat
     @Override
     public void associarCategoriaComUsuario(Long categoriaId, Long usuarioId) {
 
-       CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.encontrarCategoriaPorId(categoriaId);
-
-        Usuario usuarioEncontrado =  usuariosService.encontrarUsuarioPorId(usuarioId);
+        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaId)
+                .orElseThrow(() -> new CategoriaNaoEncontrada("Categoria não foi encontrada com essa id informada"));
+        Usuario usuarioEncontrado = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new UsuarioNaoEncontrado("usuario não foi encontrada com essa id informada"));
 
         // Verifica se a categoria já está associada
         if (categoriaEncontrada.getUsuarioRelacionado().getId().equals(usuarioEncontrado.getId()) ||
@@ -222,9 +213,10 @@ public class CategoriaFinanceiraAssocImpl implements CategoriaFinanceiraAssociat
     @Override
     public void desassociarCategoriaAConta(Long categoriaId, Long contaId) {
 
-        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.encontrarCategoriaPorId(categoriaId);
-
-        ContaUsuario contaEncontrada = contaUsuarioService.encontrarContaPorId(contaId);
+        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaId)
+                .orElseThrow(() -> new CategoriaNaoEncontrada("Categoria não foi encontrada com essa id informada"));
+        ContaUsuario contaEncontrada = contaUsuarioRepository.findById(contaId)
+                .orElseThrow(() -> new ContaNaoEncontrada("Conta não foi encontrada com essa id informada"));
 
         if(!contaEncontrada.getCategoriasRelacionadas().contains(categoriaEncontrada)
                 || !categoriaEncontrada.getContaRelacionada().getId().equals(contaEncontrada.getId())){
@@ -242,10 +234,11 @@ public class CategoriaFinanceiraAssocImpl implements CategoriaFinanceiraAssociat
     @Override
     public void desassociarCategoriaAPagamento(Long categoriaId, Long pagamentoId) {
 
-        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.encontrarCategoriaPorId(categoriaId);
+        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaId)
+                .orElseThrow(() -> new CategoriaNaoEncontrada("Categoria não foi encontrada com essa id informada"));
 
-
-        Pagamentos pagamentoEncontrado = pagamentosService.encontrarPagamentoPorid(pagamentoId);
+        Pagamentos pagamentoEncontrado = pagamentosRepository.findById(pagamentoId)
+                .orElseThrow(() -> new PagamentoNaoEncontrado("Pagamento não foi encontrada com essa id informada"));
 
         //Verificar se esse pagamento está associado
         if(!categoriaEncontrada.getPagamentosRelacionados().contains(pagamentoEncontrado) ||
@@ -267,10 +260,11 @@ public class CategoriaFinanceiraAssocImpl implements CategoriaFinanceiraAssociat
     @Override
     public void desassociarCategoriaTransacao(Long categoriaId, Long transacaoId) {
 
-        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.encontrarCategoriaPorId(categoriaId);
+        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaId)
+                .orElseThrow(() -> new CategoriaNaoEncontrada("Categoria não foi encontrada com essa id informada"));
 
-        HistoricoTransacao historicoTransacaoEncontrado = historicoTransacaoService.encontrarTransacaoPorid(transacaoId);
-
+        HistoricoTransacao historicoTransacaoEncontrado = historicoTransacaoRepository.findById(transacaoId)
+                .orElseThrow(() -> new HistoricoTransacaoNaoEncontrado("Historico transação não foi encontrada com essa id informada"));
         //Verificar se ja possui uma associação dessas
         if(!categoriaEncontrada.getTransacoesRelacionadas().contains(historicoTransacaoEncontrado)||
         !historicoTransacaoEncontrado.getCategoriasRelacionadas().contains(categoriaEncontrada)){
@@ -291,9 +285,11 @@ public class CategoriaFinanceiraAssocImpl implements CategoriaFinanceiraAssociat
     @Override
     public void desassociarCategoriaUsuario(Long categoriaId, Long usuarioId) {
 
-        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraService.encontrarCategoriaPorId(categoriaId);
+        CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaId)
+                .orElseThrow(() -> new CategoriaNaoEncontrada("Categoria não foi encontrada com essa id informada"));
 
-        Usuario usuarioEncontrado = usuariosService.encontrarUsuarioPorId(usuarioId);
+        Usuario usuarioEncontrado = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new UsuarioNaoEncontrado("Usuario não foi encontrado com essa id informada"));
 
         //Verificar se a id do usuário informada está associado a essa categoria de contas
         if(!categoriaEncontrada.getUsuarioRelacionado().getId().equals(usuarioEncontrado.getId()) ||
@@ -315,8 +311,8 @@ public class CategoriaFinanceiraAssocImpl implements CategoriaFinanceiraAssociat
     public void desassociarCategoriaCriadaComDespesa(Long categoriaId) {
 
 //Obter o id da categoria
-        CategoriaFinanceira categoriaCriadaEncontrada = categoriaFinanceiraService.encontrarCategoriaPorId(categoriaId);
-        if(categoriaCriadaEncontrada.getTiposCategorias().equals(DESPESA)){
+        CategoriaFinanceira categoriaCriadaEncontrada = categoriaFinanceiraRepository.findById(categoriaId)
+                .orElseThrow(() -> new CategoriaNaoEncontrada("Categoria não foi encontrada com essa id informada"));        if(categoriaCriadaEncontrada.getTiposCategorias().equals(DESPESA)){
             if(categoriaCriadaEncontrada.getSubTipo().name().equals(DESPESA.name())){
                 //desassociar o tipo de categoria ao subtipo de despesa selecionado,
                 // para a categoria financeira
@@ -340,8 +336,8 @@ public class CategoriaFinanceiraAssocImpl implements CategoriaFinanceiraAssociat
     public void desassociarCategoriaCriadaComReceita(Long categoriaId) {
 
         //Obter o id da categoria
-        CategoriaFinanceira categoriaCriadaEncontrada = categoriaFinanceiraService.encontrarCategoriaPorId(categoriaId);
-        if(categoriaCriadaEncontrada.getTiposCategorias().equals(RECEITA)){
+        CategoriaFinanceira categoriaCriadaEncontrada = categoriaFinanceiraRepository.findById(categoriaId)
+                .orElseThrow(() -> new CategoriaNaoEncontrada("Categoria não foi encontrada com essa id informada"));        if(categoriaCriadaEncontrada.getTiposCategorias().equals(RECEITA)){
             if(categoriaCriadaEncontrada.getSubTipo().name().equals(RECEITA.name())){
                 //desassociar o tipo de categoria ao subtipo de receita selecionado,
                 // para a categoria financeira

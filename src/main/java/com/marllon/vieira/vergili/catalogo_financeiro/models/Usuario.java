@@ -30,6 +30,7 @@ import java.util.NoSuchElementException;
 public class Usuario {
 
     @Id
+    @Setter(AccessLevel.NONE) //Não gerar setter para ID
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id",nullable = false)
     @EqualsAndHashCode.Include
