@@ -28,7 +28,6 @@ import java.util.List;
 public class CategoriaFinanceira {
 
 
-
     //----------------------------------------ATRIBUTOS--------------------------------------------------------//
 
 
@@ -46,50 +45,43 @@ public class CategoriaFinanceira {
     private TiposCategorias tiposCategorias;
 
     @NotNull(message = "O campo SubtTipo não pode ser nulo")
-    @Column(name = "subtipo_categoria",nullable = false)
+    @Column(name = "subtipo_categoria", nullable = false)
     @Enumerated(EnumType.STRING)
     private SubTipoCategoria subTipo;
-
-
 
 
     //----------------------------------------RELACIONAMENTOS--------------------------------------------------------//
 
 
-    /**Várias categorias de contas, pode ter uma conta relacionadas(Uma categoria de despesa de conta, pode
-     * ter uma conta relacionada ex: uma categoria de conta de despesa(conta de luz) pode ser paga por
-     * qualquer conta(corrente, poupança, etc..)
-     *
+    /**
+     * Representa uma categoria de contas que pode estar associada a uma conta específica.
+     * Uma categoria de despesa, como "Conta de Luz", pode ser paga por qualquer conta
+     * (corrente, poupança, etc.).
      */
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH, CascadeType.DETACH, CascadeType.MERGE})
     @JoinColumn(name = "conta_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_categoria_conta"))
-    //Categoria será associada a id da conta
     private ContaUsuario contaRelacionada;
 
     /**
-     * várias categorias diferentes, ex:ContaUsuario água, luz, etc.. pode  ter vários pagamentos relacionados
-     *   (ex: pagamento agua, pagamento luz, etc.)
+     * Uma categoria pode estar relacionada a vários pagamentos.
+     * Exemplo: A categoria "Conta de Água" pode ter múltiplos registros de pagamento associados.
      */
-    @ManyToMany(mappedBy = "categoriasRelacionadas", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "categoriaRelacionada", fetch = FetchType.LAZY)
     private List<Pagamentos> pagamentosRelacionados = new ArrayList<>();
 
     /**
-     * várias categorias pode ter várias transações. (Ex: Categoria despesa agua, internet, luz),
-     * pode estar associado a vários
-     * tiipos de transações separadamente
+     * Uma categoria pode estar associada a múltiplas transações financeiras.
+     * Exemplo: A categoria "Despesa - Internet" pode ter diferentes transações registradas ao longo do tempo.
      */
-    @ManyToMany(mappedBy = "categoriasRelacionadas", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "categoriaRelacionada", fetch = FetchType.LAZY)
     private List<HistoricoTransacao> transacoesRelacionadas = new ArrayList<>();
 
     /**
-     * muitas categorias de contas pode ter um usuário associado a essas categorias.ex: um usuário pode ter categoria
-     *  de despesas, de receitas, e investimento, etc.
+     * Muitas categorias podem estar associadas a um usuário.
+     * Exemplo: Um usuário pode ter categorias como "Despesas", "Receitas" e "Investimentos".
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_categoria_usuario"))
-    //categoria será relacionado a id do usuário, coluna de junção
     private Usuario usuarioRelacionado;
-
-
 
 }

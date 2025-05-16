@@ -51,35 +51,47 @@ public class HistoricoTransacao {
             message = "Descrição contém caracteres inválidos!")
     private String descricao;
 
+    @NotNull(message = "O campo tipo de categoria não pode ser nulo")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipos_categorias", nullable = false)
+    private TiposCategorias tiposCategorias;
 
+    // RELACIONAMENTOS
 
-    //Relacionamentos
-
-    /**Vários históricos de transações, pode ter vários pagamentos relacionados
+    /**
+     * Um histórico de transação pode estar relacionado a vários pagamentos.
+     * Exemplo: Um histórico pode representar uma compra parcelada ou múltiplos pagamentos
+     * associados à mesma transação.
      */
     @ManyToMany(mappedBy = "transacoesRelacionadas", fetch = FetchType.LAZY)
     private List<Pagamentos> pagamentosRelacionados = new ArrayList<>();
 
-    /**vários históricos de transação, pode ter uma conta associada
+    /**
+     * Um histórico de transação pode estar associado a uma conta específica.
+     * Exemplo: A transação pode ter ocorrido em uma conta corrente ou poupança.
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "conta_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_transacao_conta"))
     private ContaUsuario contaRelacionada;
 
-    /**Vários históricos de transação, pode ter um usuário associado
+    /**
+     * Um histórico de transação pode estar vinculado a um usuário.
+     * Exemplo: O usuário responsável pela transação pode ser identificado,
+     * permitindo consultas e relatórios financeiros.
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_transacao_usuario"))
     private Usuario usuarioRelacionado;
 
-    /**vários históricos de transação, pode ter vários tipos de categorias de contas relacionadas
-     */
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinTable(name = "transacoes_e_categorias", joinColumns = @JoinColumn(name = "transacao_id")
-            , foreignKey = @ForeignKey(name = "fk_transacao_id"), inverseJoinColumns =
-    @JoinColumn(name = "categoria_id"), inverseForeignKey = @ForeignKey(name = "fk_categoria_id"))
-    private List<CategoriaFinanceira> categoriasRelacionadas = new ArrayList<>();
 
+
+    /**
+     * Um histórico de transação pode estar relacionado a uma categoria financeira.
+     * Exemplo: A transação pode ser classificada como "Despesa - Alimentação" ou
+     * "Receita - Salário", organizando melhor os registros financeiros.
+     */
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "categoria_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_categoria_id"))
+    private CategoriaFinanceira categoriaRelacionada;
 
 }
-

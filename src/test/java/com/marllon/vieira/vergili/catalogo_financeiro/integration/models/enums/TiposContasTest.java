@@ -1,5 +1,6 @@
-package com.marllon.vieira.vergili.catalogo_financeiro.models.enums;
+package com.marllon.vieira.vergili.catalogo_financeiro.integration.models.enums;
 
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;

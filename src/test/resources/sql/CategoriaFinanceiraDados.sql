@@ -21,3 +21,14 @@ INSERT INTO categoria_das_contas (id, tipos_categorias, subtipo_categoria) VALUE
 INSERT INTO categoria_das_contas (id, tipos_categorias, subtipo_categoria) VALUES (24, 'RECEITA', 'RENDA_FIXA');
 INSERT INTO categoria_das_contas (id, tipos_categorias, subtipo_categoria) VALUES (25, 'RECEITA', 'RENDA_ALUGUEL');
 INSERT INTO categoria_das_contas (id, tipos_categorias, subtipo_categoria) VALUES (26, 'RECEITA', 'OUTROS');
+
+
+--DELETAR
+DELETE FROM categoria_das_contas;
+
+
+-- INSERÇÂO DE UM VALOR DAS OUTRAS ENTIDADES(PARA TESTE DE ASSOCIAÇÂO)
+INSERT INTO pagamentos(id,valor,data,descricao) values(1,1000,'2000-01-01','pagamento teste');
+INSERT INTO contas(id,nome,saldo,tipo_conta) values(1,'contateste', 1000, CONTA_CORRENTE);
+INSERT INTO historico_transacoes(id,valor,data,descricao) values(1,1000,'2000-01-01','historico teste');
+INSERT INTO usuarios(id,nome,email,senha,telefone) values(1,'teste','teste@email.com','Teste123','(11)11111-1111');

@@ -6,20 +6,16 @@ import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.RestCont
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.CategoriaNaoEncontrada;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.CategoriaFinanceiraService;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.http.HttpResponse;
+import java.util.Optional;
 
-import static org.springframework.web.servlet.function.ServerResponse.ok;
 import static org.springframework.web.servlet.function.ServerResponse.status;
 
 /**
@@ -58,9 +54,9 @@ public class CategoriaFinanceiraController {
     }
 
     @GetMapping(value = "/mostrarTipoCategoriaPeloId/{id}")
-    public ResponseEntity<CategoriaFinanceiraResponse>
+    public ResponseEntity<Optional<CategoriaFinanceiraResponse>>
     encontrarCategoriaCriadaPeloId(@PathVariable Long id) throws CategoriaNaoEncontrada {
-        CategoriaFinanceiraResponse response = categoriaService.encontrarCategoriaPorId(id);
+        Optional<CategoriaFinanceiraResponse> response = categoriaService.encontrarCategoriaPorId(id);
         return ResponseEntity.status(HttpStatus.FOUND).body(response);
     }
 

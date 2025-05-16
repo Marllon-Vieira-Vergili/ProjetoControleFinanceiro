@@ -25,64 +25,69 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PUBLIC)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(of = {"id","valor", "data", "descricao"})
-public class Pagamentos{
+public class Pagamentos {
 
     @Id
     @Setter(AccessLevel.NONE) //Não gerar setter para ID
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id",nullable = false)
+    @Column(name = "id", nullable = false)
     @EqualsAndHashCode.Include
     private Long id;
 
-    @Column(name = "valor",nullable = false)
+    @Column(name = "valor", nullable = false)
     @NotNull(message = "O campo do valor não pode ser vazio!")
     @Min(value = 1, message = "O valor mínimo para inserção de um valor, é de R$ 1,00")
     private BigDecimal valor;
 
-    @Column(name = "data",nullable = false)
+    @Column(name = "data", nullable = false)
     @NotNull(message = "O campo da data não pode ficar vazio!")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     @DateTimeFormat(pattern = "dd/MM/yyyy")
     private LocalDate data;
 
-    @Column(name = "descricao", length = 255,nullable = false)
+    @Column(name = "descricao", length = 255, nullable = false)
     @NotBlank(message = "O campo descrição não pode ficar vazio!")
     private String descricao;
 
+    @NotNull(message = "O campo tipo de categoria não pode ser nulo")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipos_categorias", nullable = false)
+    private TiposCategorias tiposCategorias;
 
 
-    //RELACIONAMENTOS
+    // RELACIONAMENTOS
 
-    /**muitos pagamentos, pode ter um usuário(muitos pagamentos, pode vir de um usuário apenas)
-     *
+    /**
+     * Muitos pagamentos podem estar associados a um único usuário.
+     * Exemplo: Um usuário pode realizar diversos pagamentos ao longo do tempo.
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuarios_id", referencedColumnName = "id",foreignKey = @ForeignKey(name = "fk_pagamento_usuario"))
+    @JoinColumn(name = "usuarios_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_pagamento_usuario"))
     private Usuario usuarioRelacionado;
 
-    /**Vários pagamentos, pode ter vários históricos de transações(varios pagamentos diversos, pode ter varias transacoes)
+    /**
+     * Um pagamento pode estar relacionado a várias transações financeiras.
+     * Exemplo: Um pagamento parcelado pode ser vinculado a diferentes registros de transação.
      */
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinTable(name = "pagamentos_e_transacoes", joinColumns = @JoinColumn
-            (name = "pagamento_id",foreignKey = @ForeignKey(name = "pagamento_fk")),
-            inverseJoinColumns = @JoinColumn(name = "transacao_id",foreignKey = @ForeignKey
-                    (name = "transacao_fk")))
+    @JoinTable(name = "pagamentos_e_transacoes",
+            joinColumns = @JoinColumn(name = "pagamento_id", foreignKey = @ForeignKey(name = "pagamento_fk")),
+            inverseJoinColumns = @JoinColumn(name = "transacao_id", foreignKey = @ForeignKey(name = "transacao_fk")))
     private List<HistoricoTransacao> transacoesRelacionadas = new ArrayList<>();
 
-    /**vários pagamentos, podem sair de uma conta(um pagamento(ou vários) é feito por uma conta de um usuário)
+    /**
+     * Um pagamento pode estar vinculado a uma conta específica.
+     * Exemplo: Os pagamentos podem ser realizados a partir de contas correntes, poupanças ou outras fontes financeiras.
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "conta_id",referencedColumnName = "id",foreignKey = @ForeignKey(name = "fk_pagamento_conta"))
+    @JoinColumn(name = "conta_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_pagamento_conta"))
     private ContaUsuario contaRelacionada;
 
-    /**Vários pagamentos, podem ter várias categorias de pagamentos(Vários pagamentos podem ter vários categorias e tipos
-    de pagamentos)
+    /**
+     * Um pagamento pode estar associado a uma categoria financeira.
+     * Exemplo: Um pagamento pode ser classificado como "Despesa - Aluguel" ou "Receita - Salário", organizando melhor os registros financeiros.
      */
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-            @JoinTable(name = "pagamentos_e_categorias",joinColumns = @JoinColumn(name = "pagamento_id"),
-                    foreignKey = @ForeignKey(name = "fk_pagamento"),inverseJoinColumns =
-            @JoinColumn(name = "categoria_id"), inverseForeignKey = @ForeignKey(name = "fk_categoria"))
-    private List<CategoriaFinanceira> categoriasRelacionadas = new ArrayList<>();
-
-
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "categoria_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_categoria_id"))
+    private CategoriaFinanceira categoriaRelacionada;
 }

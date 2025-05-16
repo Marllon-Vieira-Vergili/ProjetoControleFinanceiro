@@ -83,15 +83,13 @@ public class CategoriaFinanceiraAssocImpl implements CategoriaFinanceiraAssociat
             categoriaEncontrada.setPagamentosRelacionados(new ArrayList<>());
         }
 
-        if(pagamentoEncontrado.getCategoriasRelacionadas() == null){
-            pagamentoEncontrado.setCategoriasRelacionadas(new ArrayList<>());
-        }
+
 
         if(!categoriaEncontrada.getPagamentosRelacionados().contains(pagamentoEncontrado)
-                || !pagamentoEncontrado.getCategoriasRelacionadas().contains(categoriaEncontrada)){
+                || pagamentoEncontrado.getCategoriaRelacionada() == null){
             try{
                 categoriaEncontrada.getPagamentosRelacionados().add(pagamentoEncontrado);
-                pagamentoEncontrado.getCategoriasRelacionadas().add(categoriaEncontrada);
+                pagamentoEncontrado.setCategoriaRelacionada(categoriaEncontrada);
 
             } catch (RuntimeException e) {
                 throw new AssociationErrorException(e.getMessage());
@@ -116,9 +114,9 @@ public class CategoriaFinanceiraAssocImpl implements CategoriaFinanceiraAssociat
         }
         try{
             if(!categoriaEncontrada.getTransacoesRelacionadas().contains(transacaoEncontrada) ||
-                    !transacaoEncontrada.getCategoriasRelacionadas().contains(categoriaEncontrada)){
+                    transacaoEncontrada.getCategoriaRelacionada() == null){
                 categoriaEncontrada.getTransacoesRelacionadas().add(transacaoEncontrada);
-                transacaoEncontrada.getCategoriasRelacionadas().add(categoriaEncontrada);
+                transacaoEncontrada.setCategoriaRelacionada(categoriaEncontrada);
             }
         } catch (Exception e) {
             throw new AssociationErrorException("Não foi possível realizar a associação da categoria com a transação");
@@ -242,14 +240,14 @@ public class CategoriaFinanceiraAssocImpl implements CategoriaFinanceiraAssociat
 
         //Verificar se esse pagamento está associado
         if(!categoriaEncontrada.getPagamentosRelacionados().contains(pagamentoEncontrado) ||
-                !pagamentoEncontrado.getCategoriasRelacionadas().contains(categoriaEncontrada)){
+                pagamentoEncontrado.getCategoriaRelacionada() == null){
             throw new DesassociationErrorException("a id dessa categoria " + categoriaId + " " +
                     "não é associado a esse pagamento com essa id: " + pagamentoId);
         }
 
         //Senão.. desassociar em ambos os lados
         categoriaEncontrada.getPagamentosRelacionados().remove(pagamentoEncontrado);
-        pagamentoEncontrado.getCategoriasRelacionadas().remove(categoriaEncontrada);
+        pagamentoEncontrado.setCategoriaRelacionada(null);
 
         //Salvar as alterações realizadas
         categoriaFinanceiraRepository.save(categoriaEncontrada);
@@ -267,7 +265,7 @@ public class CategoriaFinanceiraAssocImpl implements CategoriaFinanceiraAssociat
                 .orElseThrow(() -> new HistoricoTransacaoNaoEncontrado("Historico transação não foi encontrada com essa id informada"));
         //Verificar se ja possui uma associação dessas
         if(!categoriaEncontrada.getTransacoesRelacionadas().contains(historicoTransacaoEncontrado)||
-        !historicoTransacaoEncontrado.getCategoriasRelacionadas().contains(categoriaEncontrada)){
+        historicoTransacaoEncontrado.getCategoriaRelacionada() == null){
 
             throw new DesassociationErrorException("a id dessa categoria " + categoriaId + " " +
                     "não é associado a esse histórico de transação com essa id: " + transacaoId);
@@ -275,7 +273,7 @@ public class CategoriaFinanceiraAssocImpl implements CategoriaFinanceiraAssociat
 
         //Desassociar em ambos os lados bidirecionalmente
         categoriaEncontrada.getTransacoesRelacionadas().remove(historicoTransacaoEncontrado);
-        historicoTransacaoEncontrado.getCategoriasRelacionadas().remove(categoriaEncontrada);
+        historicoTransacaoEncontrado.setCategoriaRelacionada(null);
 
         //Salvar as alterações
         categoriaFinanceiraRepository.save(categoriaEncontrada);

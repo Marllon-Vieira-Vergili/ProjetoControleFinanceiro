@@ -1,4 +1,4 @@
-package com.marllon.vieira.vergili.catalogo_financeiro.service;
+package com.marllon.vieira.vergili.catalogo_financeiro.unit.service;
 
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.CategoriaFinanceiraRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.CategoriaFinanceiraResponse;
@@ -146,7 +146,7 @@ class CategoriaFinanceiraImplTest {
 
 
         //Valor de entrada dos dados para passar ao criar a categoria
-        CategoriaFinanceiraRequest valor = new CategoriaFinanceiraRequest(DESPESA,DESPESA_ALUGUEL);
+        CategoriaFinanceiraRequest valor = new CategoriaFinanceiraRequest(DESPESA,DESPESA_ALUGUEL,1L,1L,1L,1L);
         //Act. Chamada do método principal
         CategoriaFinanceiraResponse categoriacriada = categoriaFinanceiraService.criarCategoriaFinanceira(valor,1L, 1L, 1L, 1L);
 
@@ -180,13 +180,13 @@ class CategoriaFinanceiraImplTest {
         when(mapper.retornarDadosCategoria(categoria)).thenReturn(responseEsperado);
 
         //Act
-        CategoriaFinanceiraResponse response = categoriaFinanceiraService.encontrarCategoriaPorId(id);
+        Optional<CategoriaFinanceiraResponse> response = categoriaFinanceiraService.encontrarCategoriaPorId(id);
 
         //Assert
         assertNotNull(response);
-        assertEquals(DESPESA, response.tipoCategoria());
-        assertEquals(COMBUSTIVEL, response.subTipo());
-        assertEquals(id, response.id());
+        assertEquals(DESPESA, response.get().tipoCategoria());
+        assertEquals(COMBUSTIVEL, response.get().subTipo());
+        assertEquals(id, response.get().id());
 
         //Verify (metodos somente que serao mockados, o meu que estou testando nao)
         verify(categoriaFinanceiraRepository).findById(id);

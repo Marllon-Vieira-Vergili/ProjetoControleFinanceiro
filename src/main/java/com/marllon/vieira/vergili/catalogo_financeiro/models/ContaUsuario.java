@@ -54,32 +54,33 @@ public class ContaUsuario {
 
     //RELACIONAMENTOS
 
+
     /**
-     * uma conta pode ter várias categorias de recebimentos e gastos;(uma conta(poupança,corrente,etc..)
-     * pode ter várias
-     * categorias de pagamentos, seja despesa, receita, etc.
+     * Uma conta pode estar associada a várias categorias financeiras.
+     * Exemplo: Uma conta (poupança, corrente, etc.) pode ter categorias de pagamento como
+     * despesas, receitas.
      */
     @OneToMany(mappedBy = "contaRelacionada", fetch = FetchType.LAZY, cascade = {CascadeType.DETACH,
             CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     private List<CategoriaFinanceira> categoriasRelacionadas = new ArrayList<>();
 
-
     /**
-     * Uma conta pode ter vários pagamentos relacionados(uma conta(poupança,corrente,etc..)
-     * pode ter vários pagamentos feitos
+     * Uma conta pode ter vários pagamentos associados.
+     * Exemplo: Uma conta (poupança, corrente, etc.) pode registrar múltiplos pagamentos feitos ao longo do tempo.
      */
     @OneToMany(mappedBy = "contaRelacionada", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Pagamentos> pagamentosRelacionados = new ArrayList<>();
 
     /**
-     * Uma conta pode ter várias transações relacionadas(uma conta (poupança,corrente,etc..)
-     * pode ter várias transações realizdas
+     * Uma conta pode registrar múltiplas transações financeiras.
+     * Exemplo: Uma conta (poupança, corrente, etc.) pode ter transações como depósitos, saques e transferências.
      */
     @OneToMany(mappedBy = "contaRelacionada", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<HistoricoTransacao> transacoesRelacionadas = new ArrayList<>();
 
     /**
-     * Muitas Contas pode ter um usuário relacionado(Muitas contas de perfil)
+     * Muitas contas podem estar associadas a um único usuário.
+     * Exemplo: Um usuário pode ter diversas contas cadastradas, como conta corrente, poupança e investimentos.
      */
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH,
             CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})

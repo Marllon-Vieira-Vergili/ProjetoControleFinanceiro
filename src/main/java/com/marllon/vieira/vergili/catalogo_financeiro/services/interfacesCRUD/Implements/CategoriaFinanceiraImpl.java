@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -88,10 +89,10 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService{
     }
 
     @Override
-    public CategoriaFinanceiraResponse encontrarCategoriaPorId(Long id) {
+    public Optional<CategoriaFinanceiraResponse> encontrarCategoriaPorId(Long id) {
         CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraRepository.findById(id).orElseThrow(() ->
                 new CategoriaNaoEncontrada("Categoria financeira com essa Id não foi encontrada na base de dados"));
-        return mapper.retornarDadosCategoria(categoriaEncontrada);
+        return Optional.ofNullable(mapper.retornarDadosCategoria(categoriaEncontrada));
     }
 
 

@@ -32,7 +32,7 @@ public interface ContaUsuarioService {
      * @return  contendo a conta encontrada, ou retornar uma exception
      * @throws ContaNaoEncontrada se não for encontrada a conta
      */
-    ContaUsuario encontrarContaPorId(Long id);
+    Optional<ContaUsuario> encontrarContaPorId(Long id);
 
     /**
      * Listar todas as contas pelo nome encontrado, pois pode ter várias contas com o mesmo nome

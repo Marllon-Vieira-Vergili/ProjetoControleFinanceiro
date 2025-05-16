@@ -1,5 +1,6 @@
-package com.marllon.vieira.vergili.catalogo_financeiro.models;
+package com.marllon.vieira.vergili.catalogo_financeiro.integration.models;
 
+import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

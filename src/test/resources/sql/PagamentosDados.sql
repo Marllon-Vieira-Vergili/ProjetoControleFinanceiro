@@ -1,5 +1,5 @@
 INSERT INTO pagamentos (id, valor, data, descricao) VALUES
-(1, 2500.00, '2025-01-01', 'Pagamento para o José'),
+(1, 1000.00, '2025-01-01', 'pagamento teste'),
 (2, 150.75, '2025-01-05', 'Reembolso de despesas'),
 (3, 500.00, '2025-01-10', 'Parcela do empréstimo'),
 (4, 80.00, '2025-01-15', 'Pagamento de transporte'),
@@ -19,3 +19,10 @@ INSERT INTO pagamentos (id, valor, data, descricao) VALUES
 (18, 133.33, '2025-02-15', 'Pagamento parcial de dívida'),
 (19, 2000.00, '2025-02-20', 'Pagamento para prestador de serviço'),
 (20, 35.75, '2025-02-25', 'Compra de café e lanche');
+
+
+--VALORES DE OUTRAS ENTIDADES PARA TESTE
+INSERT INTO contas(id,nome,saldo,tipo_conta) values(1,'contateste', 1000, CONTA_CORRENTE);
+INSERT INTO historico_transacoes(id,valor,data,descricao) values(1,1000,'2000-01-01','historico teste');
+INSERT INTO usuarios(id,nome,email,senha,telefone) values(1,'teste','teste@email.com','Teste123','(11)11111-1111');
+INSERT INTO categoria_das_contas (id, tipos_categorias, subtipo_categoria) VALUES (1, 'RECEITA', 'PRESENTE');

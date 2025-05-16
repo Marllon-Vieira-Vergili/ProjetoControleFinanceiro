@@ -1,6 +1,8 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.models;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -10,7 +12,6 @@ import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 /**Classe do usuário gerenciar perfis e permissoes, o usuário criará um nome, colocará seu email, senha, e telefone
  * para criar uma "Conta" e logar nesta
@@ -52,6 +53,7 @@ public class Usuario {
     @NotBlank(message = "Senha é obrigatória!")
     @Pattern(regexp = "^(?=.*[A-Z])(?=.*\\d).{6,}$", message = "A senha deve possuir pelo menos uma letra maiúscula e um numero!")
     @Size(min = 6, message = "A senha necessita ter no mínimo 6 caracteres, incluindo letras, ou números!")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String senha;
 
     @Column(name = "telefone",nullable = false)
@@ -64,29 +66,32 @@ public class Usuario {
 
     //RELACIONAMENTOS
 
-    /**Um usuário pode ter vários pagamentos realizados
-     *
+    /**
+     * Um usuário pode ter vários pagamentos registrados.
+     * Exemplo: O usuário pode realizar diferentes pagamentos ao longo do tempo.
      */
-    @OneToMany(mappedBy = "usuarioRelacionado",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "usuarioRelacionado", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Pagamentos> pagamentosRelacionados = new ArrayList<>();
 
-    /**Um Usuário pode possuir vários históricos de transação(usuário pode possuir vários historicos, etc)
-     *
+    /**
+     * Um usuário pode possuir múltiplos históricos de transações financeiras.
+     * Exemplo: O usuário pode ter registros de compras, transferências, depósitos, etc.
      */
     @OneToMany(mappedBy = "usuarioRelacionado", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<HistoricoTransacao> transacoesRelacionadas = new ArrayList<>();
 
-    /**Um usuário pode possuir uma conta(uma conta para mostrar seus gastos, receitas, etc.)
-     *
+    /**
+     * Um usuário pode ter várias contas associadas.
+     * Exemplo: O usuário pode possuir contas correntes, poupanças ou investimentos para gerenciar suas finanças.
      */
     @OneToMany(mappedBy = "usuarioRelacionado", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<ContaUsuario> contasRelacionadas;
+    private List<ContaUsuario> contasRelacionadas = new ArrayList<>();
 
-    /**Um usuário pode ter várias categorias de pagamentos relacionados(um usuário pode ter várias categorias de contas pagas
-     *
+    /**
+     * Um usuário pode ter categorias financeiras associadas.
+     * Exemplo: As categorias podem representar diferentes tipos de despesas e receitas relacionadas ao usuário.
      */
-    @OneToMany(mappedBy = "usuarioRelacionado",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "usuarioRelacionado", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<CategoriaFinanceira> categoriasRelacionadas = new ArrayList<>();
-
 
 }

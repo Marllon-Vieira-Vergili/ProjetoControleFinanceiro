@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UsuarioImpl implements UsuariosService {
@@ -21,8 +22,8 @@ public class UsuarioImpl implements UsuariosService {
     }
 
     @Override
-    public Usuario encontrarUsuarioPorId(Long id) {
-        return null;
+    public Optional<Usuario> encontrarUsuarioPorId(Long id) {
+        return Optional.empty();
     }
 
     @Override

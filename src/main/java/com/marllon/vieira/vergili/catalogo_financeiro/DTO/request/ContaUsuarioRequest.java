@@ -24,7 +24,16 @@ public record ContaUsuarioRequest(@NotBlank(message = "O campo do nome não pode
 
                                   @NotNull(message = "O campo TipoConta não pode ser nulo")
                                   @Enumerated(EnumType.STRING)
-                                  TiposContas tipoConta) {
+                                  TiposContas tipoConta,
+
+                                  @NotNull(message = "O campo id da categoria não pode ser nulo")
+                                  Long idCategoriaFinanceira,
+
+                                  @NotNull(message = "O campo id do pagamento criado não pode ser nulo")
+                                  Long idPagamentoRequest,
+
+                                  @NotNull(message = "O campo id do usuário criada não pode ser nulo!")
+                                  Long idUsuario) {
 }
 
 

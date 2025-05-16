@@ -1,4 +1,4 @@
-package com.marllon.vieira.vergili.catalogo_financeiro.controllers;
+package com.marllon.vieira.vergili.catalogo_financeiro.unit.controllers;
 
 
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.CategoriaFinanceiraResponse;
@@ -34,6 +34,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -84,7 +85,7 @@ public class CategoriaFinanceiraControllerTest {
                 new CategoriaFinanceiraResponse(id, TiposCategorias.DESPESA,SubTipoCategoria.ALIMENTACAO);
 
         //Mockando
-        when(categoriaService.encontrarCategoriaPorId(id)).thenReturn(responseEsperada);
+        when(categoriaService.encontrarCategoriaPorId(id)).thenReturn(Optional.of(responseEsperada));
 
         //Act + Assert
         mockMvc.perform(MockMvcRequestBuilders.get("/api/categoria/mostrarTipoCategoriaPeloId/{id}",id))

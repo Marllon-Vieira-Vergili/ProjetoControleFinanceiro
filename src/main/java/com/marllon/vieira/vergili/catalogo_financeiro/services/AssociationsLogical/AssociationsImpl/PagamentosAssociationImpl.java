@@ -115,18 +115,13 @@ public class PagamentosAssociationImpl implements PagamentosAssociation {
         CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaId)
                 .orElseThrow(() -> new CategoriaNaoEncontrada("Categoria não encontrada"));
 
-        if (pagamentoEncontrado.getCategoriasRelacionadas() == null) {
-            pagamentoEncontrado.setCategoriasRelacionadas(new ArrayList<>());
-        }
+
         if (categoriaEncontrada.getPagamentosRelacionados() == null) {
             categoriaEncontrada.setPagamentosRelacionados(new ArrayList<>());
         }
 
-        if (pagamentoEncontrado.getCategoriasRelacionadas().contains(categoriaEncontrada)) {
-            throw new AssociationErrorException("Esse pagamento já está associado a essa categoria");
-        }
 
-        pagamentoEncontrado.getCategoriasRelacionadas().add(categoriaEncontrada);
+        pagamentoEncontrado.setCategoriaRelacionada(categoriaEncontrada);
         categoriaEncontrada.getPagamentosRelacionados().add(pagamentoEncontrado);
 
         pagamentosRepository.save(pagamentoEncontrado);
@@ -200,11 +195,11 @@ public class PagamentosAssociationImpl implements PagamentosAssociation {
         CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaId)
                 .orElseThrow(() -> new CategoriaNaoEncontrada("Categoria não encontrada"));
 
-        if (!pagamentoEncontrado.getCategoriasRelacionadas().contains(categoriaEncontrada)) {
+        if (!(pagamentoEncontrado.getCategoriaRelacionada() == categoriaEncontrada)) {
             throw new DesassociationErrorException("Pagamento não está associado a essa categoria");
         }
 
-        pagamentoEncontrado.getCategoriasRelacionadas().remove(categoriaEncontrada);
+        pagamentoEncontrado.setCategoriaRelacionada(categoriaEncontrada);
         categoriaEncontrada.getPagamentosRelacionados().remove(pagamentoEncontrado);
 
         pagamentosRepository.save(pagamentoEncontrado);

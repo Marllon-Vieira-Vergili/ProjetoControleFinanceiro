@@ -36,7 +36,7 @@ public interface UsuariosService {
      * @return {@code UsuarioResponse com os dados, se encontrado
      * @throws UsuarioNaoEncontrado se nenhum usuário for localizado
      */
-    Usuario encontrarUsuarioPorId(Long id);
+    Optional<Usuario> encontrarUsuarioPorId(Long id);
 
     /**
      * Busca usuários que contenham o nome especificado.

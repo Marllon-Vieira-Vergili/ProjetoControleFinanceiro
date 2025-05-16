@@ -1,6 +1,7 @@
-package com.marllon.vieira.vergili.catalogo_financeiro.repository;
+package com.marllon.vieira.vergili.catalogo_financeiro.integration.repository;
 
 import com.marllon.vieira.vergili.catalogo_financeiro.models.HistoricoTransacao;
+import com.marllon.vieira.vergili.catalogo_financeiro.repository.HistoricoTransacaoRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

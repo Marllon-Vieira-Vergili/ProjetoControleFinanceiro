@@ -105,19 +105,17 @@ public class HistoricoTransacaoAssocImpl implements HistoricoTransacaoAssociatio
         CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaId)
                 .orElseThrow(() -> new CategoriaNaoEncontrada("Categoria não encontrada com id: " + categoriaId));
 
-        if (transacaoEncontrada.getCategoriasRelacionadas() == null) {
-            transacaoEncontrada.setCategoriasRelacionadas(new ArrayList<>());
-        }
+
         if (categoriaEncontrada.getTransacoesRelacionadas() == null) {
             categoriaEncontrada.setTransacoesRelacionadas(new ArrayList<>());
         }
 
         if (categoriaEncontrada.getTransacoesRelacionadas().contains(transacaoEncontrada)
-                || transacaoEncontrada.getCategoriasRelacionadas().contains(categoriaEncontrada)) {
+                || transacaoEncontrada.getCategoriaRelacionada() != null) {
             throw new AssociationErrorException("Essa transação com o id: " + transacaoId + " já está associada a essa categoria " + categoriaId);
         }
 
-        transacaoEncontrada.getCategoriasRelacionadas().add(categoriaEncontrada);
+        transacaoEncontrada.setCategoriaRelacionada(categoriaEncontrada);
         categoriaEncontrada.getTransacoesRelacionadas().add(transacaoEncontrada);
 
         historicoTransacaoRepository.save(transacaoEncontrada);
@@ -189,11 +187,11 @@ public class HistoricoTransacaoAssocImpl implements HistoricoTransacaoAssociatio
                 .orElseThrow(() -> new CategoriaNaoEncontrada("Categoria não encontrada com id: " + categoriaId));
 
         if (!categoriaEncontrada.getTransacoesRelacionadas().contains(transacaoEncontrada)
-                || !transacaoEncontrada.getCategoriasRelacionadas().contains(categoriaEncontrada)) {
+                || transacaoEncontrada.getCategoriaRelacionada() == null) {
             throw new DesassociationErrorException("A transação " + transacaoId + " não está associada à categoria " + categoriaId);
         }
 
-        transacaoEncontrada.getCategoriasRelacionadas().remove(categoriaEncontrada);
+        transacaoEncontrada.setCategoriaRelacionada(null);
         categoriaEncontrada.getTransacoesRelacionadas().remove(transacaoEncontrada);
 
         categoriaFinanceiraRepository.save(categoriaEncontrada);

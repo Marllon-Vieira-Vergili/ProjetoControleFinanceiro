@@ -32,7 +32,7 @@ public interface CategoriaFinanceiraService {
      * @return Retorna a categoria encontrada ou vazio caso não encontre.
      * @throws CategoriaNaoEncontrada se os dados digitados forem inválidos.
      */
-    CategoriaFinanceiraResponse encontrarCategoriaPorId(Long id);
+    Optional<CategoriaFinanceiraResponse> encontrarCategoriaPorId(Long id);
 
     /**
      * Encontra as categorias financeiras de um determinado subtipo.

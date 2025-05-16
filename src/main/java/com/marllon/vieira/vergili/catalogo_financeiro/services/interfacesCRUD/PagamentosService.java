@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 
 public interface PagamentosService  {
@@ -42,7 +43,7 @@ public interface PagamentosService  {
      * @param id ID do pagamento.
      * @return PagamentosResponse contendo o pagamento encontrado
      */
-    Pagamentos encontrarPagamentoPorid(Long id);
+    Optional<Pagamentos> encontrarPagamentoPorid(Long id);
 
     /**
      * Busca pagamentos por data.

@@ -28,7 +28,7 @@ public interface HistoricoTransacaoService {
      * @return transação encontrada, se existir.
      * @throws HistoricoTransacaoNaoEncontrado se não for encontrada a transação.
      */
-    HistoricoTransacao encontrarTransacaoPorid(Long id);
+    Optional<HistoricoTransacao> encontrarTransacaoPorid(Long id);
 
     /**
      * Retorna uma lista de transações realizadas em uma data específica.
