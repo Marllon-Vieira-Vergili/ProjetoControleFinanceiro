@@ -22,6 +22,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +34,7 @@ import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposC
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.mockito.internal.configuration.GlobalConfiguration.validate;
 
 @TestMethodOrder(MethodOrderer.class)
 @ActiveProfiles("test")
@@ -79,74 +82,82 @@ class CategoriaFinanceiraImplTest {
     @Test
     @Order(1)
     @DisplayName("Deve encontrar todas as outras entidades pela sua id, pra associar a categoria financeira")
+    /**
+     * Esse método de teste, é para testar a lógica do método de criar uma categoriaFinanceira nova.
+     * Quando o usuário decidir chamar esse método, essa nova categoria deverá:
+     *
+     * Condição 1: Verificar antes de criar a categoria, se os valores do parâmetro estão condizentes, como o tipo escolhido
+     * e o subtipo (Que são enums o Tipo escolhido (RECEITA ou DESPESA) e Subtipo
+     *
+     * Condição 2: O tipo de categoria deve ser salvo antes para gerar uma "id", e posteriormente associado
+     *
+     * Condição 3:Verificar se a id das outras instancias estão livres para ser associado a essa categoria,
+     * ele deverá lançar um try/catch em cada método de associar a categoria Financeira a seus respectivos relacionamentos
+     * se falhar, ele deverá lançar a exception "AssociationErrorException"
+     *
+     * se der tudo certo, o método deverá passar no teste.. Esse teste é em caso de sucesso
+     */
     public void deveEncontrarTodasAsAssociacoesPelaIdECriarTipoCategoria() {
+        //Arrange - Instanciando valores Mockados
 
-        //Setup(mock) das entidades associadas
-        Pagamentos pagamento = new Pagamentos();
-        ReflectionTestUtils.setField(pagamento,"id",1L);
+        //Instanciando os objetos
+        CategoriaFinanceira novaCategoriaMockadaParaTesteDoRepositorio = new CategoriaFinanceira();
+        novaCategoriaMockadaParaTesteDoRepositorio.setTiposCategorias(DESPESA);
+        novaCategoriaMockadaParaTesteDoRepositorio.setSubTipo(DESPESA_ALUGUEL);
+        ReflectionTestUtils.setField(novaCategoriaMockadaParaTesteDoRepositorio,"id",1L);
+
+        //Instanciando as associações Mockadas, pela sua id
+
+        Pagamentos pagamentoIdMock = new Pagamentos();
+        ReflectionTestUtils.setField(pagamentoIdMock,"id",1L);
+
+        ContaUsuario contaUsuarioMockada = new ContaUsuario();
+        ReflectionTestUtils.setField(contaUsuarioMockada,"id",1L);
+
+        Usuario usuarioMockado = new Usuario();
+        ReflectionTestUtils.setField(usuarioMockado,"id",1L);
+
+        HistoricoTransacao historicoMockado = new HistoricoTransacao();
+        ReflectionTestUtils.setField(historicoMockado,"id",1L);
+
+        when(pagamentosRepository.findById(pagamentoIdMock.getId())).thenReturn(Optional.of(pagamentoIdMock));
+        when(contaUsuarioRepository.findById(contaUsuarioMockada.getId())).thenReturn(Optional.of(contaUsuarioMockada));
+        when(historicoTransacaoRepository.findById(historicoMockado.getId())).thenReturn(Optional.of(historicoMockado));
+        when(usuarioRepository.findById(usuarioMockado.getId())).thenReturn(Optional.of(usuarioMockado));
+
+        when(categoriaFinanceiraRepository.save(any(CategoriaFinanceira.class)))
+                .thenAnswer(invocationOnMock -> {
+                    CategoriaFinanceira categoria = invocationOnMock.getArgument(0);
+                    ReflectionTestUtils.setField(categoria,"id",1L);
+                    return categoria;
+                });
+
+        doNothing().when(categoriaFinanceiraAssociation).associarCategoriaComPagamento(novaCategoriaMockadaParaTesteDoRepositorio.getId(), pagamentoIdMock.getId());
+        doNothing().when(categoriaFinanceiraAssociation).associarCategoriaComUsuario(novaCategoriaMockadaParaTesteDoRepositorio.getId(), usuarioMockado.getId());
+        doNothing().when(categoriaFinanceiraAssociation).associarCategoriaComConta(novaCategoriaMockadaParaTesteDoRepositorio.getId(), contaUsuarioMockada.getId());
+        doNothing().when(categoriaFinanceiraAssociation).associarCategoriaComTransacao(novaCategoriaMockadaParaTesteDoRepositorio.getId(),historicoMockado.getId());
 
 
-        HistoricoTransacao transacao = new HistoricoTransacao();
-        ReflectionTestUtils.setField(transacao,"id",1L);
+        //O retorno que eu espero do método, que ele crie exatamente com esses mesmos valores
+        CategoriaFinanceiraResponse respostaEsperadaDoMetodo = new CategoriaFinanceiraResponse(1L,DESPESA,DESPESA_ALUGUEL);
+
+        when(mapper.retornarDadosCategoria(novaCategoriaMockadaParaTesteDoRepositorio)).thenReturn(respostaEsperadaDoMetodo);
 
 
-        ContaUsuario contaUsuario = new ContaUsuario();
-        ReflectionTestUtils.setField(contaUsuario,"id",1L);
 
+        //Valor de entrada dos dados para passar ao criar a categoria
+        CategoriaFinanceiraRequest valor = new CategoriaFinanceiraRequest(DESPESA,DESPESA_ALUGUEL);
+        //Act. Chamada do método principal
+        CategoriaFinanceiraResponse categoriacriada = categoriaFinanceiraService.criarCategoriaFinanceira(valor,1L, 1L, 1L, 1L);
 
-        Usuario usuario = new Usuario();
-        ReflectionTestUtils.setField(usuario,"id",1L);
+        //Assert
+        assertEquals(categoriacriada,respostaEsperadaDoMetodo);
 
-
-        //Instanciando os valores
-        CategoriaFinanceiraRequest request = new CategoriaFinanceiraRequest(RECEITA, SALARIO);
-        CategoriaFinanceira categoriaSalva = new CategoriaFinanceira();
-        categoriaSalva.setTiposCategorias(RECEITA);
-        categoriaSalva.setSubTipo(SALARIO);
-        ReflectionTestUtils.setField(categoriaSalva,"id",1L);
-
-
-        //RespostaEsperada do categoriaFinanceiraResponse, quando ele criar a categoria financeira
-        CategoriaFinanceiraResponse responseEsperado = new CategoriaFinanceiraResponse(1L, RECEITA, SALARIO);
-
-        //--Mock para métodos void de associação
-        doNothing().when(categoriaFinanceiraAssociation).associarCategoriaComConta(1L, 1L);
-        doNothing().when(categoriaFinanceiraAssociation).associarCategoriaComUsuario(1L, 1L);
-        doNothing().when(categoriaFinanceiraAssociation).associarCategoriaComPagamento(1L, 1L);
-        doNothing().when(categoriaFinanceiraAssociation).associarCategoriaComTransacao(1L, 1L);
-
-
-        // --- Mockando os repositórios das entidades associadas ---
-        when(pagamentosRepository.findById(1L)).thenReturn(Optional.of(pagamento));
-        when(historicoTransacaoRepository.findById(1L)).thenReturn(Optional.of(transacao));
-        when(contaUsuarioRepository.findById(1L)).thenReturn(Optional.of(contaUsuario));
-        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
-
-        when(categoriaFinanceiraRepository.save(any(CategoriaFinanceira.class))).thenReturn(categoriaSalva);
-        when(mapper.retornarDadosCategoria(any(CategoriaFinanceira.class))).thenReturn(responseEsperado);
-
-        //Agora criando os valores do parametro criar categoria financeira
-        CategoriaFinanceiraResponse response = categoriaFinanceiraService.criarCategoriaFinanceira
-                (request, 1L, 1L, 1L, 1L);
-
-        // --- Assert--
-        assertNotNull(response);
-        assertEquals(RECEITA, response.tipoCategoria());
-        assertEquals(SALARIO, response.subTipo());
-
-        // --- Verifica se os repositórios foram chamados com as IDs corretas ---
-        verify(pagamentosRepository).findById(1L);
-        verify(contaUsuarioRepository).findById(1L);
-        verify(historicoTransacaoRepository).findById(1L);
-        verify(usuarioRepository).findById(1L);
-
-        // --- Verifica se os valores foram associados com a Categoria Financeira correta ---
-        verify(categoriaFinanceiraAssociation).associarCategoriaComPagamento(1L, 1L);
-        verify(categoriaFinanceiraAssociation).associarCategoriaComConta(1L, 1L);
-        verify(categoriaFinanceiraAssociation).associarCategoriaComTransacao(1L, 1L);
-        verify(categoriaFinanceiraAssociation).associarCategoriaComUsuario(1L, 1L);
+        //Verificar
+        verify(categoriaFinanceiraRepository).save(novaCategoriaMockadaParaTesteDoRepositorio);
 
     }
+
 
 
     @Test
@@ -303,6 +314,15 @@ class CategoriaFinanceiraImplTest {
         verify(categoriaFinanceiraRepository).findAll(pageable);
         verify(mapper).retornarDadosCategoria(categoria1);
         verify(mapper).retornarDadosCategoria(categoria2);
+    }
+
+    @AfterEach
+    public void limpardadosDepoisEecutado(){
+        categoriaFinanceiraRepository.deleteAll();
+        usuarioRepository.deleteAll();
+        contaUsuarioRepository.deleteAll();;
+        pagamentosRepository.deleteAll();
+        historicoTransacaoRepository.deleteAll();
     }
 }
 

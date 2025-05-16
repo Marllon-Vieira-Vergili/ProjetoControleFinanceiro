@@ -67,19 +67,11 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService{
 
         //Se achar, será criado a categoria financeira
         CategoriaFinanceira novaCategoria = new CategoriaFinanceira();
-        try{
-            if(novaCategoria.getTiposCategorias() == null){
-                throw new TiposCategoriasNaoEncontrado("Não foi possível atualizar, pois não foi encontrado o tipo categoria");
-            }
+
             novaCategoria.setTiposCategorias(request.tipoCategoria());
 
-            if(novaCategoria.getSubTipo() == null){
-                throw new TiposCategoriasNaoEncontrado("Não foi possível atualizar, pois não foi encontrado o SubTipo informado");
-            }
             novaCategoria.setSubTipo(request.subtipo());
-        } catch (RuntimeException e) {
-            throw new AssociationErrorException("Não foi possível realizar a atualização desta categoria financeira");
-        }
+
 
 
         //Salvar a nova categoria criada, para gerar um id e depois eu associo pelo valor dele
