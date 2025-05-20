@@ -88,6 +88,6 @@ public class Pagamentos {
      * Exemplo: Um pagamento pode ser classificado como "Despesa - Aluguel" ou "Receita - Salário", organizando melhor os registros financeiros.
      */
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "categoria_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_categoria_id"))
+    @JoinColumn(name = "categoria_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_pagamento_categoria_id"))
     private CategoriaFinanceira categoriaRelacionada;
 }

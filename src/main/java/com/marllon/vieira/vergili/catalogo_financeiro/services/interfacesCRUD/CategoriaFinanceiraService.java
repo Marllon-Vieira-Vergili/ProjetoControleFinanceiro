@@ -60,7 +60,9 @@ public interface CategoriaFinanceiraService {
      * @return Retorna o DTO com os dados da categoria atualizada.
      * @throws DadosInvalidosException se os dados digitados forem inválidos.
      */
-    CategoriaFinanceiraResponse atualizarUmaCategoriaCriada(Long idCategoria, CategoriaFinanceiraRequest novosDados);
+    CategoriaFinanceiraResponse atualizarUmaCategoriaCriada(Long idCategoria,
+                                                            TiposCategorias tiposCategoria,
+                                                            SubTipoCategoria subTipo);
 
     /**
      * Remove uma categoria financeira pelo seu ID.

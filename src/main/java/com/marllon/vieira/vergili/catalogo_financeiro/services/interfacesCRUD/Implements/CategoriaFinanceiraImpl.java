@@ -16,11 +16,14 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+
+import static org.hibernate.validator.internal.util.Contracts.assertTrue;
 
 @Service
 @Transactional
@@ -48,23 +51,23 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService{
     private CategoriaFinanceiraMapper mapper;
 
 
+
+
     @Override
     public CategoriaFinanceiraResponse criarCategoriaFinanceira(CategoriaFinanceiraRequest request
             ,Long pagamentoId,Long historicoTransacaoId, Long contaUsuarioId, Long usuarioId) {
 
         //Verificando antes de criar a categoria, se os valores pra associar a categoria existe
-        Pagamentos pagamentoEncontrado = pagamentosRepository.findById(pagamentoId).orElseThrow(()
-                -> new PagamentoNaoEncontrado("Não foi encontrado nenhum pagamento com essa id"));
+        Optional<Pagamentos> pagamentoEncontrado = pagamentosRepository.findById(pagamentoId);
 
-        HistoricoTransacao historicoEncontrado = historicoTransacaoRepository.findById(historicoTransacaoId)
-                .orElseThrow(() -> new HistoricoTransacaoNaoEncontrado("Historico Transação não encontrado"));
+        Optional<HistoricoTransacao> historicoEncontrado = historicoTransacaoRepository.findById(historicoTransacaoId);
 
-        Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new UsuarioNaoEncontrado("Usuário não encontrado"));
+        Optional<Usuario> usuario = usuarioRepository.findById(usuarioId);
+
+        Optional<ContaUsuario> contaUsuario = contaUsuarioRepository.findById(contaUsuarioId);
 
 
-        ContaUsuario contaUsuario = contaUsuarioRepository.findById(contaUsuarioId)
-                .orElseThrow(() -> new ContaNaoEncontrada("Conta de usuário não encontrada"));
+
 
         //Se achar, será criado a categoria financeira
         CategoriaFinanceira novaCategoria = new CategoriaFinanceira();
@@ -73,17 +76,15 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService{
 
             novaCategoria.setSubTipo(request.subtipo());
 
-
-
         //Salvar a nova categoria criada, para gerar um id e depois eu associo pelo valor dele
         CategoriaFinanceira categoriaSalva = categoriaFinanceiraRepository.save(novaCategoria);
 
 
         //Assim que essa categoria nova for criada, vai gerar uma Id para associarmos a cada entidade
-        categoriaAssociation.associarCategoriaComConta(categoriaSalva.getId(), contaUsuario.getId());
-        categoriaAssociation.associarCategoriaComUsuario(categoriaSalva.getId(), usuario.getId());
-        categoriaAssociation.associarCategoriaComPagamento(categoriaSalva.getId(), pagamentoEncontrado.getId());
-        categoriaAssociation.associarCategoriaComTransacao(categoriaSalva.getId(), historicoEncontrado.getId());
+        categoriaAssociation.associarCategoriaComConta(categoriaSalva.getId(), contaUsuario.get().getId());
+        categoriaAssociation.associarCategoriaComUsuario(categoriaSalva.getId(), usuario.get().getId());
+        categoriaAssociation.associarCategoriaComPagamento(categoriaSalva.getId(), pagamentoEncontrado.get().getId());
+        categoriaAssociation.associarCategoriaComTransacao(categoriaSalva.getId(), historicoEncontrado.get().getId());
 
         return mapper.retornarDadosCategoria(categoriaSalva);
     }
@@ -123,25 +124,16 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService{
     }
 
     @Override
-    public CategoriaFinanceiraResponse atualizarUmaCategoriaCriada(Long idCategoria, CategoriaFinanceiraRequest novosDados) {
+    public CategoriaFinanceiraResponse atualizarUmaCategoriaCriada(Long idCategoria,
+                                                                   TiposCategorias tiposCategoria,
+                                                                   SubTipoCategoria subTipo) {
 
         CategoriaFinanceira categoriaSerAtualizada = categoriaFinanceiraRepository.findById(idCategoria).orElseThrow(() ->
                 new CategoriaNaoEncontrada("A categoria não foi encontrada com essa id"));
 
-        try{
+            categoriaSerAtualizada.setTiposCategorias(tiposCategoria);
+            categoriaSerAtualizada.setSubTipo(subTipo);
 
-            if(novosDados.tipoCategoria() == null){
-                throw new TiposCategoriasNaoEncontrado("Não foi possível atualizar, pois não foi encontrado o tipo categoria");
-            }
-            categoriaSerAtualizada.setTiposCategorias(novosDados.tipoCategoria());
-
-            if(novosDados.subtipo() == null){
-                throw new TiposCategoriasNaoEncontrado("Não foi possível atualizar, pois não foi encontrado o SubTipo informado");
-            }
-            categoriaSerAtualizada.setSubTipo(novosDados.subtipo());
-        } catch (RuntimeException e) {
-            throw new AssociationErrorException("Não foi possível realizar a atualização desta categoria financeira");
-        }
 
         //Salvando os dados
         categoriaFinanceiraRepository.save(categoriaSerAtualizada);

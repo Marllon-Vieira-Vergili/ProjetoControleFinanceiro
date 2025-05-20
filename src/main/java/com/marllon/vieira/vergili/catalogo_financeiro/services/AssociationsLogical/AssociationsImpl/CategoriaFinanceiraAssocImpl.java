@@ -138,7 +138,9 @@ public class CategoriaFinanceiraAssocImpl implements CategoriaFinanceiraAssociat
                 .orElseThrow(() -> new UsuarioNaoEncontrado("usuario não foi encontrada com essa id informada"));
 
         // Verifica se a categoria já está associada
-        if (categoriaEncontrada.getUsuarioRelacionado().getId().equals(usuarioEncontrado.getId()) ||
+        if (categoriaEncontrada.getUsuarioRelacionado() != null && categoriaEncontrada
+                .getUsuarioRelacionado().getId().equals(usuarioEncontrado.getId()) ||
+                usuarioEncontrado.getCategoriasRelacionadas() != null &&
                 usuarioEncontrado.getCategoriasRelacionadas().contains(categoriaEncontrada)) {
             throw new AssociationErrorException("Esta categoria já está associada a um usuário.");
         }
@@ -353,6 +355,5 @@ public class CategoriaFinanceiraAssocImpl implements CategoriaFinanceiraAssociat
             throw new DesassociationErrorException("Não foi possível desassociar uma categoria de uma receita");
         }
     }
-
 
 }

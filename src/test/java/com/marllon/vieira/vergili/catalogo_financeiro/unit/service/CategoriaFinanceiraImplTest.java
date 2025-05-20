@@ -8,6 +8,7 @@ import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.Tip
 import com.marllon.vieira.vergili.catalogo_financeiro.mapper.CategoriaFinanceiraMapper;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.CategoriaFinanceiraAssociation;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.Implements.CategoriaFinanceiraImpl;
@@ -15,10 +16,12 @@ import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -36,7 +39,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.mockito.internal.configuration.GlobalConfiguration.validate;
 
-@TestMethodOrder(MethodOrderer.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @ActiveProfiles("test")
 class CategoriaFinanceiraImplTest {
 
@@ -46,6 +49,9 @@ class CategoriaFinanceiraImplTest {
     @Mock
     private CategoriaFinanceiraRepository categoriaFinanceiraRepository;
     // Mock para o Spring injetar no serviço real
+
+    @Autowired
+    private JdbcTemplate jdbc;
 
     @Mock
     private ContaUsuarioRepository contaUsuarioRepository;
@@ -77,7 +83,6 @@ class CategoriaFinanceiraImplTest {
         //Chamando a anotação mockitoannotations para ler todos os mocks antes
     }
 
-//---------------------------MÈTODO CRIAR CATEGORIA FINANCEIRA----------------------------------//
 
     @Test
     @Order(1)
@@ -194,7 +199,7 @@ class CategoriaFinanceiraImplTest {
     }
 
     @Test
-    @Order(2)
+    @Order(3)
     @DisplayName("Deve lançar exceção se não encontrar a categoria pela id ")
     public void categoriaCriadaDeveSerAssociadaAUmPagamento() {
         //Inserção dos dados
@@ -212,7 +217,7 @@ class CategoriaFinanceiraImplTest {
     }
 
     @Test
-    @Order(3)
+    @Order(4)
     @DisplayName("Deve retornar uma lista de todas as categorias criadas baseado em um subtipo indicado")
     public void deveEncontrarUmaListaDeValoresAssociadosAUmSubtipoDeCategoria(){
 
@@ -258,7 +263,7 @@ class CategoriaFinanceiraImplTest {
     }
 
     @Test
-    @Order(4)
+    @Order(5)
     @DisplayName("deve retornar todas as categoriasFinanceiras criadas")
     public void deveRetornarTodasAsCategoriasFinanceirasCriadas(){
         //Instanciando valores
@@ -316,13 +321,37 @@ class CategoriaFinanceiraImplTest {
         verify(mapper).retornarDadosCategoria(categoria2);
     }
 
-    @AfterEach
-    public void limpardadosDepoisEecutado(){
-        categoriaFinanceiraRepository.deleteAll();
-        usuarioRepository.deleteAll();
-        contaUsuarioRepository.deleteAll();;
-        pagamentosRepository.deleteAll();
-        historicoTransacaoRepository.deleteAll();
+    @Test
+    @Order(6)
+    @DisplayName("Teste para verificar se atualiza a Categoria Financeira Já criado")
+    public void deveAtualizarOsDadosCategoriaFinanceiraJaExistente(){
+        //Criando uma categoria Financeira Mockada apenas para gerar uma ID
+CategoriaFinanceira categoriaMockParaTeste = new CategoriaFinanceira();
+    categoriaMockParaTeste.setTiposCategorias(DESPESA);
+    categoriaMockParaTeste.setSubTipo(ALIMENTACAO);
+        categoriaFinanceiraRepository.save(categoriaMockParaTeste);
+        ReflectionTestUtils.setField(categoriaMockParaTeste,"id",1L);
+
+
+        Optional<CategoriaFinanceira> categoriaEncontrada = categoriaFinanceiraRepository.findById(1L);
+
+        assertTrue(categoriaEncontrada.isPresent());
+
+        //Quando a categoriaFinanceira repositorio salvar qualquer coisa na classe categoriaFinanceira
+        when(categoriaFinanceiraRepository.findById(any(CategoriaFinanceira.class).getId()))
+                .thenReturn(categoriaEncontrada);
+
+
+
+        CategoriaFinanceiraResponse categoriaMockadaAtualizada =
+                categoriaFinanceiraService.atualizarUmaCategoriaCriada
+                        (1L,RECEITA,DIVIDENDOS);
+
+        CategoriaFinanceiraResponse responseEsperada = new CategoriaFinanceiraResponse(1L,RECEITA,DIVIDENDOS);
+
+        assertEquals(categoriaMockadaAtualizada,responseEsperada);
+
     }
+
 }
 

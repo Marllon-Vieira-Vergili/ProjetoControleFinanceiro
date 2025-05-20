@@ -28,10 +28,14 @@ public interface HistoricoTransacaoRepository extends JpaRepository<HistoricoTra
      * @return true se existir uma transação com os mesmos valores
      * COUNT(h) > 0 contará todos os valores da entidade, se for maior que 0 ele ja retornará
      */
-    @Query("SELECT COUNT(h) > 0 FROM HistoricoTransacao h WHERE h.valor = :valor AND h.data = :data AND h.descricao = :descricao ")
+    @Query("SELECT COUNT(h) >0 FROM HistoricoTransacao h WHERE h.valor = :valor" +
+            " AND h.data = :data " +
+            " AND h.descricao = :descricao " +
+            " AND h.tiposCategorias = :tipoCategoria")
     boolean existsTheSameData(@Param("valor") BigDecimal valor,
                               @Param("data") LocalDate data,
-                              @Param("descricao") String descricao);
+                              @Param("descricao") String descricao,
+                              @Param("tipoCategoria") TiposCategorias tipoCategoria);
 
     /**
      * Busca todas as transações realizadas em uma determinada data.

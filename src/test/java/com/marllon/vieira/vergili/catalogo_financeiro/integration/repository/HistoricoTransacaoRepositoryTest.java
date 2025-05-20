@@ -1,7 +1,9 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.integration.repository;
 
 import com.marllon.vieira.vergili.catalogo_financeiro.models.HistoricoTransacao;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.HistoricoTransacaoRepository;
+import org.assertj.core.error.ShouldBeEqualByComparingOnlyGivenFields;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,17 +37,29 @@ public class HistoricoTransacaoRepositoryTest {
     @Sql("/sql/HistoricoTransacaoDados.sql")
     @DisplayName("Teste do metodo do repositório existsTheSameData para verificar se já existe um historico criado identico")
     public void testarMetodoExistsTheSameDataParaVerificarSeEleRetornaTrue(){
-        boolean umIgualEncontrado = historicoTransacaoRepository.existsTheSameData( BigDecimal.valueOf(500.00).setScale(2, RoundingMode.HALF_EVEN),
-                LocalDate.of(2025,1,27), "Parcela do empréstimo");
+        boolean umIgualEncontrado = historicoTransacaoRepository.existsTheSameData( BigDecimal.valueOf(500.00)
+                        .setScale(2, RoundingMode.HALF_EVEN),
+                LocalDate.of(2025,1,27), "Parcela do empréstimo"
+        ,TiposCategorias.DESPESA);
         assertTrue(umIgualEncontrado,"O método deveria ser encontrado, pois esse objeto existe na base de dados");
     }
 
     @Test
     @Sql("/sql/HistoricoTransacaoDados.sql")
-    @DisplayName("Mesmot teste do método acima, mas agora testando se eu passar um valor falso, ele não deve encontrar nada")
+    @DisplayName("Teste do metdo existsTheSameData não deve retornar um valor que não existe")
+    public void testarMetodoExistsTheSameDataNaoDeveRetornarValorNaoExistente(){
+        boolean valorFalso = historicoTransacaoRepository.existsTheSameData
+                (BigDecimal.valueOf(500.00).setScale(2,RoundingMode.HALF_EVEN),LocalDate.of(2025,1,27)
+                        ,"Parcela teste",TiposCategorias.DESPESA);
+        assertFalse(valorFalso,"O método não existe, é falso que ele exista");
+    }
+
+    @Test
+    @Sql("/sql/HistoricoTransacaoDados.sql")
+    @DisplayName("Mesmo teste do método acima, mas agora testando se eu passar um valor falso, ele não deve encontrar nada")
     public void testarMetodoExistsTheSameDataParaVerificarSeAoDigitarValorQueNaoExisteNoBancoEleRetornaFalse(){
         boolean oValorNaoExisteNoBanco = historicoTransacaoRepository.existsTheSameData(BigDecimal.valueOf(100.000)
-                ,LocalDate.of(2000,1,1),"Pagamento em janeiro de 2000");
+                ,LocalDate.of(2000,1,1),"Pagamento em janeiro de 2000",TiposCategorias.RECEITA);
         assertFalse(oValorNaoExisteNoBanco,"Esse valor não deveria voltar True como se tivesse sido encontrado!");
     }
 

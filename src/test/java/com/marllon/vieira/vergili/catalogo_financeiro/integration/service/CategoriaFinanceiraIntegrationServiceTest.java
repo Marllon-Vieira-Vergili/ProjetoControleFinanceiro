@@ -2,6 +2,7 @@ package com.marllon.vieira.vergili.catalogo_financeiro.integration.service;
 
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.CategoriaFinanceiraRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.CategoriaFinanceiraResponse;
+import com.marllon.vieira.vergili.catalogo_financeiro.mapper.CategoriaFinanceiraMapper;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
@@ -21,8 +22,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -51,6 +51,8 @@ public class CategoriaFinanceiraIntegrationServiceTest {
     @Autowired
     private HistoricoTransacaoRepository historicoTransacaoRepository;
 
+    @Autowired
+    private CategoriaFinanceiraMapper mapper;
 
     @Autowired
     private JdbcTemplate jdbc;
@@ -62,15 +64,10 @@ public class CategoriaFinanceiraIntegrationServiceTest {
         //Vai instanciar todos os valores do arquivo SQL pra testar
     }
 
-    @AfterEach
-    public void executarDelecaoDepois(){
-        jdbc.execute("DELETE FROM pagamentos");
-        jdbc.execute("DELETE FROM historico_transacoes");
-        jdbc.execute("DELETE FROM usuarios");
-        jdbc.execute("DELETE FROM categorias_das_contas");
-    }
+
 
     @Test
+    @Sql("/sql/CategoriaFinanceiraDados.sql")
     @DisplayName("Teste do método de criar uma categoriaFinanceira e associando")
     public void verificarCategoriaFinanceiraCriaValor(){
         //Instanciando os valores
@@ -84,24 +81,30 @@ public class CategoriaFinanceiraIntegrationServiceTest {
         Optional<Usuario> usuarioEncontrado = usuarioRepository.findById(usuarioId);
         Optional<ContaUsuario> contaUsuario = contaUsuarioRepository.findById(contaUsuarioId);
 
-        assertNotNull(pagamentoEncontrado);
-        assertNotNull(historicoEncontrado);
-        assertNotNull(usuarioEncontrado);
-        assertNotNull(contaUsuario);
-
-        CategoriaFinanceira categoriaFinanceira = new CategoriaFinanceira();
-        categoriaFinanceira.setTiposCategorias(TiposCategorias.RECEITA);
-        categoriaFinanceira.setSubTipo(SubTipoCategoria.SALARIO);
-        ReflectionTestUtils.setField(categoriaFinanceira, "id",20L);
+        assertTrue(pagamentoEncontrado.isPresent());
+        assertTrue(historicoEncontrado.isPresent());
+        assertTrue(usuarioEncontrado.isPresent());
+        assertTrue(contaUsuario.isPresent());
 
         CategoriaFinanceiraRequest request = new
                 CategoriaFinanceiraRequest(TiposCategorias.RECEITA,SubTipoCategoria.SALARIO,1L,1L,1L,1L);
-        categoriaservice.criarCategoriaFinanceira(request,pagamentoId,historicoTransacaoId,contaUsuarioId,usuarioId);
+
+       CategoriaFinanceiraResponse categoriaCriada =  categoriaservice.criarCategoriaFinanceira(request,1L,1L,1L,1L);
 
         CategoriaFinanceiraResponse response =
-                new CategoriaFinanceiraResponse(20L,TiposCategorias.RECEITA, SubTipoCategoria.SALARIO);
+                new CategoriaFinanceiraResponse(1L,TiposCategorias.RECEITA, SubTipoCategoria.SALARIO);
 
-        assertEquals(request,response,"deve criar o usuário no banco");
+
+        assertEquals(response,categoriaCriada);
+    }
+    @AfterEach
+    public void executarDelecaoDepois(){
+        //Deletar em ordem
+        jdbc.execute("DELETE FROM historico_transacoes");
+        jdbc.execute("DELETE FROM pagamentos");
+        jdbc.execute("DELETE FROM categoria_das_contas");
+        jdbc.execute("DELETE FROM contas");
+        jdbc.execute("DELETE FROM usuarios");
 
     }
 }

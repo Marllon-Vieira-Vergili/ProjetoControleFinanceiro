@@ -29,10 +29,14 @@ public interface PagamentosRepository extends JpaRepository<Pagamentos, Long> {
      * COUNT(h) > 0 contará todos os valores da entidade, se for maior que 0 ele ja retornará
      */
 
-    @Query("SELECT COUNT(p) > 0 from Pagamentos p WHERE p.valor = :valor AND p.data = :data AND p.descricao =:descricao")
+    @Query("SELECT COUNT(p) >0 from Pagamentos p WHERE p.valor = :valor" +
+            " AND p.data = :data" +
+            " AND p.descricao = :descricao" +
+            " AND p.tiposCategorias = :tipoCategoria")
     boolean existTheSameData(@Param("valor") BigDecimal valor,
                              @Param("data") LocalDate data,
-                             @Param("descricao") String descricao);
+                             @Param("descricao") String descricao,
+                             @Param("tipoCategoria") TiposCategorias tipoCategoria);
 
     /**
      * Busca todos os pagamentos realizados em uma determinada data.

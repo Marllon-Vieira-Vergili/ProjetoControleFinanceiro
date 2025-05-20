@@ -1,6 +1,7 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.integration.repository;
 
 import com.marllon.vieira.vergili.catalogo_financeiro.models.Pagamentos;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.PagamentosRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,7 @@ public class PagamentoRepositoryTest {
     @Sql("/sql/PagamentosDados.sql")
     public void testandoMetodoSeJaexisteComOsMesmosDados(){
         boolean oValorExiste  = pagamentosRepository.existTheSameData(BigDecimal.valueOf(1200.50)
-                ,LocalDate.of(2025,1,20),"Pagamento do aluguel");
+                ,LocalDate.of(2025,1,20),"Pagamento do aluguel", TiposCategorias.DESPESA);
     assertTrue(oValorExiste,"O valor não pode retornar false, ele existe");
     }
 

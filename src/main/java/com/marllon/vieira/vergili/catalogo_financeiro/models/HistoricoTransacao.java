@@ -91,7 +91,7 @@ public class HistoricoTransacao {
      * "Receita - Salário", organizando melhor os registros financeiros.
      */
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "categoria_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_categoria_id"))
+    @JoinColumn(name = "categoria_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_ht_categoria_id"))
     private CategoriaFinanceira categoriaRelacionada;
 
 }

@@ -16,6 +16,9 @@ import java.time.LocalDate;
  */
 
 public record HistoricoTransacaoResponse(@NotNull
-                                         Long id, BigDecimal valor, LocalDate data, String descricao,
+                                         Long id,
+                                         BigDecimal valor,
+                                         LocalDate data,
+                                         String descricao,
                                          TiposCategorias categoria) {
 }
