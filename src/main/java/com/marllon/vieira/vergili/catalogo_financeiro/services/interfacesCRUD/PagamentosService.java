@@ -142,4 +142,16 @@ public interface PagamentosService  {
      * @throws JaExisteException caso já exista.
      */
     boolean jaExisteUmPagamentoIgual(PagamentosRequest pagamento);
+
+    /**
+     *
+     * @return true se a data informada pelo usuário está em um prazo do dia atual
+     */
+    boolean dataEstaCorreta(LocalDate data);
+
+    /**
+     *
+     * @return true se valor estiver correto sendo Receita ou Pagamento(Despesa)
+     */
+    boolean valorEstaCorreto(BigDecimal valor);
 }

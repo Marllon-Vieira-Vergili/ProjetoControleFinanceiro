@@ -49,6 +49,8 @@ public class CategoriaFinanceira {
     @Enumerated(EnumType.STRING)
     private SubTipoCategoria subTipo;
 
+    public CategoriaFinanceira(TiposCategorias tiposCategorias, SubTipoCategoria subTipoCategoria) {
+    }
 
     //----------------------------------------RELACIONAMENTOS--------------------------------------------------------//
 
@@ -84,4 +86,6 @@ public class CategoriaFinanceira {
     @JoinColumn(name = "usuario_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_categoria_usuario"))
     private Usuario usuarioRelacionado;
 
+
 }
+

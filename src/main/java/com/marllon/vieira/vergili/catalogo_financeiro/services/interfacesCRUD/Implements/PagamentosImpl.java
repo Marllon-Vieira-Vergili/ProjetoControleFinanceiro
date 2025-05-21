@@ -2,14 +2,17 @@ package com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.I
 
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.PagamentosRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.PagamentosResponse;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
 import com.marllon.vieira.vergili.catalogo_financeiro.mapper.CategoriaFinanceiraMapper;
 import com.marllon.vieira.vergili.catalogo_financeiro.mapper.PagamentoMapper;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.HistoricoTransacao;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.Pagamentos;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.CategoriaFinanceiraAssociation;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.PagamentosAssociation;
+import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.ContaUsuarioService;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.PagamentosService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,7 +20,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.MonthDay;
+import java.time.chrono.ChronoLocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,27 +59,36 @@ public class PagamentosImpl implements PagamentosService {
     @Override
     public PagamentosResponse criarRecebimento(PagamentosRequest request) {
 
-        if (request == null){
-            
+        if (request.tipoCategoria() != TiposCategorias.RECEITA){
+            throw new DadosInvalidosException("Para criar Recebimento, somente o tipo RECEITA é válido");
         }
 
-        Pagamentos novoPagamento = new Pagamentos();
-        novoPagamento.setData(request.data());
-        novoPagamento.setValor(request.valor());
-        novoPagamento.setDescricao(request.descricao());
+        if(!dataEstaCorreta(request.data())){
+            throw new DadosInvalidosException("Por favor, digite uma data correta! " +
+                    "entre a partir de hoje, e no máximo para 1 mês a partir de hoje");
+        }
+        if(!valorEstaCorreto(request.valor())){
+            throw new DadosInvalidosException("Por favor, digite um valor correto! ");
+        }
+
+        Pagamentos novoRecebimento = new Pagamentos();
+        novoRecebimento.setData(request.data());
+        novoRecebimento.setValor(request.valor());
+        novoRecebimento.setDescricao(request.descricao());
+        novoRecebimento.setTiposCategorias(request.tipoCategoria());
 
         HistoricoTransacao novoHistorico = new HistoricoTransacao();
         novoHistorico.setData(request.data());
         novoHistorico.setValor(request.valor());
         novoHistorico.setDescricao(request.descricao());
-
+        novoHistorico.setTiposCategorias(request.tipoCategoria());
 
         //Salvando o pagamento e o histórico transação para gerar uma id
-        pagamentosRepository.save(novoPagamento);
+        pagamentosRepository.save(novoRecebimento);
         historicoTransacaoRepository.save(novoHistorico);
 
         //Obtendo a id dos valores após serem criados
-        Long pagamentoId = novoPagamento.getId();
+        Long pagamentoId = novoRecebimento.getId();
         Long historicoTransacaoId= novoHistorico.getId();
 
         //associando
@@ -82,12 +97,34 @@ public class PagamentosImpl implements PagamentosService {
         pagamentoAssociation.associarPagamentoComConta(pagamentoId,request.idContaUsuario());
         pagamentoAssociation.associarPagamentoComUsuario(pagamentoId,request.idUsuarioCriado());
 
-        return mapper.retornarDadosPagamento(novoPagamento);
+        //Adicionando o valor ao saldo na conta do usuário
+
+        return mapper.retornarDadosPagamento(novoRecebimento);
     }
 
     @Override
     public PagamentosResponse criarPagamento(PagamentosRequest request) {
-        return null;
+
+        //Verificando se o usuário passará os dados corretos para criação
+        if(!dataEstaCorreta(request.data())){
+            throw new DadosInvalidosException("Por favor, digite uma data válida para o pagamento " +
+                    "entre a partir do dia de hoje, para no máximo 1 mês a frente");
+        }
+        if(!valorEstaCorreto((request.valor()))){
+            throw new DadosInvalidosException("Por favor, digite um valor válido para o pagamento");
+        }
+
+        //Criando o pagamento
+        Pagamentos novoPagamento = new Pagamentos();
+        novoPagamento.setData(request.data());
+        novoPagamento.setValor(request.valor());
+        novoPagamento.setDescricao(request.descricao());
+        novoPagamento.setTiposCategorias(request.tipoCategoria());
+
+        //Salvando o novo pagamento
+        pagamentosRepository.save(novoPagamento);
+
+        return mapper.retornarDadosPagamento(novoPagamento);
     }
 
     @Override
@@ -143,5 +180,18 @@ public class PagamentosImpl implements PagamentosService {
     @Override
     public boolean jaExisteUmPagamentoIgual(PagamentosRequest pagamento) {
         return false;
+    }
+
+    @Override
+    public boolean dataEstaCorreta(LocalDate data) {
+        LocalDate hoje = LocalDate.now();
+        LocalDate validoAteUmMesAFrenteDeHoje = hoje.plusMonths(1);
+
+        return (!data.isBefore(hoje)) && ((!data.isAfter(validoAteUmMesAFrenteDeHoje)));
+    }
+
+    @Override
+    public boolean valorEstaCorreto(BigDecimal valor) {
+        return valor.compareTo(BigDecimal.ZERO) > 0;
     }
 }

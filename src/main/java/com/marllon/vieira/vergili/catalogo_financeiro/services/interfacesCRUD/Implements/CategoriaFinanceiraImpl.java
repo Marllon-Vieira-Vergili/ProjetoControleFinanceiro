@@ -2,9 +2,9 @@ package com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.I
 
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.CategoriaFinanceiraRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.CategoriaFinanceiraResponse;
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.AssociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.*;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.CategoriaNaoEncontrada;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.TiposCategoriasNaoEncontrado;
 import com.marllon.vieira.vergili.catalogo_financeiro.mapper.CategoriaFinanceiraMapper;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
@@ -16,14 +16,11 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-
-import static org.hibernate.validator.internal.util.Contracts.assertTrue;
 
 @Service
 @Transactional
@@ -65,8 +62,6 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService{
         Optional<Usuario> usuario = usuarioRepository.findById(usuarioId);
 
         Optional<ContaUsuario> contaUsuario = contaUsuarioRepository.findById(contaUsuarioId);
-
-
 
 
         //Se achar, será criado a categoria financeira

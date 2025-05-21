@@ -2,6 +2,7 @@ package com.marllon.vieira.vergili.catalogo_financeiro.unit.service;
 
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.CategoriaFinanceiraRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.CategoriaFinanceiraResponse;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.CategoriaNaoEncontrada;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.SubTipoNaoEncontrado;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.TiposCategoriasNaoEncontrado;
@@ -12,7 +13,9 @@ import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategori
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.CategoriaFinanceiraAssociation;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.Implements.CategoriaFinanceiraImpl;
+import jakarta.validation.constraints.NotNull;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -41,7 +44,7 @@ import static org.mockito.internal.configuration.GlobalConfiguration.validate;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @ActiveProfiles("test")
-class CategoriaFinanceiraImplTest {
+public class CategoriaFinanceiraImplTest {
 
 
     //Mock de todos os repositórios das outras entidades, pra testar associação com essa
@@ -50,8 +53,6 @@ class CategoriaFinanceiraImplTest {
     private CategoriaFinanceiraRepository categoriaFinanceiraRepository;
     // Mock para o Spring injetar no serviço real
 
-    @Autowired
-    private JdbcTemplate jdbc;
 
     @Mock
     private ContaUsuarioRepository contaUsuarioRepository;
@@ -109,21 +110,21 @@ class CategoriaFinanceiraImplTest {
         CategoriaFinanceira novaCategoriaMockadaParaTesteDoRepositorio = new CategoriaFinanceira();
         novaCategoriaMockadaParaTesteDoRepositorio.setTiposCategorias(DESPESA);
         novaCategoriaMockadaParaTesteDoRepositorio.setSubTipo(DESPESA_ALUGUEL);
-        ReflectionTestUtils.setField(novaCategoriaMockadaParaTesteDoRepositorio,"id",1L);
+        ReflectionTestUtils.setField(novaCategoriaMockadaParaTesteDoRepositorio, "id", 1L);
 
         //Instanciando as associações Mockadas, pela sua id
 
         Pagamentos pagamentoIdMock = new Pagamentos();
-        ReflectionTestUtils.setField(pagamentoIdMock,"id",1L);
+        ReflectionTestUtils.setField(pagamentoIdMock, "id", 1L);
 
         ContaUsuario contaUsuarioMockada = new ContaUsuario();
-        ReflectionTestUtils.setField(contaUsuarioMockada,"id",1L);
+        ReflectionTestUtils.setField(contaUsuarioMockada, "id", 1L);
 
         Usuario usuarioMockado = new Usuario();
-        ReflectionTestUtils.setField(usuarioMockado,"id",1L);
+        ReflectionTestUtils.setField(usuarioMockado, "id", 1L);
 
         HistoricoTransacao historicoMockado = new HistoricoTransacao();
-        ReflectionTestUtils.setField(historicoMockado,"id",1L);
+        ReflectionTestUtils.setField(historicoMockado, "id", 1L);
 
         when(pagamentosRepository.findById(pagamentoIdMock.getId())).thenReturn(Optional.of(pagamentoIdMock));
         when(contaUsuarioRepository.findById(contaUsuarioMockada.getId())).thenReturn(Optional.of(contaUsuarioMockada));
@@ -133,36 +134,34 @@ class CategoriaFinanceiraImplTest {
         when(categoriaFinanceiraRepository.save(any(CategoriaFinanceira.class)))
                 .thenAnswer(invocationOnMock -> {
                     CategoriaFinanceira categoria = invocationOnMock.getArgument(0);
-                    ReflectionTestUtils.setField(categoria,"id",1L);
+                    ReflectionTestUtils.setField(categoria, "id", 1L);
                     return categoria;
                 });
 
         doNothing().when(categoriaFinanceiraAssociation).associarCategoriaComPagamento(novaCategoriaMockadaParaTesteDoRepositorio.getId(), pagamentoIdMock.getId());
         doNothing().when(categoriaFinanceiraAssociation).associarCategoriaComUsuario(novaCategoriaMockadaParaTesteDoRepositorio.getId(), usuarioMockado.getId());
         doNothing().when(categoriaFinanceiraAssociation).associarCategoriaComConta(novaCategoriaMockadaParaTesteDoRepositorio.getId(), contaUsuarioMockada.getId());
-        doNothing().when(categoriaFinanceiraAssociation).associarCategoriaComTransacao(novaCategoriaMockadaParaTesteDoRepositorio.getId(),historicoMockado.getId());
+        doNothing().when(categoriaFinanceiraAssociation).associarCategoriaComTransacao(novaCategoriaMockadaParaTesteDoRepositorio.getId(), historicoMockado.getId());
 
 
         //O retorno que eu espero do método, que ele crie exatamente com esses mesmos valores
-        CategoriaFinanceiraResponse respostaEsperadaDoMetodo = new CategoriaFinanceiraResponse(1L,DESPESA,DESPESA_ALUGUEL);
+        CategoriaFinanceiraResponse respostaEsperadaDoMetodo = new CategoriaFinanceiraResponse(1L, DESPESA, DESPESA_ALUGUEL);
 
         when(mapper.retornarDadosCategoria(novaCategoriaMockadaParaTesteDoRepositorio)).thenReturn(respostaEsperadaDoMetodo);
 
 
-
         //Valor de entrada dos dados para passar ao criar a categoria
-        CategoriaFinanceiraRequest valor = new CategoriaFinanceiraRequest(DESPESA,DESPESA_ALUGUEL,1L,1L,1L,1L);
+        CategoriaFinanceiraRequest valor = new CategoriaFinanceiraRequest(DESPESA, DESPESA_ALUGUEL, 1L, 1L, 1L, 1L);
         //Act. Chamada do método principal
-        CategoriaFinanceiraResponse categoriacriada = categoriaFinanceiraService.criarCategoriaFinanceira(valor,1L, 1L, 1L, 1L);
+        CategoriaFinanceiraResponse categoriacriada = categoriaFinanceiraService.criarCategoriaFinanceira(valor, 1L, 1L, 1L, 1L);
 
         //Assert
-        assertEquals(categoriacriada,respostaEsperadaDoMetodo);
+        assertEquals(categoriacriada, respostaEsperadaDoMetodo);
 
         //Verificar
         verify(categoriaFinanceiraRepository).save(novaCategoriaMockadaParaTesteDoRepositorio);
 
     }
-
 
 
     @Test
@@ -175,7 +174,7 @@ class CategoriaFinanceiraImplTest {
         CategoriaFinanceira categoria = new CategoriaFinanceira();
         categoria.setTiposCategorias(DESPESA);
         categoria.setSubTipo(COMBUSTIVEL);
-        ReflectionTestUtils.setField(categoria,"id",1L);
+        ReflectionTestUtils.setField(categoria, "id", 1L);
 
         //Instanciando da categoriaFinanceiraResponse
         CategoriaFinanceiraResponse responseEsperado = new CategoriaFinanceiraResponse(id, DESPESA, COMBUSTIVEL);
@@ -219,7 +218,7 @@ class CategoriaFinanceiraImplTest {
     @Test
     @Order(4)
     @DisplayName("Deve retornar uma lista de todas as categorias criadas baseado em um subtipo indicado")
-    public void deveEncontrarUmaListaDeValoresAssociadosAUmSubtipoDeCategoria(){
+    public void deveEncontrarUmaListaDeValoresAssociadosAUmSubtipoDeCategoria() {
 
         //Instanciando os valores para mockar
         SubTipoCategoria subTipoParaTeste = COMBUSTIVEL;
@@ -228,19 +227,19 @@ class CategoriaFinanceiraImplTest {
         CategoriaFinanceira categoria1 = new CategoriaFinanceira();
         categoria1.setTiposCategorias(DESPESA);
         categoria1.setSubTipo(COMBUSTIVEL);
-        ReflectionTestUtils.setField(categoria1,"id",1L);
+        ReflectionTestUtils.setField(categoria1, "id", 1L);
 
 
         CategoriaFinanceira categoria2 = new CategoriaFinanceira();
         categoria2.setTiposCategorias(DESPESA);
         categoria2.setSubTipo(COMBUSTIVEL);
-        ReflectionTestUtils.setField(categoria2,"id",2L);
+        ReflectionTestUtils.setField(categoria2, "id", 2L);
 
 
-        List<CategoriaFinanceira> categoriasFinanceiras = List.of(categoria1,categoria2);
+        List<CategoriaFinanceira> categoriasFinanceiras = List.of(categoria1, categoria2);
 
-        CategoriaFinanceiraResponse response1 = new CategoriaFinanceiraResponse(1L,DESPESA,COMBUSTIVEL);
-        CategoriaFinanceiraResponse response2 = new CategoriaFinanceiraResponse(2L,DESPESA,COMBUSTIVEL);
+        CategoriaFinanceiraResponse response1 = new CategoriaFinanceiraResponse(1L, DESPESA, COMBUSTIVEL);
+        CategoriaFinanceiraResponse response2 = new CategoriaFinanceiraResponse(2L, DESPESA, COMBUSTIVEL);
 
         when(categoriaFinanceiraRepository.encontrarPorSubtipoCategoria(subTipoParaTeste)).thenReturn(categoriasFinanceiras);
         when(mapper.retornarDadosCategoria(any(CategoriaFinanceira.class)))
@@ -252,9 +251,9 @@ class CategoriaFinanceiraImplTest {
 
         //Assert
         assertNotNull(resultado);
-        assertEquals(2,resultado.size());
-        assertEquals(response1,resultado.get(0));
-        assertEquals(response2,resultado.get(1));
+        assertEquals(2, resultado.size());
+        assertEquals(response1, resultado.get(0));
+        assertEquals(response2, resultado.get(1));
 
         //Verificar
         verify(categoriaFinanceiraRepository).encontrarPorSubtipoCategoria(subTipoParaTeste);
@@ -265,28 +264,28 @@ class CategoriaFinanceiraImplTest {
     @Test
     @Order(5)
     @DisplayName("deve retornar todas as categoriasFinanceiras criadas")
-    public void deveRetornarTodasAsCategoriasFinanceirasCriadas(){
+    public void deveRetornarTodasAsCategoriasFinanceirasCriadas() {
         //Instanciando valores
 
 
         CategoriaFinanceira categoria1 = new CategoriaFinanceira();
         categoria1.setTiposCategorias(RECEITA);
         categoria1.setSubTipo(DIVIDENDOS);
-        ReflectionTestUtils.setField(categoria1,"id",1L);
+        ReflectionTestUtils.setField(categoria1, "id", 1L);
 
 
         CategoriaFinanceira categoria2 = new CategoriaFinanceira();
         categoria2.setTiposCategorias(DESPESA);
         categoria2.setSubTipo(DESPESA_ALUGUEL);
-        ReflectionTestUtils.setField(categoria2,"id",2L);
+        ReflectionTestUtils.setField(categoria2, "id", 2L);
 
 
         // Criar uma lista simulando a página de dados retornada do banco
-        List<CategoriaFinanceira> categorias = List.of(categoria1,categoria2);
+        List<CategoriaFinanceira> categorias = List.of(categoria1, categoria2);
         Page<CategoriaFinanceira> paginaMockada = new PageImpl<>(categorias);
 
         //Criando um valor de paginas encontradas
-        Pageable pageable = PageRequest.of(0,2);
+        Pageable pageable = PageRequest.of(0, 2);
 
         //Mock do repositório
         when(categoriaFinanceiraRepository.findAll(pageable)).thenReturn(paginaMockada);
@@ -294,8 +293,8 @@ class CategoriaFinanceiraImplTest {
         //Mock do mapper
         when(mapper.retornarDadosCategoria(any(CategoriaFinanceira.class))).thenAnswer(
                 invocationOnMock -> {
-                CategoriaFinanceira cat = invocationOnMock.getArgument(0);
-                return new CategoriaFinanceiraResponse(cat.getId(),cat.getTiposCategorias(),cat.getSubTipo());
+                    CategoriaFinanceira cat = invocationOnMock.getArgument(0);
+                    return new CategoriaFinanceiraResponse(cat.getId(), cat.getTiposCategorias(), cat.getSubTipo());
                 });
 
 
@@ -324,34 +323,227 @@ class CategoriaFinanceiraImplTest {
     @Test
     @Order(6)
     @DisplayName("Teste para verificar se atualiza a Categoria Financeira Já criado")
-    public void deveAtualizarOsDadosCategoriaFinanceiraJaExistente(){
+    public void deveAtualizarOsDadosCategoriaFinanceiraJaExistente() {
         //Criando uma categoria Financeira Mockada apenas para gerar uma ID
-CategoriaFinanceira categoriaMockParaTeste = new CategoriaFinanceira();
-    categoriaMockParaTeste.setTiposCategorias(DESPESA);
-    categoriaMockParaTeste.setSubTipo(ALIMENTACAO);
-        categoriaFinanceiraRepository.save(categoriaMockParaTeste);
-        ReflectionTestUtils.setField(categoriaMockParaTeste,"id",1L);
 
-
-        Optional<CategoriaFinanceira> categoriaEncontrada = categoriaFinanceiraRepository.findById(1L);
-
-        assertTrue(categoriaEncontrada.isPresent());
+        CategoriaFinanceira categoriaMockParaTeste = new CategoriaFinanceira();
+        Long id = 1L;
+        categoriaMockParaTeste.setTiposCategorias(DESPESA);
+        categoriaMockParaTeste.setSubTipo(ALIMENTACAO);
+        ReflectionTestUtils.setField(categoriaMockParaTeste, "id", id);
 
         //Quando a categoriaFinanceira repositorio salvar qualquer coisa na classe categoriaFinanceira
-        when(categoriaFinanceiraRepository.findById(any(CategoriaFinanceira.class).getId()))
-                .thenReturn(categoriaEncontrada);
+        when(categoriaFinanceiraRepository.findById(id)).thenReturn(Optional.of(Optional.of(categoriaMockParaTeste).orElseThrow()));
 
+        //Mockar para salvar os dados da entidade falsa
+        when(categoriaFinanceiraRepository.save(any(CategoriaFinanceira.class))).thenAnswer(
+                invocationOnMock -> invocationOnMock.getArgument(0));
 
+        when(mapper.retornarDadosCategoria(any())).thenAnswer(invocationOnMock -> {
+            invocationOnMock.getArgument(0);
+            return new CategoriaFinanceiraResponse(
+                    categoriaMockParaTeste.getId(),
+                    categoriaMockParaTeste.getTiposCategorias(),
+                    categoriaMockParaTeste.getSubTipo());
+        });
+
+        CategoriaFinanceiraResponse responseEsperada = new CategoriaFinanceiraResponse(id, RECEITA, DIVIDENDOS);
 
         CategoriaFinanceiraResponse categoriaMockadaAtualizada =
                 categoriaFinanceiraService.atualizarUmaCategoriaCriada
-                        (1L,RECEITA,DIVIDENDOS);
+                        (id, RECEITA, DIVIDENDOS);
 
-        CategoriaFinanceiraResponse responseEsperada = new CategoriaFinanceiraResponse(1L,RECEITA,DIVIDENDOS);
 
-        assertEquals(categoriaMockadaAtualizada,responseEsperada);
-
+        assertEquals(responseEsperada, categoriaMockadaAtualizada);
     }
 
+    @Test
+    @Order(7)
+    @DisplayName("Deve remover a categoriaFinanceira Pela ID")
+    public void metodoDeveRemoverCategoriaFinanceira() {
+        //CRIANDO UMA CATEGORIA FINANCEIRA JA ASSOCIADA COM OS RELACIONAMENTOS PARA TESTAR DELEÇÂO
+        CategoriaFinanceira categoriaMockada = new CategoriaFinanceira();
+        Long categoriaId = 1L;
+        Long usuarioId = 1L;
+        Long contaUsuarioId = 1L;
+        Long pagamentoId = 1L;
+        Long historicoTransacaoId = 1L;
+
+        categoriaMockada.setTiposCategorias(DESPESA);
+        categoriaMockada.setSubTipo(CONTA_INTERNET);
+        ReflectionTestUtils.setField(categoriaMockada, "id", categoriaId);
+
+        Usuario usuario = new Usuario();
+        ReflectionTestUtils.setField(usuario, "id", usuarioId);
+
+        ContaUsuario contaUsuario = new ContaUsuario();
+        ReflectionTestUtils.setField(contaUsuario, "id", contaUsuarioId);
+
+        Pagamentos pagamento = new Pagamentos();
+        ReflectionTestUtils.setField(pagamento, "id", pagamentoId);
+
+        HistoricoTransacao historicoTransacao = new HistoricoTransacao();
+        ReflectionTestUtils.setField(historicoTransacao, "id", historicoTransacaoId);
+
+        categoriaMockada.setUsuarioRelacionado(usuario);
+        categoriaMockada.setContaRelacionada(contaUsuario);
+        categoriaMockada.setPagamentosRelacionados(List.of(pagamento));
+        categoriaMockada.setTransacoesRelacionadas(List.of(historicoTransacao));
+
+        when(categoriaFinanceiraRepository.findById(categoriaId)).thenReturn(Optional.of(categoriaMockada))
+                .thenReturn(Optional.empty()); //Aqui retornar ja o elemento vazio no mock
+        doNothing().when(categoriaFinanceiraAssociation).desassociarCategoriaUsuario(categoriaId, usuarioId);
+        doNothing().when(categoriaFinanceiraAssociation).desassociarCategoriaAConta(categoriaId, contaUsuarioId);
+        doNothing().when(categoriaFinanceiraAssociation).desassociarCategoriaAPagamento(categoriaId, pagamentoId);
+        doNothing().when(categoriaFinanceiraAssociation).desassociarCategoriaTransacao(categoriaId, historicoTransacaoId);
+
+        assertDoesNotThrow(() -> categoriaFinanceiraService.deletarCategoria(categoriaId));
+
+
+        Optional<CategoriaFinanceira> categoriaRemovida = categoriaFinanceiraRepository.findById(categoriaId);
+
+        assertTrue(categoriaRemovida.isEmpty());
+
+        //Verify
+        verify(categoriaFinanceiraAssociation).desassociarCategoriaUsuario(categoriaId, usuarioId);
+        verify(categoriaFinanceiraAssociation).desassociarCategoriaAConta(categoriaId, contaUsuarioId);
+        verify(categoriaFinanceiraAssociation).desassociarCategoriaTransacao(categoriaId, historicoTransacaoId);
+        verify(categoriaFinanceiraAssociation).desassociarCategoriaAPagamento(categoriaId, pagamentoId);
+    }
+
+    @Order(8)
+    @DisplayName("Deve encontrar uma categoriaFinanceira pelo id, quando ela for despesa")
+    @Test
+    public void verificarQuandoCategoriaForDespesa() {
+        Long categoria1Id = 1L;
+        CategoriaFinanceira categoria1 = new CategoriaFinanceira();
+        categoria1.setTiposCategorias(DESPESA);
+        categoria1.setSubTipo(DESPESA_ALUGUEL);
+        ReflectionTestUtils.setField(categoria1,"id",categoria1Id);
+        CategoriaFinanceira categoria2 = new CategoriaFinanceira();
+        Long categoria2Id = 2L;
+        categoria2.setTiposCategorias(DESPESA);
+        categoria2.setSubTipo(COMBUSTIVEL);
+        ReflectionTestUtils.setField(categoria2,"id",categoria2Id);
+
+        List<CategoriaFinanceira> categoriasDespesa = List.of(categoria1, categoria2);
+
+        when(categoriaFinanceiraRepository.encontrarPorTipoCategoria(DESPESA)).thenReturn(categoriasDespesa);
+
+        boolean resultado = categoriaFinanceiraService.seCategoriaForDespesa();
+
+        assertTrue(categoriasDespesa.contains(categoria1));
+        assertTrue(categoriasDespesa.contains(categoria2));
+        assertTrue(resultado);
+        //verificar
+        verify(categoriaFinanceiraRepository).encontrarPorTipoCategoria(DESPESA);
+    }
+
+    @Test
+    @Order(9)
+    @DisplayName("se metodo 'se for despesa' não retornar o valor, ele deve retornar false")
+    public void deveRetornarFalseSeDespesa(){
+        CategoriaFinanceira categoria1 = new CategoriaFinanceira();
+        categoria1.setTiposCategorias(RECEITA);
+        categoria1.setSubTipo(SALARIO);
+        CategoriaFinanceira categoria2 = new CategoriaFinanceira();
+        categoria2.setTiposCategorias(RECEITA);
+        categoria2.setSubTipo(RENDA_FIXA);
+
+        List<CategoriaFinanceira> categoriasEmLista = List.of(categoria1,categoria2);
+
+        when(categoriaFinanceiraRepository.encontrarPorTipoCategoria(DESPESA)).thenReturn(categoriasEmLista);
+
+        boolean resultado = categoriaFinanceiraService.seCategoriaForDespesa();
+
+        assertFalse(resultado);
+        verify(categoriaFinanceiraRepository).encontrarPorTipoCategoria(DESPESA);
+    }
+
+    @Order(11)
+    @Test
+    @DisplayName("Deve encontrar uma categoriaFinanceira pelo id, quando ela for receita")
+    public void verificarQuandoCategoriaForReceita(){
+        CategoriaFinanceira categoriaUm = new CategoriaFinanceira();
+        categoriaUm.setTiposCategorias(RECEITA);
+        categoriaUm.setSubTipo(DIVIDENDOS);
+        CategoriaFinanceira categoriaDois = new CategoriaFinanceira();
+        categoriaDois.setTiposCategorias(RECEITA);
+        categoriaDois.setSubTipo(SALARIO);
+
+        List<CategoriaFinanceira> listaReceitas = List.of(categoriaUm,categoriaDois);
+
+        when(categoriaFinanceiraRepository.encontrarPorTipoCategoria(RECEITA)).thenReturn(listaReceitas);
+
+        boolean resultadoEsperado = categoriaFinanceiraService.seCategoriaForReceita();
+
+        assertTrue(listaReceitas.contains(categoriaUm));
+        assertTrue(listaReceitas.contains(categoriaDois));
+        assertTrue(resultadoEsperado);
+
+        verify(categoriaFinanceiraRepository).encontrarPorTipoCategoria(RECEITA);
+    }
+
+    @Order(12)
+    @Test
+    @DisplayName("deve retornar falso, quando o metodo seReceita não encontrar objeto do tipo Receita")
+    public void deveRetornarFalsoSeReceitaNaoForEncontrado(){
+        CategoriaFinanceira categoria1 = new CategoriaFinanceira();
+        categoria1.setTiposCategorias(DESPESA);
+        categoria1.setSubTipo(CONTA_AGUA);
+        CategoriaFinanceira categoria2 = new CategoriaFinanceira();
+        categoria2.setTiposCategorias(DESPESA);
+        categoria2.setSubTipo(CONTA_TELEFONE);
+
+        List<CategoriaFinanceira> listaCategorias = List.of(categoria1,categoria2);
+
+        when(categoriaFinanceiraRepository.encontrarPorTipoCategoria(RECEITA)).thenReturn(listaCategorias);
+
+        boolean resultadoEsperado = categoriaFinanceiraService.seCategoriaForReceita();
+
+        assertTrue(listaCategorias.contains(categoria1));
+        assertTrue(listaCategorias.contains(categoria2));
+        assertFalse(resultadoEsperado);
+
+        verify(categoriaFinanceiraRepository).encontrarPorTipoCategoria(RECEITA);
+    }
+
+    @Order(13)
+    @Test
+    @DisplayName("Verificando metodo Tipo Categoria existe")
+    public void testandoTipoCategoriaExiste(){
+
+        List<TiposCategorias> categorias = List.of(RECEITA, DESPESA);
+
+        boolean resultadoCategoriaReceitaExiste = categoriaFinanceiraService.tipoCategoriaExiste(RECEITA);
+        boolean resultadoCategoriaDespesaExiste = categoriaFinanceiraService.tipoCategoriaExiste(DESPESA);
+
+        assertEquals(2,categorias.size());
+        assertTrue(resultadoCategoriaReceitaExiste);
+        assertTrue(resultadoCategoriaDespesaExiste);
+        assertNotNull(categorias);
+    }
+
+    @Test
+    @Order(14)
+    @DisplayName("Verificando se acha um tipo Categoria criado igual")
+    public void deveEncontrarUmTipoCategoriaJaCriadoIgual(){
+
+        //Criando valores falsos
+        CategoriaFinanceira categoriaUm = new CategoriaFinanceira();
+        categoriaUm.setTiposCategorias(RECEITA);
+        categoriaUm.setSubTipo(RENDA_ALUGUEL);
+
+        List<CategoriaFinanceira> categoriaLista = List.of(categoriaUm);
+
+        when(categoriaFinanceiraRepository.encontrarPorTipoAndSubtipo(RECEITA,RENDA_ALUGUEL)).thenReturn(categoriaLista);
+
+        boolean resultadoEsperado = categoriaFinanceiraService.jaExisteUmaCategoriaIgual(categoriaUm);
+
+        assertTrue(resultadoEsperado);
+
+        verify(categoriaFinanceiraRepository).encontrarPorTipoAndSubtipo(RECEITA,RENDA_ALUGUEL);
+    }
 }
+
 
