@@ -12,6 +12,7 @@ import com.marllon.vieira.vergili.catalogo_financeiro.repository.HistoricoTransa
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.PagamentosRepository;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.UsuarioRepository;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.PagamentosAssociation;
+import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.ContaUsuarioService;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.Implements.PagamentosImpl;
 import org.aspectj.util.Reflection;
 import org.junit.jupiter.api.*;
@@ -45,6 +46,9 @@ public class PagamentosImplTest {
     private ContaUsuarioRepository contaUsuarioRepository;
 
     @Mock
+    private HistoricoTransacaoRepository historicoTransacaoRepository;
+
+    @Mock
     private UsuarioRepository usuarioRepository;
 
     @Mock
@@ -52,6 +56,9 @@ public class PagamentosImplTest {
 
     @Mock
     private PagamentosAssociation pagamentosAssociation;
+
+    @Mock
+    private ContaUsuarioService contaUsuarioService;
 
     @Mock
     private PagamentoMapper pagamentoMapper;
@@ -199,6 +206,67 @@ public class PagamentosImplTest {
 
     @Test
     @Order(5)
+    @DisplayName("Criar recebimento deve atualizar o saldo da conta associada corretamente")
+    public void criarRecebimentoDeveAtualizarSaldoDaConta() {
+        Long idRecebimento = 1L;
+        Pagamentos recebimentoTeste = new Pagamentos();
+        recebimentoTeste.setValor(BigDecimal.valueOf(1000));
+        recebimentoTeste.setData(LocalDate.now());
+        recebimentoTeste.setDescricao("teste");
+        recebimentoTeste.setTiposCategorias(TiposCategorias.RECEITA);
+        recebimentoTeste.setCategoriaRelacionada(new CategoriaFinanceira(TiposCategorias.RECEITA,SubTipoCategoria.HERANCA));
+        ReflectionTestUtils.setField(recebimentoTeste,"id",idRecebimento);
+
+        Long idCategoriaFinanceira = 1L;
+        CategoriaFinanceira categoriaFinanceiraTudoNulo = new CategoriaFinanceira();
+        ReflectionTestUtils.setField(categoriaFinanceiraTudoNulo,"id",idCategoriaFinanceira);
+
+        Long idContaUsuario = 1L;
+        ContaUsuario contaUsuarioTudoNulo = new ContaUsuario();
+        contaUsuarioTudoNulo.setSaldo(BigDecimal.valueOf(1000));
+        ReflectionTestUtils.setField(contaUsuarioTudoNulo,"id",idContaUsuario);
+
+        Long idUsuarioCriado = 1L;
+        Usuario usuarioTudoNulo = new Usuario();
+        ReflectionTestUtils.setField(usuarioTudoNulo,"id",idUsuarioCriado);
+
+        assertTrue(pagamentosService.dataEstaCorreta(recebimentoTeste.getData()));
+        assertTrue(pagamentosService.valorEstaCorreto(recebimentoTeste.getValor()));
+
+
+        //Simulando agora que vou adicionar o valor a conta encontrada
+        when(contaUsuarioRepository.findById(idContaUsuario)).thenReturn(Optional.of(contaUsuarioTudoNulo));
+
+        //Simulando primeiro quando ele for criar o objeto no banco
+        when(pagamentosRepository.save(any(Pagamentos.class))).thenAnswer(
+                invocationOnMock -> {
+                    Pagamentos recebimento = invocationOnMock.getArgument(0);
+                    ReflectionTestUtils.setField(recebimento,"id",idRecebimento);
+                    return recebimento;
+                });
+
+        PagamentosRequest request = new PagamentosRequest(recebimentoTeste.getValor(),
+                recebimentoTeste.getData(),
+                recebimentoTeste.getDescricao(),
+                recebimentoTeste.getTiposCategorias(),
+                recebimentoTeste.getCategoriaRelacionada().getSubTipo(),
+                idCategoriaFinanceira,idUsuarioCriado,idContaUsuario);
+
+        //só depois criar o pagamento
+        pagamentosService.criarRecebimento(request);
+
+        assertNotEquals(BigDecimal.valueOf(2000), recebimentoTeste.getValor());
+
+
+        verify(pagamentosRepository).save(recebimentoTeste);
+        verify(contaUsuarioRepository).findById(idContaUsuario);
+        verify(contaUsuarioService).adicionarSaldo(idContaUsuario, BigDecimal.valueOf(1000));
+
+    }
+
+
+    @Test
+    @Order(6)
     @DisplayName("Teste do método criar pagamento deve retornar exceção se data estiver incorreta")
     public void seDataEstiverErradaDeveRetornarExceptionAoCriarPagamento(){
         Long idPagamento = 1L;
@@ -239,7 +307,7 @@ public class PagamentosImplTest {
     }
 
     @Test
-    @Order(6)
+    @Order(7)
     @DisplayName("Teste do método criar pagamento deve retornar exceção se valor estiver incorreto")
     public void seValorPagamentoEstiverErradoDeveRetornarExcecaoDadosInvalidosException(){
         Long pagamentoId = 1L;
@@ -282,7 +350,7 @@ public class PagamentosImplTest {
         });
     }
     @Test
-    @Order(7)
+    @Order(8)
     @DisplayName("Teste do método criar Pagamento ja associado")
     public void verificarSePagamentoCriadoFunciona(){
 

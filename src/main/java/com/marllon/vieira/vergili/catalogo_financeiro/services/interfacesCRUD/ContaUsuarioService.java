@@ -93,22 +93,22 @@ public interface ContaUsuarioService {
     /**
      * Adiciona um valor ao saldo atual da conta do usuário.
      *
-     * @param conta a conta do usuário que terá o saldo atualizado.
+     * @param idConta a conta do usuário que terá o saldo atualizado.
      * @param valor o valor a ser adicionado ao saldo da conta.
      * @throws IllegalArgumentException se o valor for nulo ou negativo.
      */
-    void adicionarSaldo(ContaUsuario conta, BigDecimal valor);
+    void adicionarSaldo(Long idConta, BigDecimal valor);
 
     /**
      * Subtrai um valor do saldo atual da conta do usuário.
      *
-     * @param conta a conta do usuário que terá o saldo reduzido.
+     * @param idConta a conta do usuário que terá o saldo reduzido.
      * @param valor o valor a ser subtraído do saldo da conta.
      * @throws IllegalArgumentException se o valor for nulo ou negativo.
      * @throws ArithmeticException se o valor for maior que o saldo atual da conta.Porém...
      * Só deve permitir saldo negativo em tipo de conta CORRENTE
      */
-    void subtrairSaldo(ContaUsuario conta, BigDecimal valor);
+    void subtrairSaldo(Long idConta, BigDecimal valor);
 
     /**
      * Consulta o saldo atual da conta do usuário.

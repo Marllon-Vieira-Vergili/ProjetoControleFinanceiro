@@ -92,7 +92,7 @@ public class CategoriaFinanceiraIntegrationServiceTest {
        CategoriaFinanceiraResponse categoriaCriada =  categoriaservice.criarCategoriaFinanceira(request,1L,1L,1L,1L);
 
         CategoriaFinanceiraResponse response =
-                new CategoriaFinanceiraResponse(1L,TiposCategorias.RECEITA, SubTipoCategoria.SALARIO);
+                new CategoriaFinanceiraResponse(27L,TiposCategorias.RECEITA, SubTipoCategoria.SALARIO);
 
 
         assertEquals(response,categoriaCriada);

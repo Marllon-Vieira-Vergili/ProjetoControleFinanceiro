@@ -21,7 +21,7 @@ INSERT INTO pagamentos (id, valor, data, descricao, tipos_categorias) VALUES
 (20, 35.75, '2025-02-25', 'Compra de café e lanche', 'DESPESA');
 
 -- Valores de outras entidades para teste
+INSERT INTO categoria_das_contas(id, tipos_categorias, subtipo_categoria) VALUES (1, 'RECEITA', 'PRESENTE');
 INSERT INTO contas(id, nome, saldo, tipo_conta) VALUES (1, 'contateste', 1000, 'CONTA_CORRENTE');
 INSERT INTO historico_transacoes(id, valor, data, descricao,tipos_categorias) VALUES (1, 1000, '2000-01-01', 'teste', 'RECEITA');
 INSERT INTO usuarios(id, nome, email, senha, telefone) VALUES (1, 'teste', 'teste@email.com', 'Teste123', '(11)11111-1111');
-INSERT INTO categoria_das_contas (id, tipos_categorias, subtipo_categoria) VALUES (1, 'RECEITA', 'PRESENTE');

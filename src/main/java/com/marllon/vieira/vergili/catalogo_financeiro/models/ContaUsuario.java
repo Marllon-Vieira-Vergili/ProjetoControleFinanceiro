@@ -18,8 +18,7 @@ import java.util.List;
  */
 
 @Entity
-@Table(name = "contas",uniqueConstraints = {
-        @UniqueConstraint(name = "fk_conta_usuario", columnNames = "usuario_id")})
+@Table(name = "contas")
 @Getter(AccessLevel.PUBLIC)
 @Setter(AccessLevel.PUBLIC)
 @NoArgsConstructor(access = AccessLevel.PUBLIC)

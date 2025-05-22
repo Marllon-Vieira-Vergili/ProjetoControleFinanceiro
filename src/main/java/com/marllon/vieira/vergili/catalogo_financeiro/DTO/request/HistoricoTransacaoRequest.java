@@ -41,7 +41,20 @@ public record HistoricoTransacaoRequest(@NotNull(message = "O valor da transaç�
 
                                         @NotNull(message = "O campo SubtTipo não pode ser nulo")
                                         @Enumerated(EnumType.STRING)
-                                        SubTipoCategoria subTipoCategoria) {
+                                        SubTipoCategoria subTipoCategoria,
+
+                                        @NotNull(message = "O campo id do pagamento criado não pode ser nulo")
+                                        Long idPagamentoRequest,
+
+                                        @NotNull(message = "O campo id da categoria não pode ser nulo")
+                                        Long idCategoriaFinanceira,
+
+                                        @NotNull(message = "O campo id do usuário criado não pode ser nulo")
+                                        Long idUsuarioCriado,
+
+                                        @NotNull(message = "O campo id da conta do usuário criada não pode ser nulo!")
+                                        Long idContaUsuario
+                                        ) {
 
 }
 

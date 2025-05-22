@@ -1,12 +1,12 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.Implements;
 
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.HistoricoTransacaoRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.PagamentosRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.PagamentosResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
 import com.marllon.vieira.vergili.catalogo_financeiro.mapper.CategoriaFinanceiraMapper;
 import com.marllon.vieira.vergili.catalogo_financeiro.mapper.PagamentoMapper;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.HistoricoTransacao;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.Pagamentos;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.*;
@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -54,6 +55,9 @@ public class PagamentosImpl implements PagamentosService {
 
     @Autowired
     private PagamentoMapper mapper;
+
+    @Autowired
+    private ContaUsuarioService contaUsuarioService;
 
 
     @Override
@@ -91,13 +95,24 @@ public class PagamentosImpl implements PagamentosService {
         Long pagamentoId = novoRecebimento.getId();
         Long historicoTransacaoId= novoHistorico.getId();
 
+
+        Optional<CategoriaFinanceira> categoriaFinanceiraEncontrada = categoriaFinanceiraRepository.findById(request.idCategoriaFinanceira());
+        Optional<HistoricoTransacao> historicoTransacaoEncontrado = historicoTransacaoRepository.findById(novoHistorico.getId());
+        Optional<Usuario> usuarioEncontrado = usuarioRepository.findById(request.idUsuarioCriado());
+        Optional<ContaUsuario> contaUsuarioEncontrada = contaUsuarioRepository.findById(request.idContaUsuario());
+
+
         //associando
-        pagamentoAssociation.associarPagamentoATransacao(pagamentoId,historicoTransacaoId);
-        pagamentoAssociation.associarPagamentoComCategoria(pagamentoId, request.idCategoriaFinanceira());
-        pagamentoAssociation.associarPagamentoComConta(pagamentoId,request.idContaUsuario());
-        pagamentoAssociation.associarPagamentoComUsuario(pagamentoId,request.idUsuarioCriado());
+        pagamentoAssociation.associarPagamentoATransacao(pagamentoId,historicoTransacaoEncontrado.get().getId());
+        pagamentoAssociation.associarPagamentoComCategoria(pagamentoId, categoriaFinanceiraEncontrada.get().getId());
+        pagamentoAssociation.associarPagamentoComConta(pagamentoId,contaUsuarioEncontrada.get().getId());
+        pagamentoAssociation.associarPagamentoComUsuario(pagamentoId,usuarioEncontrado.get().getId());
+
+        //Buscando a conta desejada para atualizar o saldo dela
 
         //Adicionando o valor ao saldo na conta do usuário
+        contaUsuarioEncontrada.ifPresent(contaUsuario ->
+                contaUsuarioService.adicionarSaldo(contaUsuario.getId(), novoRecebimento.getValor()));
 
         return mapper.retornarDadosPagamento(novoRecebimento);
     }

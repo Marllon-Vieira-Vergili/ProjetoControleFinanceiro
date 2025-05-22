@@ -2,20 +2,16 @@ package com.marllon.vieira.vergili.catalogo_financeiro.integration.service;
 
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.PagamentosRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.PagamentosResponse;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
-import com.marllon.vieira.vergili.catalogo_financeiro.repository.CategoriaFinanceiraRepository;
-import com.marllon.vieira.vergili.catalogo_financeiro.repository.ContaUsuarioRepository;
-import com.marllon.vieira.vergili.catalogo_financeiro.repository.HistoricoTransacaoRepository;
-import com.marllon.vieira.vergili.catalogo_financeiro.repository.UsuarioRepository;
+import com.marllon.vieira.vergili.catalogo_financeiro.repository.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.PagamentosAssociation;
-import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.CategoriaFinanceiraService;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.PagamentosService;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -31,11 +27,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @TestPropertySource("classpath:/application-test.properties")
 @SpringBootTest
+@Transactional
 public class PagamentosIntegrationServiceTest {
 
 
     @Autowired
     private PagamentosService pagamentosService;
+
+    @Autowired
+    private PagamentosRepository pagamentosRepository;
 
     @Autowired
     private CategoriaFinanceiraRepository categoriaFinanceiraRepository;
@@ -55,54 +55,82 @@ public class PagamentosIntegrationServiceTest {
     @Autowired
     private JdbcTemplate jdbc;
 
+    @Autowired
+    private EntityManager entityManager;
+
 
     @BeforeEach
-    @Sql("/sql/PagamentosDados.sql")
+    @Sql(value = "classpath:/sql/PagamentosDados.sql",executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     public void antesDeInicializarCadaUm(){
+
         //Executar os valores dentro do SQL
     }
 
+
+
+
+
+
+    @Test
+    @DisplayName("Deve falhar se usuario digitar DESPESA em metodo criar Recebimento")
+    public void deveRetornarExcecaoSeUSuarioDigitarValorDESPESAEmCriarRecebimento(){
+        PagamentosRequest requestRecebimento = new PagamentosRequest(BigDecimal.valueOf(100.00),
+                LocalDate.now(),
+                "teste",
+                TiposCategorias.DESPESA,
+                SubTipoCategoria.CONTA_AGUA,
+                1L,
+               1L,
+                1L);
+
+        assertTrue(pagamentosService.dataEstaCorreta(requestRecebimento.data()));
+        assertTrue(pagamentosService.valorEstaCorreto(requestRecebimento.valor()));
+
+//Assertando que ele joga exception de dados invalidos, se usuario digitar TiposCategorias.DESPESA em metodo de receber
+        assertThrows(DadosInvalidosException.class,()
+                ->{
+           pagamentosService.criarRecebimento(requestRecebimento);
+        });
+    }
+
+    @Test
+    @DisplayName("Teste para verificar se está criando recebimento")
+    @Sql(value = "classpath:/sql/PagamentosDados.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    public void deveCriarRecebimento() {
+        // Busca relacionamentos para garantir existência
+        CategoriaFinanceira categoria = categoriaFinanceiraRepository.findById(1L).orElseThrow();
+        ContaUsuario conta = contaUsuarioRepository.findById(1L).orElseThrow();
+        Usuario usuario = usuarioRepository.findById(1L).orElseThrow();
+
+        PagamentosRequest request = new PagamentosRequest(
+                BigDecimal.valueOf(1000.00),
+                LocalDate.now(),
+                "teste",
+                TiposCategorias.RECEITA,
+                SubTipoCategoria.HERANCA,
+                categoria.getId(),
+                usuario.getId(),
+                conta.getId()
+        );
+
+        PagamentosResponse response = pagamentosService.criarRecebimento(request);
+
+        assertEquals(BigDecimal.valueOf(1000.00), response.valor());
+        assertEquals(TiposCategorias.RECEITA, response.categoria());
+        assertEquals(SubTipoCategoria.HERANCA, response.subTipoCategoria());
+        assertEquals(conta.getId(), response.contaAssociada());
+        assertEquals(usuario.getId(), response.usuarioAssociado());
+    }
+
+
     @AfterEach
-    public void depoisDeInicializarCadaUmLimparValores(){
+    public  void depoisDeInicializarCadaUmLimparValores(){
         jdbc.execute("DELETE FROM pagamentos");
         jdbc.execute("DELETE FROM historico_transacoes");
         jdbc.execute("DELETE FROM usuarios");
         jdbc.execute("DELETE FROM categoria_das_contas");
 
-    }
-
-    @Test
-    @DisplayName("Criar um pagamento e associá-lo")
-    public void criarPagamentoTeste(){
-
-        Optional<CategoriaFinanceira> categoria = categoriaFinanceiraRepository.findById(1L);
-        assertNotNull(Optional.of(categoria));
-
-        Optional<ContaUsuario> contaUsuario = contaUsuarioRepository.findById(1L);
-        assertNotNull(Optional.of(contaUsuario));
-
-        Optional<Usuario> usuario = usuarioRepository.findById(1L);
-        assertNotNull(Optional.of(usuario));
-
-        Optional<HistoricoTransacao> transacao = historicoTransacaoRepository.findById(1L);
-        assertNotNull(Optional.of(contaUsuario));
-
-        PagamentosRequest request =new PagamentosRequest(BigDecimal.valueOf(1000).setScale(2, RoundingMode.HALF_EVEN),LocalDate.of(2025,1,1),
-                "pagamento teste",TiposCategorias.RECEITA, SubTipoCategoria.DIVIDENDOS,1L,1L,1L);
-
-        PagamentosResponse pagamentoCriadoDoMetodo = pagamentosService.criarPagamento(request);
-
-        PagamentosResponse response = new PagamentosResponse
-                (1L, BigDecimal.valueOf(1000.00).setScale(2,RoundingMode.HALF_EVEN)
-                        ,LocalDate.of(2025,1,1),"pagamento teste",
-                        TiposCategorias.RECEITA,SubTipoCategoria.DIVIDENDOS,1L,1L);
-
-        pagamentosAssociation.associarPagamentoComUsuario(response.id(),usuario.orElseThrow().getId());
-        pagamentosAssociation.associarPagamentoComConta(response.id(),contaUsuario.orElseThrow().getId());
-        pagamentosAssociation.associarPagamentoComCategoria(response.id(),categoria.orElseThrow().getId());
-        pagamentosAssociation.associarPagamentoATransacao(response.id(),transacao.orElseThrow().getId());
-
-        assertEquals(response, pagamentoCriadoDoMetodo);
-
         }
+
+
     }

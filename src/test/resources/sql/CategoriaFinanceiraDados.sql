@@ -1,6 +1,7 @@
 --Este arquivo SQL é um arquivo para instanciar objetos do tipo Categoria, para testes
 
 -- DESPESAS
+INSERT INTO categoria_das_contas (id, tipos_categorias, subtipo_categoria) VALUES (1, 'DESPESA', 'CONTA_LUZ');
 INSERT INTO categoria_das_contas (id, tipos_categorias, subtipo_categoria) VALUES (2, 'DESPESA', 'CONTA_AGUA');
 INSERT INTO categoria_das_contas (id, tipos_categorias, subtipo_categoria) VALUES (3, 'DESPESA', 'CONTA_INTERNET');
 INSERT INTO categoria_das_contas (id, tipos_categorias, subtipo_categoria) VALUES (4, 'DESPESA', 'CARTAO_CREDITO');
@@ -11,7 +12,6 @@ INSERT INTO categoria_das_contas (id, tipos_categorias, subtipo_categoria) VALUE
 INSERT INTO categoria_das_contas (id, tipos_categorias, subtipo_categoria) VALUES (9, 'DESPESA', 'ALIMENTACAO');
 INSERT INTO categoria_das_contas (id, tipos_categorias, subtipo_categoria) VALUES (10, 'DESPESA', 'DESPESA_ALUGUEL');
 INSERT INTO categoria_das_contas (id, tipos_categorias, subtipo_categoria) VALUES (11, 'DESPESA', 'EMPRESTIMOS');
-INSERT INTO categoria_das_contas (id, tipos_categorias, subtipo_categoria) VALUES (12, 'DESPESA', 'CONTA_LUZ');
 
 -- RECEITAS
 INSERT INTO categoria_das_contas (id, tipos_categorias, subtipo_categoria) VALUES (20, 'RECEITA', 'SALARIO');
