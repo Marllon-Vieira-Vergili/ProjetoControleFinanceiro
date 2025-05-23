@@ -1,4 +1,5 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.integration.associationTests;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.AssociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
@@ -189,44 +190,52 @@ public class CategoriaFinanceiraAssocImplTest {
         @DisplayName("teste metodo void associarCategoriaComTransacao(Long categoriaId, Long transacaoId) se associa")
         public void testeMetodoAssociarCategoriaComHistoricoTransacaoDeveAssociar(){
 
+            //Encontrando os objetos no banco de dados
             Optional<CategoriaFinanceira> categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaCriadaPraTeste.getId());
-            assertTrue(categoriaEncontrada.isPresent());
-
             Optional<HistoricoTransacao> transacaoEncontrada = historicoTransacaoRepository.findById(historicoTransacaoCriadoParaTeste.getId());
-            assertTrue(transacaoEncontrada.isPresent());
 
-            assertTrue(categoriaEncontrada.get().getTransacoesRelacionadas().isEmpty());
+            //Assertando que é verdade que esses objetos foram encontrados.. e estão presentes
+            assertTrue(transacaoEncontrada.isPresent(),"A transação encontrada deveria ser encontrada");
+            assertTrue(categoriaEncontrada.isPresent(),"A categoria encontrada deveria ser encontrada");
+
+            //Assertando que eles não estão associados em nenhum dos lados.
+            assertTrue(categoriaEncontrada.get().getTransacoesRelacionadas().isEmpty(),"A transação não deveria estar relacionado a essa categoria ");
+            assertNull(transacaoEncontrada.get().getCategoriaRelacionada(),"A categoria não deveria estar relacionado a essa transação");
+
+            //Assertando que ele não joga nenhuma exceção de erro quando eu realizar a associação...
 
             assertDoesNotThrow(()->categoriaFinanceiraAssociation.associarCategoriaComTransacao(categoriaEncontrada.get().getId(), transacaoEncontrada.get().getId()));
 
-            HistoricoTransacao transacaoAssociado = historicoTransacaoRepository.findById(historicoTransacaoCriadoParaTeste.getId()).orElseThrow();
-            CategoriaFinanceira categoriaAssociada = categoriaFinanceiraRepository.findById(categoriaCriadaPraTeste.getId()).orElseThrow();
-
-
-            assertTrue(categoriaAssociada.getTransacoesRelacionadas().contains(transacaoAssociado));
-            assertEquals(transacaoAssociado.getCategoriaRelacionada(), categoriaAssociada);
+            //Assertando que a associação foi realizada
+            assertTrue(categoriaEncontrada.get().getTransacoesRelacionadas().contains(transacaoEncontrada.get()),"A transação relacionada  do lado da categoria deveria estar associado");
+            assertEquals(transacaoEncontrada.get().getCategoriaRelacionada(), categoriaEncontrada.get(),"A categoria relacionada do lado da transação deveria estar associada");
         }
 
         @Test
         @DisplayName("teste metodo void associarCategoriaComUsuario(Long categoriaId, Long usuarioId) se associa")
         public void testeMetodoAssociarCategoriaComUsuarioDeveAssociar(){
 
+            //Encontrando os valores pela ID
             Optional<CategoriaFinanceira> categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaCriadaPraTeste.getId());
-            assertTrue(categoriaEncontrada.isPresent());
-
             Optional<Usuario> usuarioEncontrado = usuarioRepository.findById(usuarioCriadoParaTeste.getId());
-            assertTrue(usuarioEncontrado.isPresent());
 
-            assertNull(categoriaEncontrada.get().getUsuarioRelacionado());
+            //Assertando que os objetos estão presentes no banco de dados
+            assertTrue(usuarioEncontrado.isPresent(),"O usuário deveria ser encontrado com essa ID");
+            assertTrue(categoriaEncontrada.isPresent(), "A categoria deveria ser encontrada com essa ID");
 
-            assertDoesNotThrow(()->categoriaFinanceiraAssociation.associarCategoriaComUsuario(categoriaEncontrada.get().getId(), usuarioEncontrado.get().getId()));
+            //Assertando que ambos os lados não estão associados entre si
+            assertNull(categoriaEncontrada.get().getUsuarioRelacionado(),"A categoria não deveria estar associado a esse usuário");
+            assertTrue(usuarioEncontrado.get().getCategoriasRelacionadas().isEmpty(),"O usuário não deveria estar associado a essa categoria");
 
-            Usuario usuarioAssociado = usuarioRepository.findById(usuarioEncontrado.get().getId()).orElseThrow();
-            CategoriaFinanceira categoriaAssociada = categoriaFinanceiraRepository.findById(categoriaEncontrada.get().getId()).orElseThrow();
+            //Assertando que ele não irá jogar exceção de erro, ao associar
+            assertDoesNotThrow(()->categoriaFinanceiraAssociation
+                    .associarCategoriaComUsuario(categoriaEncontrada.get().getId(), usuarioEncontrado.get().getId()),"O método deveria associar ambos os lados");
 
 
-            assertEquals(categoriaAssociada.getUsuarioRelacionado(), usuarioAssociado);
-            assertIterableEquals(usuarioAssociado.getCategoriasRelacionadas(), List.of(categoriaAssociada));
+            //Assertando que eles foram associados
+            assertEquals(categoriaEncontrada.get().getUsuarioRelacionado(), usuarioEncontrado.get(),"Deveria estar associado do lado categoria pra usuário");
+            assertTrue(usuarioEncontrado.get()
+                    .getCategoriasRelacionadas().contains(categoriaEncontrada.get()),"Deveria estar associado do lado usuário pra categoria");
         }
     }
 
@@ -238,7 +247,7 @@ public class CategoriaFinanceiraAssocImplTest {
         @DisplayName("teste do método void desassociarCategoriaAConta(Long categoriaId, Long contaId)")
         public void testeMetodoDesassociarCategoriaComContaDeveRealizarDesassociacao(){
 
-            //Associei
+            //Associei os valores já criados
             categoriaCriadaPraTeste.setContaRelacionada(contaCriadaParaTeste);
             contaCriadaParaTeste.setCategoriasRelacionadas(new ArrayList<>(List.of(categoriaCriadaPraTeste)));
 
@@ -320,6 +329,7 @@ public class CategoriaFinanceiraAssocImplTest {
             //Salvei.. agora vou procurar a id desses valores criados, igual o método de desassociar faz, pra cobrir aqueles OPtional..
             Optional<CategoriaFinanceira> categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaCriadaPraTeste.getId());
             assertTrue(categoriaEncontrada.isPresent());
+
             Optional<Usuario> usuarioEncontrado = usuarioRepository.findById(usuarioCriadoParaTeste.getId());
             assertTrue(usuarioEncontrado.isPresent());
 
@@ -334,21 +344,34 @@ public class CategoriaFinanceiraAssocImplTest {
     }
 
     @Nested
-    @DisplayName("Cenários de Erro e Exceptions nas Associações")
+    @DisplayName("Associações - Cenários de Erros")
     class TesteCenariosDeErrosAndExceptionsNasAssociacoes{
 
         @Test
-        @DisplayName("RetornarException associarCategoriaComConta(Long categoriaId, Long contaId)")
-        public void associarCategoriaComContaDeveRetornarExceptions(){
+        @DisplayName("Teste Cenário de erro ao associar categoria com conta")
+        public void associarCategoriaComContaDeveRetornarExcecao(){
 
-            //Encontrando os valores
+            //Realizando a associação antes de chamar o método
+            categoriaCriadaPraTeste.setContaRelacionada(contaCriadaParaTeste);
+            contaCriadaParaTeste.setCategoriasRelacionadas(new ArrayList<>(List.of(categoriaCriadaPraTeste)));
+
+            //Assertando que os valores da lógica estejam corretos
+            assertNotNull(categoriaCriadaPraTeste.getContaRelacionada(),"Categoria ja deve ter conta associado");
+            assertTrue(contaCriadaParaTeste.getCategoriasRelacionadas().contains(categoriaCriadaPraTeste));
+            assertEquals(categoriaCriadaPraTeste.getContaRelacionada(),contaCriadaParaTeste,
+                    "A conta relacionada deve ser igual a da associada");
+
+            assertThrows(AssociationErrorException.class,()
+                    ->categoriaFinanceiraAssociation.associarCategoriaComConta
+                    (categoriaCriadaPraTeste.getId(),contaCriadaParaTeste.getId())
+                            ,"Deveria retornar Exceção, pois ambos ja estão associados");
 
         }
     }
 
 
     @Nested
-    @DisplayName("Cenários de Erro e Exceptions nas Desassociações")
+    @DisplayName("Desassociações - Cenários de erros")
     class TesteCenariosDeErrosAndExceptionsNasDesassociacoes{
 
         @Test

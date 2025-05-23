@@ -114,13 +114,16 @@ public class ContaUsuarioAssocImpl implements ContaUsuarioAssociation {
     public void associarContaComUsuario(Long contaId, Long usuarioId) {
         ContaUsuario contaEncontrada = contaUsuarioRepository.findById(contaId)
                 .orElseThrow(() -> new ContaNaoEncontrada("Conta não encontrada com id: " + contaId));
+
         Usuario usuarioEncontrado = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new UsuarioNaoEncontrado("Usuário não encontrado com id: " + usuarioId));
 
-        if (contaEncontrada.getUsuarioRelacionado().getId().equals(usuarioEncontrado.getId())
+        if (contaEncontrada.getUsuarioRelacionado() != null
                 && usuarioEncontrado.getContasRelacionadas().contains(contaEncontrada)) {
             throw new AssociationErrorException("Essa conta com o id: " + contaId + " já está associada a esse usuário " + usuarioId);
         }
+
+
 
         contaEncontrada.setUsuarioRelacionado(usuarioEncontrado);
         usuarioEncontrado.getContasRelacionadas().add(contaEncontrada);
@@ -134,14 +137,17 @@ public class ContaUsuarioAssocImpl implements ContaUsuarioAssociation {
     public void desassociarContaDeCategoria(Long contaId, Long categoriaId) {
         ContaUsuario contaEncontrada = contaUsuarioRepository.findById(contaId)
                 .orElseThrow(() -> new ContaNaoEncontrada("Conta não encontrada com id: " + contaId));
+
         CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaId)
                 .orElseThrow(() -> new CategoriaNaoEncontrada("Categoria não encontrada com id: " + categoriaId));
 
         if (contaEncontrada.getCategoriasRelacionadas() == null) {
             contaEncontrada.setCategoriasRelacionadas(new ArrayList<>());
         }
-        if (!contaEncontrada.getCategoriasRelacionadas().contains(categoriaEncontrada)
-                || !categoriaEncontrada.getContaRelacionada().getId().equals(contaEncontrada.getId())) {
+
+        if (contaEncontrada.getCategoriasRelacionadas() == null || categoriaEncontrada.getContaRelacionada() == null ||
+                !contaEncontrada.getCategoriasRelacionadas().contains(categoriaEncontrada)
+                && !categoriaEncontrada.getContaRelacionada().getId().equals(contaEncontrada.getId())) {
             throw new DesassociationErrorException("A conta com id " + contaId + " não está associada à categoria " + categoriaId);
         }
 
@@ -197,10 +203,12 @@ public class ContaUsuarioAssocImpl implements ContaUsuarioAssociation {
         Usuario usuarioEncontrado = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new UsuarioNaoEncontrado("Usuário não encontrado com id: " + usuarioId));
 
-        if (!contaEncontrada.getUsuarioRelacionado().getId().equals(usuarioEncontrado.getId())
-                || !usuarioEncontrado.getContasRelacionadas().contains(contaEncontrada)) {
+        if(contaEncontrada.getUsuarioRelacionado() == null || usuarioEncontrado.getContasRelacionadas() == null
+                || !contaEncontrada.getUsuarioRelacionado().getId().equals(usuarioEncontrado.getId()) ||
+                !usuarioEncontrado.getContasRelacionadas().contains(contaEncontrada)){
             throw new DesassociationErrorException("A conta com id " + contaId + " não está associada ao usuário " + usuarioId);
         }
+
 
         contaEncontrada.setUsuarioRelacionado(null);
         usuarioEncontrado.getContasRelacionadas().remove(contaEncontrada);

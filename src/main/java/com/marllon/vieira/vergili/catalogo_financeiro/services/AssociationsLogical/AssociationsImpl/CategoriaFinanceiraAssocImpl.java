@@ -55,17 +55,15 @@ public class CategoriaFinanceiraAssocImpl implements CategoriaFinanceiraAssociat
         ContaUsuario contaUsuarioEncontrada = contaUsuarioRepository.findById(contaId)
                 .orElseThrow(() -> new ContaNaoEncontrada("Conta não foi encontrada com essa id informada"));
 
-        if(categoriaEncontrada.getContaRelacionada() == null ||
-                !contaUsuarioEncontrada.getCategoriasRelacionadas().contains(categoriaEncontrada)){
-            //Associação bidirecional
-            try{
-                categoriaEncontrada.setContaRelacionada(contaUsuarioEncontrada);
-                contaUsuarioEncontrada.getCategoriasRelacionadas().add(categoriaEncontrada);
-            } catch (RuntimeException e) {
-                throw new AssociationErrorException("Erro ao associar a categoria com a conta" +
-                        e.getMessage());
+        if(contaUsuarioEncontrada.getCategoriasRelacionadas().contains(categoriaEncontrada) &&
+                categoriaEncontrada.getContaRelacionada() == (contaUsuarioEncontrada)){
+            throw new AssociationErrorException("Erro ao associar a categoria com a conta");
             }
-        }
+
+        //Associação bidirecional
+        categoriaEncontrada.setContaRelacionada(contaUsuarioEncontrada);
+        contaUsuarioEncontrada.getCategoriasRelacionadas().add(categoriaEncontrada);
+
         //salvar ambos os lados
         categoriaFinanceiraRepository.save(categoriaEncontrada);
         contaUsuarioRepository.save(contaUsuarioEncontrada);
