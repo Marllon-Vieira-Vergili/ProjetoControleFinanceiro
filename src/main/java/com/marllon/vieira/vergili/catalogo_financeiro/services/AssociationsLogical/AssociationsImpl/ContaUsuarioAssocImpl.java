@@ -42,21 +42,25 @@ public class ContaUsuarioAssocImpl implements ContaUsuarioAssociation {
 
     @Override
     public void associarContaComCategoria(Long contaId, Long categoriaId) {
+
         ContaUsuario contaEncontrada = contaUsuarioRepository.findById(contaId)
                 .orElseThrow(() -> new ContaNaoEncontrada("Conta não encontrada com id: " + contaId));
+
         CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaId)
                 .orElseThrow(() -> new CategoriaNaoEncontrada("Categoria não encontrada com id: " + categoriaId));
 
         if (contaEncontrada.getCategoriasRelacionadas() == null) {
             contaEncontrada.setCategoriasRelacionadas(new ArrayList<>());
         }
-        if (contaEncontrada.getCategoriasRelacionadas().contains(categoriaEncontrada)
-                || categoriaEncontrada.getContaRelacionada().getId().equals(contaEncontrada.getId())) {
+
+        if (contaEncontrada.getCategoriasRelacionadas().contains(categoriaEncontrada) &&
+                 categoriaEncontrada.getContaRelacionada().getId().equals(contaEncontrada.getId())) {
             throw new AssociationErrorException("Essa conta com o id: " + contaId + " já está associada a essa categoria " + categoriaId);
         }
 
         contaEncontrada.getCategoriasRelacionadas().add(categoriaEncontrada);
         categoriaEncontrada.setContaRelacionada(contaEncontrada);
+
 
         contaUsuarioRepository.save(contaEncontrada);
         categoriaFinanceiraRepository.save(categoriaEncontrada);
@@ -73,7 +77,7 @@ public class ContaUsuarioAssocImpl implements ContaUsuarioAssociation {
             contaEncontrada.setPagamentosRelacionados(new ArrayList<>());
         }
         if (contaEncontrada.getPagamentosRelacionados().contains(pagamentoEncontrado)
-                || pagamentoEncontrado.getContaRelacionada().getId().equals(contaEncontrada.getId())) {
+                && pagamentoEncontrado.getContaRelacionada().getId().equals(contaEncontrada.getId())) {
             throw new AssociationErrorException("Essa conta com o id: " + contaId + " já está associada a esse pagamento " + pagamentoId);
         }
 
@@ -95,7 +99,7 @@ public class ContaUsuarioAssocImpl implements ContaUsuarioAssociation {
             contaEncontrada.setTransacoesRelacionadas(new ArrayList<>());
         }
         if (contaEncontrada.getTransacoesRelacionadas().contains(historicoEncontrado)
-                || historicoEncontrado.getContaRelacionada().getId().equals(contaEncontrada.getId())) {
+                && historicoEncontrado.getContaRelacionada().getId().equals(contaEncontrada.getId())) {
             throw new AssociationErrorException("Essa conta com o id: " + contaId + " já está associada a esse histórico de transação " + transacaoId);
         }
 
@@ -114,7 +118,7 @@ public class ContaUsuarioAssocImpl implements ContaUsuarioAssociation {
                 .orElseThrow(() -> new UsuarioNaoEncontrado("Usuário não encontrado com id: " + usuarioId));
 
         if (contaEncontrada.getUsuarioRelacionado().getId().equals(usuarioEncontrado.getId())
-                || usuarioEncontrado.getContasRelacionadas().contains(contaEncontrada)) {
+                && usuarioEncontrado.getContasRelacionadas().contains(contaEncontrada)) {
             throw new AssociationErrorException("Essa conta com o id: " + contaId + " já está associada a esse usuário " + usuarioId);
         }
 

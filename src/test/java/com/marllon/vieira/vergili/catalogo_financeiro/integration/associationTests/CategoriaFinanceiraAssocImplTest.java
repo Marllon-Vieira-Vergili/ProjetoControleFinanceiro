@@ -1,19 +1,22 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.integration.associationTests;
-
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.CategoriaFinanceiraResponse;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.ContaUsuario;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.CategoriaFinanceiraAssociation;
-import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.jdbc.Sql;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -24,25 +27,27 @@ import static org.junit.jupiter.api.Assertions.*;
  * void associarCategoriaComPagamento(Long categoriaId, Long pagamentoId);
  * void associarCategoriaComTransacao(Long categoriaId, Long transacaoId);
  * void associarCategoriaComUsuario(Long categoriaId, Long usuarioId);
- * void associarSubTipoCategoriaComDespesa(TiposCategorias tipoCategoriaDespesa, SubTipoCategoria subTipoDespesa);
- * void associarSubTipoCategoriaComReceita(TiposCategorias tipoCategoriaReceita, SubTipoCategoria subTipoReceita);
  * //////--------------------------------------------------------////////////////////////////////
  * // ======================== MÉTODOS DE DESASSOCIAÇÃO ========================
  * void desassociarCategoriaAConta(Long categoriaId, Long contaId);
  * void desassociarCategoriaAPagamento(Long categoriaId, Long pagamentoId);
  * void desassociarCategoriaTransacao(Long categoriaId, Long transacaoId);
  * void desassociarCategoriaUsuario(Long categoriaId, Long usuarioId);
- * void desassociarCategoriaCriadaComDespesa(Long categoriaId);
- * void desassociarCategoriaCriadaComReceita(Long categoriaId);
  */
-@SpringBootTest
-@TestPropertySource("classpath:/application-test.properties")
+
+@SpringBootTest //Rodar o teste em um contexto de Teste em toda aplicação
+@TestPropertySource("classpath:/application-test.properties") //Encontrar o arquivo .properties do banco Memoria
+//Ou usar a anotação @ActiveProfiles("test") que ja encontra pelo nome, o properties de test
+@Transactional //Realizar os roolbacks automaticamente após cada etapa
+@AutoConfigureTestDatabase //Auto configurar o banco de dados teste
 public class CategoriaFinanceiraAssocImplTest {
 
+//Instanciando as entidades que deverão ser utilizadas para teste
 
     @Autowired
     private CategoriaFinanceiraRepository categoriaFinanceiraRepository;
 
+    //Injetando a classe que será testada, quando for chamada
     @Autowired
     private CategoriaFinanceiraAssociation categoriaFinanceiraAssociation;
 
@@ -59,32 +64,301 @@ public class CategoriaFinanceiraAssocImplTest {
     private HistoricoTransacaoRepository historicoTransacaoRepository;
 
     @Autowired
-    private EntityManager entityManager;
+    private JdbcTemplate jdbcTemplate;
+
+    //Instanciando objetos para teste, criará no banco
+    CategoriaFinanceira categoriaCriadaPraTeste;
+    Usuario usuarioCriadoParaTeste;
+    ContaUsuario contaCriadaParaTeste;
+    HistoricoTransacao historicoTransacaoCriadoParaTeste;
+    Pagamentos pagamentoCriadoPraTeste;
 
     @BeforeEach
-    @Sql("/sql/CategoriaFinanceiraDados.sql")
-    public void antesDeExecutarCadaMetodo(){
-        //Executando os valores do arquivo sql antes
+    public void antesDeExecutarCadaMetodoCrioObjetosManualmente(){
+
+        categoriaCriadaPraTeste = new CategoriaFinanceira();
+        categoriaCriadaPraTeste.setTiposCategorias(TiposCategorias.DESPESA);
+        categoriaCriadaPraTeste.setSubTipo(SubTipoCategoria.ALIMENTACAO);
+
+
+        usuarioCriadoParaTeste = new Usuario();
+        usuarioCriadoParaTeste.setSenha("Teste123");
+        usuarioCriadoParaTeste.setTelefone("(11)11111-1111");
+        usuarioCriadoParaTeste.setEmail("usuario@email.com");
+        usuarioCriadoParaTeste.setNome("teste");
+
+        contaCriadaParaTeste = new ContaUsuario();
+        contaCriadaParaTeste.setTipoConta(TiposContas.CONTA_INVESTIMENTO);
+        contaCriadaParaTeste.setNome("teste");
+        contaCriadaParaTeste.setSaldo(BigDecimal.valueOf(100));
+
+        historicoTransacaoCriadoParaTeste = new HistoricoTransacao();
+        historicoTransacaoCriadoParaTeste.setTiposCategorias(TiposCategorias.DESPESA);
+        historicoTransacaoCriadoParaTeste.setData(LocalDate.now());
+        historicoTransacaoCriadoParaTeste.setValor(BigDecimal.valueOf(1000));
+        historicoTransacaoCriadoParaTeste.setDescricao("teste");
+
+        pagamentoCriadoPraTeste = new Pagamentos();
+        pagamentoCriadoPraTeste.setTiposCategorias(TiposCategorias.DESPESA);
+        pagamentoCriadoPraTeste.setData(LocalDate.now());
+        pagamentoCriadoPraTeste.setValor(BigDecimal.valueOf(1000));
+        pagamentoCriadoPraTeste.setDescricao("teste");
+
+        //Persistir os objetos no banco de dados em memoria H2
+        usuarioRepository.save(usuarioCriadoParaTeste);
+        pagamentosRepository.save(pagamentoCriadoPraTeste);
+        categoriaFinanceiraRepository.save(categoriaCriadaPraTeste);
+        contaUsuarioRepository.save(contaCriadaParaTeste);
+        historicoTransacaoRepository.save(historicoTransacaoCriadoParaTeste);
     }
 
-    @Test
-    @Sql("/sql/CategoriaFinanceiraDados.sql")
-    @DisplayName(" teste do método void associarCategoriaComConta(Long categoriaId, Long contaId);")
-    public void testeMetodoAssociarCategoriaComConta(){
+    @AfterEach
+    @DisplayName("Realizar a deleção dos dados do banco após cada teste")
+    public void depoisDeExecutarTesteTodosMetodos(){
+        //Execução de SQL para deleção de todos os dados de cada tabela de cada entidade
+        jdbcTemplate.execute("DELETE FROM categoria_das_contas");
+        jdbcTemplate.execute("DELETE FROM usuarios");
+        jdbcTemplate.execute("DELETE FROM pagamentos");
+        jdbcTemplate.execute("DELETE FROM historico_transacoes");
+        jdbcTemplate.execute("DELETE FROM contas");
+    }
 
-        Optional<CategoriaFinanceira> categoriaEncontrada = categoriaFinanceiraRepository.findById(2L);
-        assertTrue(categoriaEncontrada.isPresent());
+    @Nested //Nested - Criando Subclasses dentro da classe Principal para Separação de Testes
+    @DisplayName("Associações - Cenários de Sucesso") //Nome que será exibido no console, do bloco de Sucesso Associacoes
+    class CenariosDeSucessoNasAssociacoes{
 
-        Optional<ContaUsuario> contaEncontrada = contaUsuarioRepository.findById(1L);
-        assertTrue(contaEncontrada.isPresent());
 
-         categoriaFinanceiraAssociation.associarCategoriaComConta(categoriaEncontrada.get().getId(),
-                contaEncontrada.get().getId());
+        @Test
+        @DisplayName(" teste do método void associarCategoriaComConta(Long categoriaId, Long contaId) se associa")
+        public void testeMetodoAssociarCategoriaComContaDeveAssociar(){
 
-         //assertDoesNotThrow(this::testeMetodoAssociarCategoriaComConta);
-         assertEquals(categoriaEncontrada.get().getContaRelacionada(),contaEncontrada.get().getCategoriasRelacionadas());
+            //Encontrando os objetos no banco de dados
+            Optional<CategoriaFinanceira> categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaCriadaPraTeste.getId());
+            Optional<ContaUsuario> contaEncontrada = contaUsuarioRepository.findById(contaCriadaParaTeste.getId());
+
+            //Assertando que os valores estão presentes no banco de dados H2
+            assertTrue(categoriaEncontrada.isPresent(),"A categoria deveria estar presente, e ser encontrada");
+            assertTrue(contaEncontrada.isPresent(),"A conta deveria estar presente, e ser encontrada");
+
+            //Assertando que é verdade que ambos não estão associados
+            assertNull(categoriaEncontrada.get().getContaRelacionada(),"A categoria encontrada não deveria estar associado a essa conta relacionada");
+            assertTrue(contaEncontrada.get().getCategoriasRelacionadas().isEmpty(),"A conta encontrada não deveria estar associada a essa categoria encontrada");
+
+            //Assertando que na hora de realizar a associação, ele não retorne nenhum erro ou exceção
+            assertDoesNotThrow(()-> categoriaFinanceiraAssociation.associarCategoriaComConta(categoriaEncontrada.get().getId(),
+                    contaEncontrada.get().getId()),"A associação não deveria dar erro ou Exception");
+
+
+            //Assertando que os valores agora foram devidamente associados, com os valores passados e o valor real
+            //Valor esperado                                                  valor real
+            assertNotNull(categoriaEncontrada.get().getContaRelacionada(),"Categoria deve estar associada a uma conta");
+            assertTrue(contaEncontrada.get().getCategoriasRelacionadas().contains(categoriaEncontrada.get()),
+                    "Conta encontrada deve estar associada a uma categoria");
+
+        }
+
+        @Test
+        @DisplayName("teste metodo void associarCategoriaComPagamento(Long categoriaId, Long pagamentoId) se associa")
+        public void testeMetodoAssociarCategoriaComPagamentoDeveAssociar(){
+
+            //Encontrando os objetos no banco de dados
+            Optional<CategoriaFinanceira> categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaCriadaPraTeste.getId());
+            Optional<Pagamentos> pagamentoEncontrado = pagamentosRepository.findById(pagamentoCriadoPraTeste.getId());
+
+            //Assertando que é verdade que esses objetos foram encontrados.. e estão presentes
+            assertTrue(categoriaEncontrada.isPresent(),"A categoria encontrada deveria ser encontrada");
+            assertTrue(pagamentoEncontrado.isPresent(),"O pagamento encontrado deveria ser encontrado");
+
+            //Assertando que eles não estão associados em nenhum dos lados.
+            assertTrue(categoriaEncontrada.get().getPagamentosRelacionados().isEmpty(),"A categoria não deveria estar relacionado a esse pagamento");
+            assertNull(pagamentoEncontrado.get().getCategoriaRelacionada(),"O pagamento não deveria estar relacionado a essa categoria");
+
+            //Assertando que ele não joga nenhuma exceção de erro quando eu realizar a associação...
+            assertDoesNotThrow(()->categoriaFinanceiraAssociation
+                    .associarCategoriaComPagamento
+                            (categoriaEncontrada.get().getId(), pagamentoEncontrado.get().getId()),"A associação não deveria dar Erro ou Exceção");
+
+            //Assertando que as associações foram realizadas
+            assertTrue(categoriaEncontrada.get().getPagamentosRelacionados()
+                    .contains(pagamentoEncontrado.get()),"A categoria encontrada deveria encontrar o pagamento Associado");
+            assertEquals(pagamentoEncontrado.get().getCategoriaRelacionada(), categoriaEncontrada.get()
+                    ,"O pagamento encontrado deveria encontrar a associação com a categoria");
+        }
+
+        @Test
+        @DisplayName("teste metodo void associarCategoriaComTransacao(Long categoriaId, Long transacaoId) se associa")
+        public void testeMetodoAssociarCategoriaComHistoricoTransacaoDeveAssociar(){
+
+            Optional<CategoriaFinanceira> categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaCriadaPraTeste.getId());
+            assertTrue(categoriaEncontrada.isPresent());
+
+            Optional<HistoricoTransacao> transacaoEncontrada = historicoTransacaoRepository.findById(historicoTransacaoCriadoParaTeste.getId());
+            assertTrue(transacaoEncontrada.isPresent());
+
+            assertTrue(categoriaEncontrada.get().getTransacoesRelacionadas().isEmpty());
+
+            assertDoesNotThrow(()->categoriaFinanceiraAssociation.associarCategoriaComTransacao(categoriaEncontrada.get().getId(), transacaoEncontrada.get().getId()));
+
+            HistoricoTransacao transacaoAssociado = historicoTransacaoRepository.findById(historicoTransacaoCriadoParaTeste.getId()).orElseThrow();
+            CategoriaFinanceira categoriaAssociada = categoriaFinanceiraRepository.findById(categoriaCriadaPraTeste.getId()).orElseThrow();
+
+
+            assertTrue(categoriaAssociada.getTransacoesRelacionadas().contains(transacaoAssociado));
+            assertEquals(transacaoAssociado.getCategoriaRelacionada(), categoriaAssociada);
+        }
+
+        @Test
+        @DisplayName("teste metodo void associarCategoriaComUsuario(Long categoriaId, Long usuarioId) se associa")
+        public void testeMetodoAssociarCategoriaComUsuarioDeveAssociar(){
+
+            Optional<CategoriaFinanceira> categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaCriadaPraTeste.getId());
+            assertTrue(categoriaEncontrada.isPresent());
+
+            Optional<Usuario> usuarioEncontrado = usuarioRepository.findById(usuarioCriadoParaTeste.getId());
+            assertTrue(usuarioEncontrado.isPresent());
+
+            assertNull(categoriaEncontrada.get().getUsuarioRelacionado());
+
+            assertDoesNotThrow(()->categoriaFinanceiraAssociation.associarCategoriaComUsuario(categoriaEncontrada.get().getId(), usuarioEncontrado.get().getId()));
+
+            Usuario usuarioAssociado = usuarioRepository.findById(usuarioEncontrado.get().getId()).orElseThrow();
+            CategoriaFinanceira categoriaAssociada = categoriaFinanceiraRepository.findById(categoriaEncontrada.get().getId()).orElseThrow();
+
+
+            assertEquals(categoriaAssociada.getUsuarioRelacionado(), usuarioAssociado);
+            assertIterableEquals(usuarioAssociado.getCategoriasRelacionadas(), List.of(categoriaAssociada));
+        }
+    }
+
+    @Nested
+    @DisplayName("Desassociações - Cenários de Sucesso")
+    class CenariosDeSucessoNasDesassociacoes{
+
+        @Test
+        @DisplayName("teste do método void desassociarCategoriaAConta(Long categoriaId, Long contaId)")
+        public void testeMetodoDesassociarCategoriaComContaDeveRealizarDesassociacao(){
+
+            //Associei
+            categoriaCriadaPraTeste.setContaRelacionada(contaCriadaParaTeste);
+            contaCriadaParaTeste.setCategoriasRelacionadas(new ArrayList<>(List.of(categoriaCriadaPraTeste)));
+
+            //Assertando que em ambos os lados estão associados..
+            assertEquals(categoriaCriadaPraTeste.getContaRelacionada(),contaCriadaParaTeste);
+            assertNotNull(contaCriadaParaTeste.getCategoriasRelacionadas());
+            assertTrue(contaCriadaParaTeste.getCategoriasRelacionadas().contains(categoriaCriadaPraTeste));
+
+            //agora vou chamar o método de desassociar pra testar
+
+            Optional<CategoriaFinanceira> categoriaAssociadaEncontrada = categoriaFinanceiraRepository.findById(categoriaCriadaPraTeste.getId());
+            assertTrue(categoriaAssociadaEncontrada.isPresent());
+            Optional<ContaUsuario> contaUsuarioEncontrada = contaUsuarioRepository.findById(contaCriadaParaTeste.getId());
+            assertTrue(contaUsuarioEncontrada.isPresent());
+
+            CategoriaFinanceira categoriaFinanceira = categoriaAssociadaEncontrada.get();
+            ContaUsuario contaUsuario = contaUsuarioEncontrada.get();
+            assertDoesNotThrow(()->categoriaFinanceiraAssociation
+                    .desassociarCategoriaAConta(categoriaFinanceira.getId(), contaUsuario.getId()));
+
+            assertNull(categoriaAssociadaEncontrada.get().getContaRelacionada());
+            assertTrue(contaUsuarioEncontrada.get().getCategoriasRelacionadas().isEmpty());
+        }
+
+        @Test
+        @DisplayName("teste do metodo void desassociarCategoriaAPagamento(Long categoriaId, Long pagamentoId")
+        public void testeMetodoDesassociarCategoriaComPagamentoDeveRealizarDesassociacao(){
+
+            //Realizando as associações
+            categoriaCriadaPraTeste.setPagamentosRelacionados(new ArrayList<>(List.of(pagamentoCriadoPraTeste)));
+            pagamentoCriadoPraTeste.setCategoriaRelacionada(categoriaCriadaPraTeste);
+
+            //Encontro os valores
+            Optional<CategoriaFinanceira> categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaCriadaPraTeste.getId());
+            assertTrue(categoriaEncontrada.isPresent());
+
+            Optional<Pagamentos> pagamentoEncontrado = pagamentosRepository.findById(pagamentoCriadoPraTeste.getId());
+            assertTrue(pagamentoEncontrado.isPresent());
+
+
+            assertDoesNotThrow(()->categoriaFinanceiraAssociation
+                    .desassociarCategoriaAPagamento(categoriaEncontrada.get().getId(), pagamentoEncontrado.get().getId()));
+
+            assertTrue(categoriaEncontrada.get().getPagamentosRelacionados().isEmpty());
+            assertNull(pagamentoEncontrado.get().getCategoriaRelacionada());
+        }
+
+        @Test
+        @DisplayName("teste do metodo void desassociarCategoriaATransacao(Long categoriaId, Long transacaoId")
+        public void testeMetodoDesassociarCategoriaComHistoricoTransacaoDeveRealizarDesassociacao(){
+
+            //Realizo a associação de ambos os lados
+            categoriaCriadaPraTeste.setTransacoesRelacionadas(new ArrayList<>(List.of(historicoTransacaoCriadoParaTeste)));
+            historicoTransacaoCriadoParaTeste.setCategoriaRelacionada(categoriaCriadaPraTeste);
+
+            //Salvei.. agora vou procurar a id desses valores criados, igual o método de desassociar faz, pra cobrir aqueles OPtional..
+            Optional<CategoriaFinanceira> categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaCriadaPraTeste.getId());
+            assertTrue(categoriaEncontrada.isPresent());
+            Optional<HistoricoTransacao> historicoEncontrado = historicoTransacaoRepository.findById(historicoTransacaoCriadoParaTeste.getId());
+            assertTrue(historicoEncontrado.isPresent());
+
+            //Vou chamar agora o método pra desassociar eles
+            assertDoesNotThrow(()-> categoriaFinanceiraAssociation
+                    .desassociarCategoriaTransacao(categoriaEncontrada.get().getId(), historicoEncontrado.get().getId()));
+
+
+            assertTrue(categoriaEncontrada.get().getTransacoesRelacionadas().isEmpty());
+            assertNull(historicoEncontrado.get().getCategoriaRelacionada());
+        }
+
+        @Test
+        @DisplayName("teste do metodo void desassociarCategoriaAUsuario(Long categoriaId, Long usuarioId")
+        public void testeMetodoDesassociarCategoriaComUsuarioDeveRealizarDesassociacao(){
+
+            //Realizo a associação de ambos os lados
+            categoriaCriadaPraTeste.setUsuarioRelacionado(usuarioCriadoParaTeste);
+            usuarioCriadoParaTeste.setCategoriasRelacionadas(new ArrayList<>(List.of(categoriaCriadaPraTeste)));
+
+            //Salvei.. agora vou procurar a id desses valores criados, igual o método de desassociar faz, pra cobrir aqueles OPtional..
+            Optional<CategoriaFinanceira> categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaCriadaPraTeste.getId());
+            assertTrue(categoriaEncontrada.isPresent());
+            Optional<Usuario> usuarioEncontrado = usuarioRepository.findById(usuarioCriadoParaTeste.getId());
+            assertTrue(usuarioEncontrado.isPresent());
+
+            //Vou chamar agora o método pra desassociar eles
+            assertDoesNotThrow(()-> categoriaFinanceiraAssociation
+                    .desassociarCategoriaUsuario(categoriaEncontrada.get().getId(), usuarioEncontrado.get().getId()));
+
+
+            assertTrue(categoriaEncontrada.get().getTransacoesRelacionadas().isEmpty());
+            assertTrue(usuarioEncontrado.get().getCategoriasRelacionadas().isEmpty());
+        }
+    }
+
+    @Nested
+    @DisplayName("Cenários de Erro e Exceptions nas Associações")
+    class TesteCenariosDeErrosAndExceptionsNasAssociacoes{
+
+        @Test
+        @DisplayName("RetornarException associarCategoriaComConta(Long categoriaId, Long contaId)")
+        public void associarCategoriaComContaDeveRetornarExceptions(){
+
+            //Encontrando os valores
+
+        }
+    }
+
+
+    @Nested
+    @DisplayName("Cenários de Erro e Exceptions nas Desassociações")
+    class TesteCenariosDeErrosAndExceptionsNasDesassociacoes{
+
+        @Test
+        @DisplayName("tesd")
+        public void teste(){
+
+        }
     }
 }
+
 
 
 

@@ -2,6 +2,7 @@ package com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.I
 
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.CategoriaFinanceiraRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.CategoriaFinanceiraResponse;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.AssociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.CategoriaNaoEncontrada;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.TiposCategoriasNaoEncontrado;
@@ -63,6 +64,8 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService{
 
         Optional<ContaUsuario> contaUsuario = contaUsuarioRepository.findById(contaUsuarioId);
 
+        //Verificar se o tipo categoria é compativel com o subtipo informado
+        tipoCategoriaESubtipoSaoCompativeis(request.tipoCategoria(),request.subtipo());
 
         //Se achar, será criado a categoria financeira
         CategoriaFinanceira novaCategoria = new CategoriaFinanceira();
@@ -213,6 +216,13 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService{
     @Override
     public boolean tipoCategoriaExiste(TiposCategorias tipoCategoria) {
         return Arrays.asList(TiposCategorias.values()).contains(tipoCategoria);
+    }
+
+    @Override
+    public void tipoCategoriaESubtipoSaoCompativeis(TiposCategorias tipoCategoria, SubTipoCategoria subTipoCategoria) {
+        if(subTipoCategoria.getTiposCategorias() != tipoCategoria){
+            throw new AssociationErrorException("Tipos de categorias são incompatíveis um com o outro");
+        }
     }
 
     @Override

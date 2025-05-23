@@ -46,24 +46,6 @@ public interface CategoriaFinanceiraAssociation {
      */
     void associarCategoriaComUsuario(Long categoriaId, Long usuarioId);
 
-    /**
-     * Associa um subtipo de categoria (ex: "Alimentação") a uma categoria do tipo **DESPESA**.
-     *
-     * @param tipoCategoriaDespesa somente aceito categoria despesa.
-     * @param subTipoDespesa O subtipo de categoria (DESPESA).
-     * @throws AssociationErrorException se a associação não der certo.
-     */
-    void associarSubTipoCategoriaComDespesa(TiposCategorias tipoCategoriaDespesa, SubTipoCategoria subTipoDespesa);
-
-    /**
-     * Associa um subtipo de categoria a uma categoria do tipo **RECEITA**.
-     *
-     * @param tipoCategoriaReceita o nome do tipo da categoria RECEITA.
-     * @param subTipoReceita O subtipo de categoria (RECEITA).
-     * @throws AssociationErrorException se a associação não der certo.
-     */
-    void associarSubTipoCategoriaComReceita(TiposCategorias tipoCategoriaReceita, SubTipoCategoria subTipoReceita);
-
     // ======================== MÉTODOS DE DESASSOCIAÇÃO ========================
 
     /**
@@ -102,20 +84,6 @@ public interface CategoriaFinanceiraAssociation {
      */
     void desassociarCategoriaUsuario(Long categoriaId, Long usuarioId);
 
-    /**
-     * Remove a associação de uma categoria com o tipo **DESPESA**.
-     *
-     * @param categoriaId O ID da categoria.
-     * @throws DesassociationErrorException se a desassociação não der certo.
-     */
-    void desassociarCategoriaCriadaComDespesa(Long categoriaId);
 
-    /**
-     * Remove a associação de uma categoria com o tipo **RECEITA**.
-     *
-     * @param categoriaId O ID da categoria.
-     * @throws DesassociationErrorException se a desassociação não der certo.
-     */
-    void desassociarCategoriaCriadaComReceita(Long categoriaId);
 
 }

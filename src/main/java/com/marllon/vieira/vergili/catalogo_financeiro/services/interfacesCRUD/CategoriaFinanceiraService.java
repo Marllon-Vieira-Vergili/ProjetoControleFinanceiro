@@ -56,7 +56,6 @@ public interface CategoriaFinanceiraService {
      * Atualiza os dados de uma categoria financeira existente.
      *
      * @param idCategoria O ID da categoria a ser atualizada.
-     * @param novosDados DTO com os novos dados da categoria.
      * @return Retorna o DTO com os dados da categoria atualizada.
      * @throws DadosInvalidosException se os dados digitados forem inválidos.
      */
@@ -100,6 +99,15 @@ public interface CategoriaFinanceiraService {
     boolean tipoCategoriaExiste(TiposCategorias tipoCategoria);
 
 
+    /**
+     * Verifica se um determinado tipo de categoria e subtipo são compatíveis entre si.
+     *
+     * Este método é útil para validar a relação entre categorias e subtipos em sistemas
+     * que exigem consistência na organização dos dados.
+     *
+     * @return true se o tipo de categoria e subtipo forem compatíveis, false caso contrário.
+     */
+    void tipoCategoriaESubtipoSaoCompativeis(TiposCategorias tipoCategoria,SubTipoCategoria subTipoCategoria);
 
     /**
      * Verifica se já existe uma categoria com os mesmos dados fornecidos (exceto o ID) no banco de dados.
