@@ -1,5 +1,6 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.integration.associationTests;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.AssociationErrorException;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
@@ -41,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.*;
 //Ou usar a anotação @ActiveProfiles("test") que ja encontra pelo nome, o properties de test
 @Transactional //Realizar os roolbacks automaticamente após cada etapa
 @AutoConfigureTestDatabase //Auto configurar o banco de dados teste
-public class CategoriaFinanceiraAssocImplTest {
+public class CategoriaFinanAssocImplTest {
 
 //Instanciando as entidades que deverão ser utilizadas para teste
 
@@ -367,6 +368,70 @@ public class CategoriaFinanceiraAssocImplTest {
                             ,"Deveria retornar Exceção, pois ambos ja estão associados");
 
         }
+
+        @Test
+        @DisplayName("Teste Cenário de erro ao associar categoria com pagamento")
+        public void associarCategoriaComPagamentoDeveRetornarExcecao(){
+
+            //Realizando a associação antes de chamar o método
+            categoriaCriadaPraTeste.setPagamentosRelacionados(new ArrayList<>(List.of(pagamentoCriadoPraTeste)));
+            pagamentoCriadoPraTeste.setCategoriaRelacionada(categoriaCriadaPraTeste);
+
+            //Assertando que os valores da lógica estejam corretos
+            assertTrue(categoriaCriadaPraTeste.getPagamentosRelacionados().contains(pagamentoCriadoPraTeste)
+                    , "A Categoria deveria ter o pagamento associado");
+
+                assertEquals(pagamentoCriadoPraTeste.getCategoriaRelacionada(),categoriaCriadaPraTeste,
+                    "A categoria deve ter o pagamento relacionado");
+
+            assertThrows(AssociationErrorException.class,()
+                    ->categoriaFinanceiraAssociation.associarCategoriaComPagamento
+                    (categoriaCriadaPraTeste.getId(),pagamentoCriadoPraTeste.getId())
+                            ,"Deveria retornar Exceção, pois ambos ja estão associados");
+        }
+
+        @Test
+        @DisplayName("Teste Cenário de erro ao associar categoria com transacao")
+        public void associarCategoriaComTransacaoDeveRetornarExcecao(){
+
+            //Realizando a associação antes de chamar o método
+            categoriaCriadaPraTeste.setTransacoesRelacionadas(new ArrayList<>(List.of(historicoTransacaoCriadoParaTeste)));
+            historicoTransacaoCriadoParaTeste.setCategoriaRelacionada(categoriaCriadaPraTeste);
+
+            //Assertando que os valores da lógica estejam corretos
+            assertTrue(categoriaCriadaPraTeste.getTransacoesRelacionadas().contains(historicoTransacaoCriadoParaTeste)
+                    , "A Categoria deveria ter o pagamento associado");
+
+                assertEquals(historicoTransacaoCriadoParaTeste.getCategoriaRelacionada(),categoriaCriadaPraTeste,
+                    "A categoria deve ter o pagamento relacionado");
+
+            assertThrows(AssociationErrorException.class,()
+                    ->categoriaFinanceiraAssociation.associarCategoriaComTransacao
+                    (categoriaCriadaPraTeste.getId(),historicoTransacaoCriadoParaTeste.getId())
+                            ,"Deveria retornar Exceção, pois ambos ja estão associados");
+        }
+
+        @Test
+        @DisplayName("Teste Cenário de erro ao associar categoria com usuario")
+        public void associarCategoriaComUsuarioDeveRetornarExcecao(){
+
+            //Realizando a associação antes de chamar o método
+            categoriaCriadaPraTeste.setUsuarioRelacionado(usuarioCriadoParaTeste);
+            usuarioCriadoParaTeste.setCategoriasRelacionadas(new ArrayList<>(List.of(categoriaCriadaPraTeste)));
+
+            //Assertando que os valores da lógica estejam corretos
+            assertEquals(categoriaCriadaPraTeste.getUsuarioRelacionado(),usuarioCriadoParaTeste,
+                    "A categoria deve ter o usuário relacionado");
+            assertTrue(usuarioCriadoParaTeste.getCategoriasRelacionadas().contains(categoriaCriadaPraTeste)
+                    , "O Usuário deveria ter a categoria associado");
+
+            assertThrows(AssociationErrorException.class,()
+                    ->categoriaFinanceiraAssociation.associarCategoriaComUsuario
+                    (categoriaCriadaPraTeste.getId(),usuarioCriadoParaTeste.getId())
+                            ,"Deveria retornar Exceção, pois ambos ja estão associados");
+        }
+
+
     }
 
 
@@ -375,10 +440,79 @@ public class CategoriaFinanceiraAssocImplTest {
     class TesteCenariosDeErrosAndExceptionsNasDesassociacoes{
 
         @Test
-        @DisplayName("tesd")
-        public void teste(){
+        @DisplayName("Teste Cenário de erro ao desassociar categoria com conta")
+        public void desassociarCategoriaComContaDeveRetornarExcecao(){
+
+            //Assertando que os valores não estão associados
+            assertNull(categoriaCriadaPraTeste.getContaRelacionada(),
+                    "A categoria não deveria estar associada a essa conta");
+
+            assertTrue(contaCriadaParaTeste.getCategoriasRelacionadas().isEmpty()
+                    ,"A conta não deveria estar associado a essa categoria");
+
+
+            //Agora vou chamar o método de desassociar, assertando que ele vai retornar a exceção
+            assertThrows(DesassociationErrorException.class,()
+                    ->categoriaFinanceiraAssociation.desassociarCategoriaAConta
+                    (categoriaCriadaPraTeste.getId(),contaCriadaParaTeste.getId())
+                            ,"Deveria retornar Exceção, pois ambos não estão associados");
 
         }
+
+        @Test
+        @DisplayName("Teste Cenário de erro ao desassociar categoria com pagamento")
+        public void desassociarCategoriaComPagamentoDeveRetornarExcecao(){
+
+            //Assertando que os valores não estão associados
+            assertTrue(categoriaCriadaPraTeste.getPagamentosRelacionados().isEmpty()
+                    ,"A categoria não deveria estar associado a esse pagamento");
+
+            assertNull(pagamentoCriadoPraTeste.getCategoriaRelacionada()
+                    ,"O pagamento não deveria estar associado a essa categoria");
+
+            //Agora vou chamar o método de desassociar, assertando que ele vai retornar a exceção
+            assertThrows(DesassociationErrorException.class,()
+                    ->categoriaFinanceiraAssociation.desassociarCategoriaAPagamento
+                    (categoriaCriadaPraTeste.getId(),pagamentoCriadoPraTeste.getId())
+                            ,"Deveria retornar Exceção, pois ambos não estão associados");
+        }
+
+        @Test
+        @DisplayName("Teste Cenário de erro ao desassociar categoria com transacao")
+        public void desassociarCategoriaComTransacaoDeveRetornarExcecao(){
+
+            //Assertando que os valores não estão associados
+            assertTrue(categoriaCriadaPraTeste.getTransacoesRelacionadas().isEmpty()
+                    ,"A categoria não deveria estar associado a essa transação");
+
+            assertNull(historicoTransacaoCriadoParaTeste.getCategoriaRelacionada()
+                    ,"A transação não deveria estar associado a essa categoria");
+
+            //Agora vou chamar o método de desassociar, assertando que ele vai retornar a exceção
+            assertThrows(DesassociationErrorException.class,()
+                    ->categoriaFinanceiraAssociation.desassociarCategoriaTransacao
+                    (categoriaCriadaPraTeste.getId(),historicoTransacaoCriadoParaTeste.getId())
+                            ,"Deveria retornar Exceção, pois ambos não estão associados");
+        }
+
+        @Test
+        @DisplayName("Teste Cenário de erro ao desassociar categoria com usuario")
+        public void desassociarCategoriaComUsuarioDeveRetornarExcecao(){
+
+            //Assertando que os valores não estão associados
+            assertNull(categoriaCriadaPraTeste.getUsuarioRelacionado()
+                    ,"A categoria não deveria estar associado a esse usuário");
+
+            assertTrue(usuarioCriadoParaTeste.getCategoriasRelacionadas().isEmpty()
+                    ,"O usuário não deveria estar associado a essa categoria");
+
+            //Agora vou chamar o método de desassociar, assertando que ele vai retornar a exceção
+            assertThrows(DesassociationErrorException.class,()
+                    ->categoriaFinanceiraAssociation.desassociarCategoriaUsuario
+                    (categoriaCriadaPraTeste.getId(),usuarioCriadoParaTeste.getId())
+                            ,"Deveria retornar Exceção, pois ambos não estão associados");
+        }
+
     }
 }
 

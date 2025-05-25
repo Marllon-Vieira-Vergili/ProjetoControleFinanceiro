@@ -16,7 +16,7 @@ import java.util.ArrayList;
 @Component
 @Transactional
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class HistoricoTransacaoAssocImpl implements HistoricoTransacaoAssociation {
+public class HistoricoTraAssocImpl implements HistoricoTransacaoAssociation {
 
     @Autowired
     private PagamentosRepository pagamentosRepository;
@@ -35,6 +35,7 @@ public class HistoricoTransacaoAssocImpl implements HistoricoTransacaoAssociatio
 
     @Override
     public void associarTransacaoComPagamento(Long transacaoId, Long pagamentoId) {
+
         HistoricoTransacao transacaoEncontrada = historicoTransacaoRepository.findById(transacaoId)
                 .orElseThrow(() -> new HistoricoTransacaoNaoEncontrado("Transação não encontrada com id: " + transacaoId));
         Pagamentos pagamentoEncontrado = pagamentosRepository.findById(pagamentoId)
@@ -61,17 +62,30 @@ public class HistoricoTransacaoAssocImpl implements HistoricoTransacaoAssociatio
 
     @Override
     public void associarTransacaoComConta(Long transacaoId, Long contaId) {
+
         HistoricoTransacao transacaoEncontrada = historicoTransacaoRepository.findById(transacaoId)
                 .orElseThrow(() -> new HistoricoTransacaoNaoEncontrado("Transação não encontrada com id: " + transacaoId));
+
         ContaUsuario contaEncontrada = contaUsuarioRepository.findById(contaId)
                 .orElseThrow(() -> new ContaNaoEncontrada("Conta não encontrada com id: " + contaId));
 
         if (contaEncontrada.getTransacoesRelacionadas() == null) {
             contaEncontrada.setTransacoesRelacionadas(new ArrayList<>());
         }
-        if (transacaoEncontrada.getContaRelacionada() == null && contaEncontrada.getTransacoesRelacionadas().contains(transacaoEncontrada)) {
-            throw new AssociationErrorException("Essa transação com o id: " + transacaoId + " já está associada a essa conta " + contaId);
+        if (transacaoEncontrada.getContaRelacionada() != null && transacaoEncontrada.getContaRelacionada().equals(contaEncontrada)
+                && contaEncontrada.getTransacoesRelacionadas() != null &&
+                contaEncontrada.getTransacoesRelacionadas().contains(transacaoEncontrada)) {
+            throw new AssociationErrorException
+                    ("Essa transação com o id: " + transacaoId + " já está associada a essa conta " + contaId);
         }
+
+        //Senão.. associar em ambos os lados
+        transacaoEncontrada.setContaRelacionada(contaEncontrada);
+        contaEncontrada.getTransacoesRelacionadas().add(transacaoEncontrada);
+
+        //Salvar as entidades associadas
+        historicoTransacaoRepository.save(transacaoEncontrada);
+        contaUsuarioRepository.save(contaEncontrada);
     }
 
     @Override

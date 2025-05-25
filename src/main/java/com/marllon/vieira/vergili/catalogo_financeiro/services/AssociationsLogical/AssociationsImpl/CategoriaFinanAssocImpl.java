@@ -1,12 +1,9 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.AssociationsImpl;
 
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.AssociationErrorException;
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.CategoriaFinanceiraAssociation;
 import jakarta.transaction.Transactional;
@@ -17,12 +14,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 
-import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias.DESPESA;
-import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias.RECEITA;
 @Component
 @Transactional
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class CategoriaFinanceiraAssocImpl implements CategoriaFinanceiraAssociation {
+public class CategoriaFinanAssocImpl implements CategoriaFinanceiraAssociation {
 
 
     @Autowired
@@ -56,8 +51,8 @@ public class CategoriaFinanceiraAssocImpl implements CategoriaFinanceiraAssociat
                 .orElseThrow(() -> new ContaNaoEncontrada("Conta não foi encontrada com essa id informada"));
 
         if(contaUsuarioEncontrada.getCategoriasRelacionadas().contains(categoriaEncontrada) &&
-                categoriaEncontrada.getContaRelacionada() == (contaUsuarioEncontrada)){
-            throw new AssociationErrorException("Erro ao associar a categoria com a conta");
+                categoriaEncontrada.getContaRelacionada().equals(contaUsuarioEncontrada)){
+            throw new AssociationErrorException("Erro ao associar a categoria com a conta, pois ja estão associados");
             }
 
         //Associação bidirecional
@@ -82,17 +77,14 @@ public class CategoriaFinanceiraAssocImpl implements CategoriaFinanceiraAssociat
         }
 
 
-
-        if(!categoriaEncontrada.getPagamentosRelacionados().contains(pagamentoEncontrado)
-                || pagamentoEncontrado.getCategoriaRelacionada() == null){
-            try{
-                categoriaEncontrada.getPagamentosRelacionados().add(pagamentoEncontrado);
-                pagamentoEncontrado.setCategoriaRelacionada(categoriaEncontrada);
-
-            } catch (RuntimeException e) {
-                throw new AssociationErrorException(e.getMessage());
-            }
+        if(categoriaEncontrada.getPagamentosRelacionados().contains(pagamentoEncontrado)
+                && pagamentoEncontrado.getCategoriaRelacionada().equals(categoriaEncontrada)){
+            throw new AssociationErrorException("Erro ao associar a categoria com o pagamento, pois ja estão associados");
         }
+
+        //Senão.. associar em ambos os lados
+        categoriaEncontrada.getPagamentosRelacionados().add(pagamentoEncontrado);
+        pagamentoEncontrado.setCategoriaRelacionada(categoriaEncontrada);
 
         //Salvar em ambos os lados
         categoriaFinanceiraRepository.save(categoriaEncontrada);
@@ -110,15 +102,15 @@ public class CategoriaFinanceiraAssocImpl implements CategoriaFinanceiraAssociat
         if(categoriaEncontrada.getTransacoesRelacionadas() == null){
             categoriaEncontrada.setTransacoesRelacionadas(new ArrayList<>());
         }
-        try{
-            if(!categoriaEncontrada.getTransacoesRelacionadas().contains(transacaoEncontrada) ||
-                    transacaoEncontrada.getCategoriaRelacionada() == null){
-                categoriaEncontrada.getTransacoesRelacionadas().add(transacaoEncontrada);
-                transacaoEncontrada.setCategoriaRelacionada(categoriaEncontrada);
+
+            if(categoriaEncontrada.getTransacoesRelacionadas().contains(transacaoEncontrada) &&
+                    transacaoEncontrada.getCategoriaRelacionada().equals(categoriaEncontrada)){
+                throw new AssociationErrorException("Não foi possível associar a categoria com a transação, pois já estão associados");
             }
-        } catch (Exception e) {
-            throw new AssociationErrorException("Não foi possível realizar a associação da categoria com a transação");
-        }
+
+            //Senão.. associar em ambos os lados
+        categoriaEncontrada.getTransacoesRelacionadas().add(transacaoEncontrada);
+        transacaoEncontrada.setCategoriaRelacionada(categoriaEncontrada);
 
         //Salvar em ambos os lados
         categoriaFinanceiraRepository.save(categoriaEncontrada);
@@ -135,21 +127,22 @@ public class CategoriaFinanceiraAssocImpl implements CategoriaFinanceiraAssociat
         Usuario usuarioEncontrado = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new UsuarioNaoEncontrado("usuario não foi encontrada com essa id informada"));
 
+        // Inicializa a lista de categorias se for necessário e adiciona a categoria
+        if (usuarioEncontrado.getCategoriasRelacionadas() == null) {
+            usuarioEncontrado.setCategoriasRelacionadas(new ArrayList<>());
+        }
+
         // Verifica se a categoria já está associada
         if (categoriaEncontrada.getUsuarioRelacionado() != null && categoriaEncontrada
-                .getUsuarioRelacionado().getId().equals(usuarioEncontrado.getId()) ||
+                .getUsuarioRelacionado().getId().equals(usuarioEncontrado.getId()) &&
                 usuarioEncontrado.getCategoriasRelacionadas() != null &&
                 usuarioEncontrado.getCategoriasRelacionadas().contains(categoriaEncontrada)) {
             throw new AssociationErrorException("Esta categoria já está associada a um usuário.");
         }
 
-        // Associa a categoria ao usuário
+        // Associa a categoria ao usuário e do vice-versa
         categoriaEncontrada.setUsuarioRelacionado(usuarioEncontrado);
 
-        // Inicializa a lista de categorias se for necessário e adiciona a categoria
-        if (usuarioEncontrado.getCategoriasRelacionadas() == null) {
-            usuarioEncontrado.setCategoriasRelacionadas(new ArrayList<>());
-        }
         usuarioEncontrado.getCategoriasRelacionadas().add(categoriaEncontrada);
 
         // Salvar em ambos os lados
@@ -241,7 +234,9 @@ public class CategoriaFinanceiraAssocImpl implements CategoriaFinanceiraAssociat
                 .orElseThrow(() -> new UsuarioNaoEncontrado("Usuario não foi encontrado com essa id informada"));
 
         //Verificar se a id do usuário informada está associado a essa categoria de contas
-        if(!categoriaEncontrada.getUsuarioRelacionado().getId().equals(usuarioEncontrado.getId()) ||
+        if(categoriaEncontrada.getUsuarioRelacionado() == null ||
+                !categoriaEncontrada.getUsuarioRelacionado().getId().equals(usuarioEncontrado.getId()) &&
+                usuarioEncontrado.getCategoriasRelacionadas() == null ||
                 !usuarioEncontrado.getCategoriasRelacionadas().contains(categoriaEncontrada)){
             throw new DesassociationErrorException("a id dessa categoria " + categoriaId + " " +
                     "não é associado a esse usuário com essa id: " + usuarioId);

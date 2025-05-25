@@ -5,18 +5,16 @@ import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.Desassoc
 import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.UsuariosAssociation;
-import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.*;
 import jakarta.transaction.Transactional;
 import lombok.EqualsAndHashCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 @Component
 @Transactional
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class UsuarioAssociationImpl implements UsuariosAssociation {
+public class UsuarioAssocImpl implements UsuariosAssociation {
 
     @Autowired
     private PagamentosRepository pagamentosRepository;

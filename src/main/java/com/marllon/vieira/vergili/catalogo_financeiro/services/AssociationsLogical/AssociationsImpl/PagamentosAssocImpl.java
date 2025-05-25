@@ -16,7 +16,7 @@ import java.util.ArrayList;
 @Service
 @Transactional
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class PagamentosAssociationImpl implements PagamentosAssociation {
+public class PagamentosAssocImpl implements PagamentosAssociation {
 
     @Autowired
     private PagamentosRepository pagamentosRepository;
