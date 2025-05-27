@@ -140,11 +140,12 @@ public class HistoricoTraAssocImpl implements HistoricoTransacaoAssociation {
     public void desassociarTransacaoDePagamento(Long transacaoId, Long pagamentoId) {
         HistoricoTransacao transacaoEncontrada = historicoTransacaoRepository.findById(transacaoId)
                 .orElseThrow(() -> new HistoricoTransacaoNaoEncontrado("Transação não encontrada com id: " + transacaoId));
+
         Pagamentos pagamentoEncontrado = pagamentosRepository.findById(pagamentoId)
                 .orElseThrow(() -> new PagamentoNaoEncontrado("Pagamento não encontrado com id: " + pagamentoId));
 
         if (!pagamentoEncontrado.getTransacoesRelacionadas().contains(transacaoEncontrada)
-                || !transacaoEncontrada.getPagamentosRelacionados().contains(pagamentoEncontrado)) {
+                && !transacaoEncontrada.getPagamentosRelacionados().contains(pagamentoEncontrado)) {
             throw new DesassociationErrorException("A transação " + transacaoId + " não está associada ao pagamento " + pagamentoId);
         }
 
@@ -159,11 +160,12 @@ public class HistoricoTraAssocImpl implements HistoricoTransacaoAssociation {
     public void desassociarTransacaoDeConta(Long transacaoId, Long contaId) {
         HistoricoTransacao transacaoEncontrada = historicoTransacaoRepository.findById(transacaoId)
                 .orElseThrow(() -> new HistoricoTransacaoNaoEncontrado("Transação não encontrada com id: " + transacaoId));
+
         ContaUsuario contaEncontrada = contaUsuarioRepository.findById(contaId)
                 .orElseThrow(() -> new ContaNaoEncontrada("Conta não encontrada com id: " + contaId));
 
-        if (!transacaoEncontrada.getContaRelacionada().equals(contaEncontrada)
-                || !contaEncontrada.getTransacoesRelacionadas().contains(transacaoEncontrada)) {
+        if (transacaoEncontrada.getContaRelacionada() == null
+                && !contaEncontrada.getTransacoesRelacionadas().contains(transacaoEncontrada)) {
             throw new DesassociationErrorException("A transação " + transacaoId + " não está associada à conta " + contaId);
         }
 
@@ -181,8 +183,8 @@ public class HistoricoTraAssocImpl implements HistoricoTransacaoAssociation {
         Usuario usuarioEncontrado = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new UsuarioNaoEncontrado("Usuário não encontrado com id: " + usuarioId));
 
-        if (!transacaoEncontrada.getUsuarioRelacionado().equals(usuarioEncontrado)
-                || !usuarioEncontrado.getTransacoesRelacionadas().contains(transacaoEncontrada)) {
+        if (transacaoEncontrada.getUsuarioRelacionado() == null
+                && !usuarioEncontrado.getTransacoesRelacionadas().contains(transacaoEncontrada)) {
             throw new DesassociationErrorException("A transação " + transacaoId + " não está associada ao usuário " + usuarioId);
         }
 
@@ -201,7 +203,7 @@ public class HistoricoTraAssocImpl implements HistoricoTransacaoAssociation {
                 .orElseThrow(() -> new CategoriaNaoEncontrada("Categoria não encontrada com id: " + categoriaId));
 
         if (!categoriaEncontrada.getTransacoesRelacionadas().contains(transacaoEncontrada)
-                || transacaoEncontrada.getCategoriaRelacionada() == null) {
+                && transacaoEncontrada.getCategoriaRelacionada() == null) {
             throw new DesassociationErrorException("A transação " + transacaoId + " não está associada à categoria " + categoriaId);
         }
 

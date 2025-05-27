@@ -31,15 +31,6 @@ public record UsuarioRequest(@NotBlank(message = "Nome do usuário é obrigatór
                              @NotBlank(message = "Campo telefone é obrigatório!")
                              @Size(min = 14,max = 14, message = "Padrão de telefone aceito: (DDD)00000-0000")
                              @Pattern(regexp = "\\(\\d{2}\\)\\d{5}-\\d{4}", message = "O formato deve ser formato Brasil (99)99999-9999")
-                             String telefone,
-
-                             @NotNull(message = "O campo id da categoria não pode ser nulo")
-                             Long idCategoriaFinanceira,
-
-                             @NotNull(message = "O campo id do pagamento criado não pode ser nulo")
-                             Long idPagamentoRequest,
-
-                             @NotNull(message = "O campo id da conta do usuário criada não pode ser nulo!")
-                             Long idContaUsuario) {
+                             String telefone) {
 }
 

@@ -120,6 +120,11 @@ public class PagamentosAssocImpl implements PagamentosAssociation {
             categoriaEncontrada.setPagamentosRelacionados(new ArrayList<>());
         }
 
+        if(categoriaEncontrada.getPagamentosRelacionados().contains(pagamentoEncontrado)
+                && pagamentoEncontrado.getCategoriaRelacionada() != null
+                &&pagamentoEncontrado.getCategoriaRelacionada().equals(categoriaEncontrada)){
+            throw new AssociationErrorException("Ambos ja estão associados");
+        }
 
         pagamentoEncontrado.setCategoriaRelacionada(categoriaEncontrada);
         categoriaEncontrada.getPagamentosRelacionados().add(pagamentoEncontrado);
@@ -192,14 +197,16 @@ public class PagamentosAssocImpl implements PagamentosAssociation {
 
         Pagamentos pagamentoEncontrado = pagamentosRepository.findById(pagamentoId)
                 .orElseThrow(() -> new PagamentoNaoEncontrado("Pagamento não encontrado"));
+
         CategoriaFinanceira categoriaEncontrada = categoriaFinanceiraRepository.findById(categoriaId)
                 .orElseThrow(() -> new CategoriaNaoEncontrada("Categoria não encontrada"));
 
-        if (!(pagamentoEncontrado.getCategoriaRelacionada() == categoriaEncontrada)) {
+        if (!(pagamentoEncontrado.getCategoriaRelacionada() == categoriaEncontrada)
+                && !categoriaEncontrada.getPagamentosRelacionados().contains(pagamentoEncontrado)) {
             throw new DesassociationErrorException("Pagamento não está associado a essa categoria");
         }
 
-        pagamentoEncontrado.setCategoriaRelacionada(categoriaEncontrada);
+        pagamentoEncontrado.setCategoriaRelacionada(null);
         categoriaEncontrada.getPagamentosRelacionados().remove(pagamentoEncontrado);
 
         pagamentosRepository.save(pagamentoEncontrado);

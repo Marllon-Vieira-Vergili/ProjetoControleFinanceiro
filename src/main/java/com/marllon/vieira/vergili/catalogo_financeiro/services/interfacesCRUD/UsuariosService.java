@@ -27,7 +27,7 @@ public interface UsuariosService {
      * @return {@code UsuarioResponse} com os dados persistidos
      * @throws DadosInvalidosException se os dados forem inválidos ou incompletos
      */
-    UsuarioResponse criarUsuario(UsuarioRequest usuario, ContaUsuarioRequest conta);
+    UsuarioResponse criarUsuario(UsuarioRequest usuario);
 
     /**
      * Busca um usuário pelo seu ID.
@@ -36,7 +36,7 @@ public interface UsuariosService {
      * @return {@code UsuarioResponse com os dados, se encontrado
      * @throws UsuarioNaoEncontrado se nenhum usuário for localizado
      */
-    Optional<Usuario> encontrarUsuarioPorId(Long id);
+    Optional<UsuarioResponse> encontrarUsuarioPorId(Long id);
 
     /**
      * Busca usuários que contenham o nome especificado.
@@ -72,15 +72,22 @@ public interface UsuariosService {
 
     // ======================== OPERAÇÕES ESPECÍFICAS ========================
 
-
     /**
-     * Retorna todas as contas associadas a um usuário específico.
+     * Busca todas as contas associadas a um usuário específico.
      *
-     * @param usuarioId ID do usuário
-     * @return lista de contas associadas
-     * @throws UsuarioNaoEncontrado se o usuário não for encontrado
+     * @param usuarioId ID do usuário a ser pesquisado.
+     * @return Lista de contas associadas ao usuário.
+     * @throws UsuarioNaoEncontrado se o usuário não for encontrado no sistema.
      */
     List<ContaUsuarioResponse> buscarContasAssociadas(Long usuarioId);
+
+    /**
+     * Altera a senha de um usuário específico.
+     *
+     * @param id ID do usuário cuja senha será alterada.
+     * @param novaSenha A nova senha a ser configurada.
+     */
+    void alterarSenhaUsuario(Long id, String novaSenha);
 
     // ======================== MÉTODOS DE VALIDAÇÕES ========================
 
@@ -107,5 +114,5 @@ public interface UsuariosService {
      * @param usuario dados do usuário a ser comparado
      * @return {@code true} se um usuário idêntico já existir, {@code false} se não
      */
-    boolean existeUsuarioIgual(UsuarioRequest usuario);
+    boolean existeUsuarioIgualCriadoPeloEmail(String emailUsuario);
 }

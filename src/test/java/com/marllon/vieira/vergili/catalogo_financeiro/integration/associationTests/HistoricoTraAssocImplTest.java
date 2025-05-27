@@ -1,6 +1,7 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.integration.associationTests;
 
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.AssociationErrorException;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
@@ -298,6 +299,31 @@ public class HistoricoTraAssocImplTest {
                     , "O Método deve lançar AssociationErrorException, pois ja está associado");
 
         }
+        @Test
+        @DisplayName("Associar Histórico de transação com  Categoria - Cenário de erro")
+        public void metodoAssociarHistoricoTransacaoComCategoriaDeveLancarExcecao(){
+
+            //Realizar as associações em ambos os lados
+            historicoTransacaoCriadoParaTeste.setCategoriaRelacionada(categoriaCriadaPraTeste);
+            categoriaCriadaPraTeste.setTransacoesRelacionadas(new ArrayList<>(List.of(historicoTransacaoCriadoParaTeste)));
+
+            //Assertando que os valores estão devidamente associados
+            assertEquals(historicoTransacaoCriadoParaTeste.getCategoriaRelacionada(),categoriaCriadaPraTeste
+                    ,"Deveria ser igual o calor da categoria, com o que está associado ao histórico de transação");
+
+            assertTrue(categoriaCriadaPraTeste.getTransacoesRelacionadas().contains(historicoTransacaoCriadoParaTeste)
+                    ,"Deveria ser verdade que a transação está relacionado a categoria");
+
+            //Agora chamando o método pra ver se ele retorna a exceção de erro
+            assertThrows(AssociationErrorException.class,()
+                    ->historicoTransacaoAssociation.associarTransacaoComCategoria
+                    (historicoTransacaoCriadoParaTeste.getId(), categoriaCriadaPraTeste.getId())
+                    ,"O método deveria retornar a AssociationErrorException, pois não foi possivel associar.. eles ja estavam associados");
+
+        }
+    }
+
+
 
         @Nested
         @DisplayName("Desassociação - Cenário de sucesso")
@@ -305,8 +331,115 @@ public class HistoricoTraAssocImplTest {
 
             @Test
             @DisplayName("Desassociar Histórico de transação com  Pagamento - Cenário de sucesso")
-            public void teste() {
+            public void metodoDesassociarHistoricoTransacaoComPagamentoDeveDesassociarComSucesso() {
 
+                //Realizar as associações manualmente
+                historicoTransacaoCriadoParaTeste.setPagamentosRelacionados(new ArrayList<>(List.of(pagamentoCriadoPraTeste)));
+                pagamentoCriadoPraTeste.setTransacoesRelacionadas(new ArrayList<>(List.of(historicoTransacaoCriadoParaTeste)));
+
+                //Agora vou verificar se realmente estão relacionados
+                assertTrue(historicoTransacaoCriadoParaTeste.getPagamentosRelacionados().contains(pagamentoCriadoPraTeste)
+                        ,"O histórico de transação deveria estar com o pagamento relacionado a ele");
+
+                assertTrue(pagamentoCriadoPraTeste.getTransacoesRelacionadas().contains(historicoTransacaoCriadoParaTeste)
+                        ,"O pagamento deveria estar com o histórico de transação relacionado a ele");
+
+                //Encontrando a id dos valores que serão desassociados
+                Optional<HistoricoTransacao> historicoTransacaoEncontrado = Optional.of(historicoTransacaoRepository.findById(historicoTransacaoCriadoParaTeste.getId()).orElseThrow());
+                Optional<Pagamentos> pagamentoEncontrado = Optional.of(pagamentosRepository.findById(pagamentoCriadoPraTeste.getId())).orElseThrow();
+
+                assertTrue(historicoTransacaoEncontrado.isPresent(),"O histórico de transação deveria ser encontrado pela id");
+                assertTrue(pagamentoEncontrado.isPresent(),"O pagamento deveria ser encontrado pela id");
+
+                //Agora chamando o método principal de associar... assertando que ele não irá jogar exceção de erro ao desassociar
+                assertDoesNotThrow(()->historicoTransacaoAssociation.desassociarTransacaoDePagamento
+                                (historicoTransacaoEncontrado.get().getId(), pagamentoEncontrado.get().getId())
+                        ,"O método deveria desassociar normalmente, sem jogar exceção");
+
+            }
+
+            @Test
+            @DisplayName("Desassociar Histórico de Transação com conta  - Cenário de Sucesso")
+            public void metodoDesassociarTransacaoComContaDeveDesassociarComSucesso(){
+
+                //Realizar as associações manualmente
+                historicoTransacaoCriadoParaTeste.setContaRelacionada(contaCriadaParaTeste);
+                contaCriadaParaTeste.setTransacoesRelacionadas(new ArrayList<>(List.of(historicoTransacaoCriadoParaTeste)));
+
+                //Agora vou verificar se realmente estão relacionados
+                assertEquals(historicoTransacaoCriadoParaTeste.getContaRelacionada(),contaCriadaParaTeste
+                        ,"O histórico de transação deveria estar com a conta relacionado a ele");
+
+                assertTrue(contaCriadaParaTeste.getTransacoesRelacionadas().contains(historicoTransacaoCriadoParaTeste)
+                        ,"A conta deveria estar com o histórico de transação relacionado a ele");
+
+                //Encontrando a id dos valores que serão desassociados
+                Optional<HistoricoTransacao> historicoTransacaoEncontrado = Optional.of(historicoTransacaoRepository.findById(historicoTransacaoCriadoParaTeste.getId()).orElseThrow());
+                Optional<ContaUsuario> contaEncontrada = Optional.of(contaUsuarioRepository.findById(contaCriadaParaTeste.getId())).orElseThrow();
+
+                assertTrue(historicoTransacaoEncontrado.isPresent(),"O histórico de transação deveria ser encontrado pela id");
+                assertTrue(contaEncontrada.isPresent(),"A conta deveria ser encontrado pela id");
+
+                //Agora chamando o método principal de associar... assertando que ele não irá jogar exceção de erro ao desassociar
+                assertDoesNotThrow(()->historicoTransacaoAssociation.desassociarTransacaoDeConta
+                                (historicoTransacaoEncontrado.get().getId(), contaEncontrada.get().getId())
+                        ,"O método deveria desassociar normalmente, sem jogar exceção");
+            }
+
+            @Test
+            @DisplayName("Desassociar Histórico de transação de Usuário  - Caso de Sucesso")
+            public void metodoDesassociarTransacaoComUsuarioDeveDesassociarComSucesso(){
+
+                //Realizar as associações manualmente
+                historicoTransacaoCriadoParaTeste.setUsuarioRelacionado(usuarioCriadoParaTeste);
+                usuarioCriadoParaTeste.setTransacoesRelacionadas(new ArrayList<>(List.of(historicoTransacaoCriadoParaTeste)));
+
+                //Agora vou verificar se realmente estão relacionados
+                assertEquals(historicoTransacaoCriadoParaTeste.getUsuarioRelacionado(),usuarioCriadoParaTeste
+                        ,"O histórico de transação deveria estar com o usuario relacionado a ele");
+
+                assertTrue(usuarioCriadoParaTeste.getTransacoesRelacionadas().contains(historicoTransacaoCriadoParaTeste)
+                        ,"O usuario deveria estar com o histórico de transação relacionado a ele");
+
+                //Encontrando a id dos valores que serão desassociados
+                Optional<HistoricoTransacao> historicoTransacaoEncontrado = Optional.of(historicoTransacaoRepository.findById(historicoTransacaoCriadoParaTeste.getId()).orElseThrow());
+                Optional<Usuario> usuarioEncontrado = Optional.of(usuarioRepository.findById(usuarioCriadoParaTeste.getId())).orElseThrow();
+
+                assertTrue(historicoTransacaoEncontrado.isPresent(),"O histórico de transação deveria ser encontrado pela id");
+                assertTrue(usuarioEncontrado.isPresent(),"O usuario deveria ser encontrado pela id");
+
+                //Agora chamando o método principal de associar... assertando que ele não irá jogar exceção de erro ao desassociar
+                assertDoesNotThrow(()->historicoTransacaoAssociation.desassociarTransacaoDeUsuario
+                                (historicoTransacaoEncontrado.get().getId(), usuarioEncontrado.get().getId())
+                        ,"O método deveria desassociar normalmente, sem jogar exceção");
+            }
+
+            @Test
+            @DisplayName("Desassociar Histórico de transação de Categoria  - Caso de Sucesso")
+            public void metodoDesassociarTransacaoComCategoriaDeveDesassociarComSucesso(){
+
+                //Realizar as associações manualmente
+                historicoTransacaoCriadoParaTeste.setCategoriaRelacionada(categoriaCriadaPraTeste);
+                categoriaCriadaPraTeste.setTransacoesRelacionadas(new ArrayList<>(List.of(historicoTransacaoCriadoParaTeste)));
+
+                //Agora vou verificar se realmente estão relacionados
+                assertEquals(historicoTransacaoCriadoParaTeste.getCategoriaRelacionada(),categoriaCriadaPraTeste
+                        ,"O histórico de transação deveria estar com a categoria relacionado a ele");
+
+                assertTrue(categoriaCriadaPraTeste.getTransacoesRelacionadas().contains(historicoTransacaoCriadoParaTeste)
+                        ,"A categoria deveria estar com o histórico de transação relacionado a ele");
+
+                //Encontrando a id dos valores que serão desassociados
+                Optional<HistoricoTransacao> historicoTransacaoEncontrado = Optional.of(historicoTransacaoRepository.findById(historicoTransacaoCriadoParaTeste.getId()).orElseThrow());
+                Optional<CategoriaFinanceira> categoriaEncontrada = Optional.of(categoriaFinanceiraRepository.findById(categoriaCriadaPraTeste.getId())).orElseThrow();
+
+                assertTrue(historicoTransacaoEncontrado.isPresent(),"O histórico de transação deveria ser encontrado pela id");
+                assertTrue(categoriaEncontrada.isPresent(),"A categoria deveria ser encontrado pela id");
+
+                //Agora chamando o método principal de associar... assertando que ele não irá jogar exceção de erro ao desassociar
+                assertDoesNotThrow(()->historicoTransacaoAssociation.desassociarTransacaoDeCategoria
+                                (historicoTransacaoEncontrado.get().getId(), categoriaEncontrada.get().getId())
+                        ,"O método deveria desassociar normalmente, sem jogar exceção");
             }
         }
 
@@ -315,13 +448,86 @@ public class HistoricoTraAssocImplTest {
         public class TesteDosCenariosDeErroDesassociacao {
 
             @Test
-            @DisplayName("teste")
-            public void teste() {
+            @DisplayName("Desassociação de Historico de Transação com Pagamento - Cenário de Erro")
+            public void metodoDesassociarTransacaoComPagamentoDeveRetornarExcecao() {
 
+                //Não vou associar.. ja vou tentar desassociar normalmente pra ele retornar exceção
+                // e verificar se a mesma funciona
+
+                assertTrue(historicoTransacaoCriadoParaTeste.getPagamentosRelacionados().isEmpty()
+                        ,"Não deveria estar associado com pagamento");
+
+                assertTrue(pagamentoCriadoPraTeste.getTransacoesRelacionadas().isEmpty()
+                        ,"Não deveria estar associado com historico transacao");
+
+                //Agora chamando o método pra ele pegar o if de verificacao e testar se ele retornará a exceção
+                assertThrows(DesassociationErrorException.class,
+                        ()->historicoTransacaoAssociation.desassociarTransacaoDePagamento
+                                (historicoTransacaoCriadoParaTeste.getId(), pagamentoCriadoPraTeste.getId())
+                        ,"O método deveria retornar a DesassociationErrorException, pois ambos não estao associados");
+            }
+            @Test
+            @DisplayName("Desassociação de Historico de Transação De Conta - Cenário de Erro")
+            public void metodoDesassociarTransacaoDeContaDeveRetornarExcecao() {
+
+                //Não vou associar.. ja vou tentar desassociar normalmente pra ele retornar exceção
+                // e verificar se a mesma funciona
+
+                assertNull(historicoTransacaoCriadoParaTeste.getContaRelacionada()
+                        ,"Não deveria estar associado com conta");
+
+                assertTrue(contaCriadaParaTeste.getTransacoesRelacionadas().isEmpty()
+                        ,"Não deveria estar associado com historico transacao");
+
+                //Agora chamando o método pra ele pegar o if de verificacao e testar se ele retornará a exceção
+                assertThrows(DesassociationErrorException.class,
+                        ()->historicoTransacaoAssociation.desassociarTransacaoDeConta
+                                (historicoTransacaoCriadoParaTeste.getId(), contaCriadaParaTeste.getId())
+                        ,"O método deveria retornar a DesassociationErrorException, pois ambos não estao associados");
+            }
+
+            @Test
+            @DisplayName("Desassociação de Historico de Transação De Usuario - Cenário de Erro")
+            public void metodoDesassociarTransacaoDeUsuarioDeveRetornarExcecao() {
+
+                //Não vou associar.. ja vou tentar desassociar normalmente pra ele retornar exceção
+                // e verificar se a mesma funciona
+
+                assertNull(historicoTransacaoCriadoParaTeste.getUsuarioRelacionado()
+                        ,"Não deveria estar associado com usuário");
+
+                assertTrue(usuarioCriadoParaTeste.getTransacoesRelacionadas().isEmpty()
+                        ,"Não deveria estar associado com historico transacao");
+
+                //Agora chamando o método pra ele pegar o if de verificacao e testar se ele retornará a exceção
+                assertThrows(DesassociationErrorException.class,
+                        ()->historicoTransacaoAssociation.desassociarTransacaoDeUsuario
+                                (historicoTransacaoCriadoParaTeste.getId(), usuarioCriadoParaTeste.getId())
+                        ,"O método deveria retornar a DesassociationErrorException, pois ambos não estao associados");
+            }
+
+            @Test
+            @DisplayName("Desassociação de Historico de Transação De Categoria - Cenário de Erro")
+            public void metodoDesassociarTransacaoDeCategoriaDeveRetornarExcecao() {
+
+                //Não vou associar.. ja vou tentar desassociar normalmente pra ele retornar exceção
+                // e verificar se a mesma funciona
+
+                assertNull(historicoTransacaoCriadoParaTeste.getCategoriaRelacionada()
+                        ,"Não deveria estar associado com categoria");
+
+                assertTrue(categoriaCriadaPraTeste.getTransacoesRelacionadas().isEmpty()
+                        ,"Não deveria estar associado com historico transacao");
+
+                //Agora chamando o método pra ele pegar o if de verificacao e testar se ele retornará a exceção
+                assertThrows(DesassociationErrorException.class,
+                        ()->historicoTransacaoAssociation.desassociarTransacaoDeCategoria
+                                (historicoTransacaoCriadoParaTeste.getId(), categoriaCriadaPraTeste.getId())
+                        ,"O método deveria retornar a DesassociationErrorException, pois ambos não estao associados");
             }
         }
     }
-}
+
 
 
 

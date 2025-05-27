@@ -30,16 +30,16 @@ public class UsuarioRepositoryTest {
     @Sql("/sql/UsuarioDados.sql")
     @DisplayName("Teste do método para verificar se ja tem um valor igual, com mesmo nome, email e telefone")
     public void testarMetodoVerificarSeJaExisteUmUsuarioIgual(){
-        boolean usuarioEncontrado = usuarioRepository.existsByNomeAndEmailAndTelefone
-                ("Maria Fernanda", "maria.fernanda@email.com", "(21)99876-5432");
+        boolean usuarioEncontrado = usuarioRepository.existsByEmail
+                ("maria.fernanda@email.com");
         assertTrue(usuarioEncontrado,"O método deveria retornar que esses dados informados existe na base de dados");
     }
     @Test
     @Sql("/sql/UsuarioDados.sql")
     @DisplayName("Teste do método para verificar se ja tem um valor igual, mas com dados falsos")
     public void testarMetodoVerificarSeJaExisteUmUsuarioIgualNaoEncontraValorFalso(){
-        boolean usuarioEncontrado = usuarioRepository.existsByNomeAndEmailAndTelefone
-                ("Maria Fernandah", "maria.fernadnda@email.com", "(21)99876-5432");
+        boolean usuarioEncontrado = usuarioRepository.existsByEmail(
+                ("maria.fernadnda@email.com"));
         assertFalse(usuarioEncontrado,"O método não deveria informar que encontrou esses dados na base de dados, eles não existem");
     }
 

@@ -17,13 +17,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     /**
      * Verifica se existe um usuário com o mesmo nome, email e telefone.
      * Utilizado para evitar duplicidade de registros.
-     *
-     * @param nome o nome do usuário
      * @param email o email do usuário
-     * @param telefone o telefone do usuário
      * @return true se existir um usuário com os dados fornecidos
      */
-    boolean existsByNomeAndEmailAndTelefone(String nome, String email, String telefone);
+    boolean existsByEmail(String email);
 
     /**
      * Busca todos os usuários que possuem um nome exato.

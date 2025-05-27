@@ -30,7 +30,7 @@ public interface UsuariosAssociation {
     /**
      * Associa um usuário a uma conta.
      *
-     * @param usuarioid ID do usuário
+     * @param usuarioId ID do usuário
      * @param contaId ID da conta
      * @throws AssociationErrorException em caso de falha na associação
      */

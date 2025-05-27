@@ -42,7 +42,7 @@ public class UsuarioAssocImpl implements UsuariosAssociation {
         if (usuarioEncontrado.getPagamentosRelacionados() == null) {
             usuarioEncontrado.setPagamentosRelacionados(new ArrayList<>());
         }
-        if (usuarioEncontrado.getPagamentosRelacionados().contains(pagamentoEncontrado) ||
+        if (usuarioEncontrado.getPagamentosRelacionados().contains(pagamentoEncontrado) &&
                 pagamentoEncontrado.getUsuarioRelacionado().getId().equals(usuarioEncontrado.getId())) {
             throw new AssociationErrorException("Esse usuário já está associado ao pagamento: " + pagamentoId);
         }
@@ -64,7 +64,7 @@ public class UsuarioAssocImpl implements UsuariosAssociation {
         if (usuarioEncontrado.getTransacoesRelacionadas() == null) {
             usuarioEncontrado.setTransacoesRelacionadas(new ArrayList<>());
         }
-        if (usuarioEncontrado.getTransacoesRelacionadas().contains(historicoEncontrado) ||
+        if (usuarioEncontrado.getTransacoesRelacionadas().contains(historicoEncontrado) &&
                 historicoEncontrado.getUsuarioRelacionado().getId().equals(usuarioEncontrado.getId())) {
             throw new AssociationErrorException("Esse usuário já está associado à transação: " + transacaoId);
         }
@@ -86,7 +86,7 @@ public class UsuarioAssocImpl implements UsuariosAssociation {
         if (usuarioEncontrado.getContasRelacionadas() == null) {
             usuarioEncontrado.setContasRelacionadas(new ArrayList<>());
         }
-        if (usuarioEncontrado.getContasRelacionadas().contains(contaEncontrada) ||
+        if (usuarioEncontrado.getContasRelacionadas().contains(contaEncontrada) &&
                 contaEncontrada.getUsuarioRelacionado().getId().equals(usuarioEncontrado.getId())) {
             throw new AssociationErrorException("Esse usuário já está associado à conta: " + contaId);
         }
@@ -108,7 +108,7 @@ public class UsuarioAssocImpl implements UsuariosAssociation {
         if (usuarioEncontrado.getCategoriasRelacionadas() == null) {
             usuarioEncontrado.setCategoriasRelacionadas(new ArrayList<>());
         }
-        if (usuarioEncontrado.getCategoriasRelacionadas().contains(categoriaEncontrada) ||
+        if (usuarioEncontrado.getCategoriasRelacionadas().contains(categoriaEncontrada) &&
                 categoriaEncontrada.getUsuarioRelacionado().getId().equals(usuarioEncontrado.getId())) {
             throw new AssociationErrorException("Esse usuário já está associado à categoria: " + categoriaId);
         }
