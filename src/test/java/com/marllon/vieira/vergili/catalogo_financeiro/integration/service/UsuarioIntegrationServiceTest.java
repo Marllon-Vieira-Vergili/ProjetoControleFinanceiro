@@ -1,6 +1,6 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.integration.service;
 
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.UsuarioRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.Usuario.UsuarioRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.Usuario;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.UsuarioRepository;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.UsuariosAssociation;

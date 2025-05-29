@@ -1,5 +1,6 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD;
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.ContaUsuarioRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.ContaUsuario.ContaUsuarioCreateRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.ContaUsuario.ContaUsuarioRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.ContaUsuarioResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.ContaNaoEncontrada;
@@ -24,7 +25,7 @@ public interface ContaUsuarioService {
      * @return DTO com a conta criada
      * @throws DadosInvalidosException se os dados da request forem inválidos
      */
-    ContaUsuarioResponse criarConta(ContaUsuarioRequest request);
+    ContaUsuarioResponse criarConta(ContaUsuarioCreateRequest request, Long idUsuario);
 
     /**
      * Busca uma conta pelo ID
@@ -32,7 +33,7 @@ public interface ContaUsuarioService {
      * @return  contendo a conta encontrada, ou retornar uma exception
      * @throws ContaNaoEncontrada se não for encontrada a conta
      */
-    Optional<ContaUsuario> encontrarContaPorId(Long id);
+    Optional<ContaUsuarioResponse> encontrarContaPorId(Long id);
 
     /**
      * Listar todas as contas pelo nome encontrado, pois pode ter várias contas com o mesmo nome
@@ -75,7 +76,7 @@ public interface ContaUsuarioService {
      * @param contaId ID da conta
      * @return o tipo de conta correspondente
      */
-    String verificarTipoConta(Long contaId);
+    TiposContas verificarTipoConta(Long contaId);
     /**
      * Verificar se a conta tem saldo negativo.
      * @return true se a conta possuir saldo negativo

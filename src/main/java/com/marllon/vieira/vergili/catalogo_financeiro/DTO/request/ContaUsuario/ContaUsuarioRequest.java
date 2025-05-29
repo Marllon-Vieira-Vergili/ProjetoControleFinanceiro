@@ -1,4 +1,4 @@
-package com.marllon.vieira.vergili.catalogo_financeiro.DTO.request;
+package com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.ContaUsuario;
 
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas;
 import jakarta.persistence.EnumType;
@@ -20,20 +20,11 @@ public record ContaUsuarioRequest(@NotBlank(message = "O campo do nome não pode
                                   String nome,
 
                                   @NotNull(message = "O campo do saldo na conta não pode ser nulo!")
-                                  BigDecimal saldo,
+                                   BigDecimal saldo,
 
                                   @NotNull(message = "O campo TipoConta não pode ser nulo")
                                   @Enumerated(EnumType.STRING)
-                                  TiposContas tipoConta,
-
-                                  @NotNull(message = "O campo id da categoria não pode ser nulo")
-                                  Long idCategoriaFinanceira,
-
-                                  @NotNull(message = "O campo id do pagamento criado não pode ser nulo")
-                                  Long idPagamentoRequest,
-
-                                  @NotNull(message = "O campo id do usuário criada não pode ser nulo!")
-                                  Long idUsuario) {
+                                  TiposContas tipoConta) {
 }
 
 

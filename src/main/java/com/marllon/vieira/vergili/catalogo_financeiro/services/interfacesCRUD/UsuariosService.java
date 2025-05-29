@@ -1,12 +1,11 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD;
 
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.ContaUsuarioRequest;
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.UsuarioRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.Usuario.UsuarioRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.Usuario.UsuarioUpdateRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.ContaUsuarioResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.UsuarioResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.UsuarioNaoEncontrado;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.Usuario;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -52,7 +51,7 @@ public interface UsuariosService {
      * @param contaId ID da conta
      * @return lista de usuários associados à conta
      */
-    List<UsuarioResponse> buscarPorContaId(Long contaId);
+    List<UsuarioResponse> buscarPorIdConta(Long contaId);
 
     /**
      * Retorna todos os usuários cadastrados de forma paginada.
@@ -61,6 +60,24 @@ public interface UsuariosService {
      * @return página com usuários encontrados
      */
     Page<UsuarioResponse> buscarTodosUsuarios(Pageable pageable);
+
+    /**
+     * Atualiza os dados de um usuário existente com as informações fornecidas.
+     * <p>
+     * Este método deve ser utilizado para atualizar os dados cadastrais de um usuário.
+     * Todos os campos presentes no {@link UsuarioRequest} substituirão os valores atuais do usuário.
+     *
+     * <p>
+     * Caso queira permitir atualizações parciais (somente alguns campos), é recomendado
+     * criar um DTO específico para atualização com campos opcionais.
+     *
+     * @param dadosUsuario objeto {@link UsuarioRequest} contendo os novos dados do usuário.
+     *                     Todos os campos preenchidos neste objeto irão sobrescrever os dados existentes.
+     * @return um {@link UsuarioResponse} contendo os dados atualizados do usuário.
+     * @throws UsuarioNaoEncontrado se o usuário não for encontrado na base de dados.
+     */
+    UsuarioResponse atualizarDadosUsuario(Long id, UsuarioUpdateRequest dadosUsuario);
+
 
     /**
      * Remove um usuário do sistema.

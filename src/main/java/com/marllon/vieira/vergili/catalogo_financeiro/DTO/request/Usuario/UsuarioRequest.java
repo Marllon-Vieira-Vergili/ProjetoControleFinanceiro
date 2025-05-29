@@ -1,8 +1,5 @@
-package com.marllon.vieira.vergili.catalogo_financeiro.DTO.request;
-
-
+package com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.Usuario;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 
 /**

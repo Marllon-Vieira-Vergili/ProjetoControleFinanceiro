@@ -1,6 +1,7 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.Implements;
 
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.UsuarioRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.Usuario.UsuarioRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.Usuario.UsuarioUpdateRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.ContaUsuarioResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.UsuarioResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
@@ -15,6 +16,7 @@ import com.marllon.vieira.vergili.catalogo_financeiro.repository.ContaUsuarioRep
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.UsuarioRepository;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.UsuariosAssociation;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.UsuariosService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -41,6 +43,7 @@ public class UsuarioImpl implements UsuariosService {
     private ContaUsuarioRepository contaUsuarioRepository;
 
     @Override
+    @Transactional
     public UsuarioResponse criarUsuario(UsuarioRequest usuario) {
 
         //Analisando se o email passado já não existe uma conta criada
@@ -85,8 +88,15 @@ public class UsuarioImpl implements UsuariosService {
     }
 
     @Override
-    public List<UsuarioResponse> buscarPorContaId(Long contaId) {
-        return List.of();
+    public List<UsuarioResponse> buscarPorIdConta(Long contaId) {
+
+        //Encontrando a conta usuário pela id
+        Optional<ContaUsuario> contaUsuarioEncontrada = contaUsuarioRepository.findById(contaId);
+        Usuario usuarioLocalizado = null;
+        if (contaUsuarioEncontrada.isPresent()){
+           usuarioLocalizado = contaUsuarioEncontrada.get().getUsuarioRelacionado();
+        }
+        return Collections.singletonList(usuarioMapper.retornarDadosUsuario(usuarioLocalizado));
     }
 
     @Override
@@ -102,6 +112,38 @@ public class UsuarioImpl implements UsuariosService {
     }
 
     @Override
+    @Transactional
+    public UsuarioResponse atualizarDadosUsuario(Long id, UsuarioUpdateRequest dadosUsuario) {
+
+        //Encontrando o usuário pela id
+        Optional<Usuario> usuarioEncontrado = Optional.ofNullable(usuarioRepository.findById(id)
+                .orElseThrow(() -> new UsuarioNaoEncontrado(super.toString())));
+
+        if (usuarioEncontrado.isPresent()){
+
+            try{
+                if (dadosUsuario.nome() != null){
+                    usuarioEncontrado.get().setNome(dadosUsuario.nome());
+                }
+                if (dadosUsuario.email() != null){
+                    usuarioEncontrado.get().setEmail(dadosUsuario.email());
+                }
+                if (dadosUsuario.telefone() != null){
+                    usuarioEncontrado.get().setTelefone(dadosUsuario.telefone());
+                }
+                usuarioRepository.save(usuarioEncontrado.get());
+            } catch (RuntimeException e) {
+                throw new DadosInvalidosException(e.getMessage());
+            }
+        }
+
+
+
+        return usuarioMapper.retornarDadosUsuario(usuarioEncontrado.get());
+    }
+
+    @Override
+    @Transactional
     public void deletarUsuario(Long id) {
 
         Usuario usuarioEncontrado = usuarioRepository.findById(id).orElseThrow();
@@ -117,7 +159,9 @@ public class UsuarioImpl implements UsuariosService {
                     throw new DesassociationErrorException(e.getMessage());
                 }
             }
+            usuarioEncontrado.getContasRelacionadas().clear();
         }
+
         if (!usuarioEncontrado.getTransacoesRelacionadas().isEmpty()) {
             List<HistoricoTransacao> transacoesEncontradas = usuarioEncontrado.getTransacoesRelacionadas();
             for (HistoricoTransacao transacoesPercorridas : transacoesEncontradas) {
@@ -127,6 +171,7 @@ public class UsuarioImpl implements UsuariosService {
                     throw new DesassociationErrorException(e.getMessage());
                 }
             }
+            usuarioEncontrado.getTransacoesRelacionadas().clear();
         }
         if (!usuarioEncontrado.getPagamentosRelacionados().isEmpty()) {
             List<Pagamentos> pagamentosEncontrados = usuarioEncontrado.getPagamentosRelacionados();
@@ -137,6 +182,7 @@ public class UsuarioImpl implements UsuariosService {
                     throw new DesassociationErrorException(e.getMessage());
                 }
             }
+            usuarioEncontrado.getPagamentosRelacionados().clear();
         }
         if (!usuarioEncontrado.getCategoriasRelacionadas().isEmpty()) {
             List<CategoriaFinanceira> categoriaFinanceiraEncontrada = usuarioEncontrado.getCategoriasRelacionadas();
@@ -148,21 +194,12 @@ public class UsuarioImpl implements UsuariosService {
                     throw new DesassociationErrorException(e.getMessage());
                 }
             }
+            usuarioEncontrado.getCategoriasRelacionadas().clear();
         }
 
-        if (!usuarioEncontrado.getContasRelacionadas().isEmpty()) {
-            List<ContaUsuario> contasEncontradas = usuarioEncontrado.getContasRelacionadas();
-            for (ContaUsuario contasPercorridas : contasEncontradas) {
-                try {
-                    usuariosAssociation.desassociarUsuarioComConta(usuarioEncontrado.getId(), contasPercorridas.getId());
-                } catch (RuntimeException e) {
-                    throw new DesassociationErrorException(e.getMessage());
-                }
-            }
-        }
 
         //Remover agora a conta
-        contaUsuarioRepository.deleteById(usuarioEncontrado.getId());
+        usuarioRepository.deleteById(usuarioEncontrado.getId());
     }
 
 
@@ -189,13 +226,18 @@ public class UsuarioImpl implements UsuariosService {
     }
 
     @Override
+    @Transactional
     public void alterarSenhaUsuario(Long id, String novaSenha) {
 
         //Encontrar o usuário
-        Optional<Usuario> usuarioEncontrado = Optional.of(usuarioRepository.findById(id).orElseThrow());
+        Usuario usuarioEncontrado = usuarioRepository.findById(id).orElseThrow(()->
+                new UsuarioNaoEncontrado(super.toString()));
 
         //Alterar a senha
-        usuarioEncontrado.ifPresent(usuario -> usuario.setSenha(novaSenha));
+        usuarioEncontrado.setSenha(novaSenha);
+
+        //Salvando a nova senha
+        usuarioRepository.save(usuarioEncontrado);
 
     }
 

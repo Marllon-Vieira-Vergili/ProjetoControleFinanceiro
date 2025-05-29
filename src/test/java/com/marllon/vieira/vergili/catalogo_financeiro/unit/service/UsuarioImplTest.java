@@ -1,14 +1,15 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.unit.service;
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.UsuarioRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.Usuario.UsuarioRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.Usuario.UsuarioUpdateRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.ContaUsuarioResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.UsuarioResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.JaExisteException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.ContaNaoEncontrada;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.UsuarioNaoEncontrado;
 import com.marllon.vieira.vergili.catalogo_financeiro.mapper.UsuarioMapper;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.ContaUsuario;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.Usuario;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.CategoriaFinanceiraRepository;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.ContaUsuarioRepository;
@@ -16,14 +17,11 @@ import com.marllon.vieira.vergili.catalogo_financeiro.repository.HistoricoTransa
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.UsuarioRepository;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.UsuariosAssociation;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.Implements.UsuarioImpl;
-import org.aspectj.util.Reflection;
 import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
@@ -322,7 +320,127 @@ public class UsuarioImplTest {
         @Test
         @DisplayName("Teste Mètodo remover Usuario - Sucesso")
         public void metodoRemoverUsuarioDeveFuncionar(){
+            //Instanciando os objetos
+            Long pagamentoId = 1L;
+            Long contaUsuarioId = 1L;
+            Long usuarioId = 1L;
+            Long categoriaFId = 1L;
+            Long historicoTransacaoId = 1L;
+
+            ContaUsuario contaUsuarioTeste = new ContaUsuario();
+            ReflectionTestUtils.setField(contaUsuarioTeste,"id",contaUsuarioId);
+
+            Pagamentos pagamentoTeste = new Pagamentos();
+            ReflectionTestUtils.setField(pagamentoTeste,"id",pagamentoId);
+
+            HistoricoTransacao historicoTeste = new HistoricoTransacao();
+            ReflectionTestUtils.setField(historicoTeste,"id",historicoTransacaoId);
+
+            CategoriaFinanceira categoriaTeste = new CategoriaFinanceira();
+            ReflectionTestUtils.setField(categoriaTeste,"id",categoriaFId);
+
+            Usuario usuarioTeste = new Usuario();
+            ReflectionTestUtils.setField(usuarioTeste,"id",usuarioId);
+
+            //associando manualmente
+            usuarioTeste.setTransacoesRelacionadas(new ArrayList<>(List.of(historicoTeste)));
+            usuarioTeste.setPagamentosRelacionados(new ArrayList<>(List.of(pagamentoTeste)));
+            usuarioTeste.setContasRelacionadas(new ArrayList<>(List.of(contaUsuarioTeste)));
+            usuarioTeste.setCategoriasRelacionadas(new ArrayList<>(List.of(categoriaTeste)));
+
+            //Assertando que estão associados
+            assertTrue(usuarioTeste.getPagamentosRelacionados().contains(pagamentoTeste),"O usuário deve estar associado ao pagamento");
+            assertTrue(usuarioTeste.getContasRelacionadas().contains(contaUsuarioTeste),"O usuário deve estar associado a conta");
+            assertTrue(usuarioTeste.getTransacoesRelacionadas().contains(historicoTeste),"O usuário deve estar associado ao histórico de transação");
+            assertTrue(usuarioTeste.getCategoriasRelacionadas().contains(categoriaTeste),"O usuário deve estar associado a categoria Financeira");
             
+            //Agora vou fazer as simulações(Mocks)
+            when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuarioTeste));
+
+            doNothing().when(usuariosAssociation).desassociarUsuarioComCategoria(usuarioId,categoriaFId);
+            doNothing().when(usuariosAssociation).desassociarUsuarioComConta(usuarioId,contaUsuarioId);
+            doNothing().when(usuariosAssociation).desassociarUsuarioComPagamento(usuarioId,pagamentoId);
+            doNothing().when(usuariosAssociation).desassociarUsuarioComTransacao(usuarioId,historicoTransacaoId);
+
+            assertDoesNotThrow(()->{
+                usuarioImplementation.deletarUsuario(usuarioId);
+                assertFalse(usuarioTeste.getPagamentosRelacionados().contains(pagamentoTeste),"O usuário Não deve estar associado ao pagamento");
+                assertFalse(usuarioTeste.getContasRelacionadas().contains(contaUsuarioTeste),"O usuário Não deve estar associado a conta");
+                assertFalse(usuarioTeste.getTransacoesRelacionadas().contains(historicoTeste),"O usuário Não deve estar associado ao histórico de transação");
+                assertFalse(usuarioTeste.getCategoriasRelacionadas().contains(categoriaTeste),"O usuário Não deve estar associado a categoria Financeira");
+            });
+
+            verify(usuarioRepository).findById(usuarioId);
+            verify(usuariosAssociation).desassociarUsuarioComCategoria(usuarioId,categoriaFId);
+            verify(usuariosAssociation).desassociarUsuarioComConta(usuarioId,contaUsuarioId);
+            verify(usuariosAssociation).desassociarUsuarioComPagamento(usuarioId,pagamentoId);
+            verify(usuariosAssociation).desassociarUsuarioComTransacao(usuarioId,historicoTransacaoId);
+        }
+
+        @Test
+        @DisplayName("Teste buscar Conta Usuário deve retornar Sucesso")
+        public void buscarContaUsuarioDeveRetornarEncontrado(){
+
+            //Instanciando valores
+            Long idContaUsuario = 1L;
+            ContaUsuario contaUsuario = new ContaUsuario();
+            ReflectionTestUtils.setField(contaUsuario,"id",idContaUsuario);
+
+            Long usuarioId = 1L;
+            Usuario usuario = new Usuario();
+            ReflectionTestUtils.setField(usuario,"id",usuarioId);
+
+            //Associando conta usuario com usuario
+            usuario.setContasRelacionadas(new ArrayList<>(List.of(contaUsuario)));
+
+            when(contaUsuarioRepository.findById(idContaUsuario)).thenReturn(Optional.of(contaUsuario));
+
+            when(usuarioMapper.retornarDadosUsuario(usuario)).thenAnswer(invocationOnMock -> {
+                UsuarioResponse responseUsuario = invocationOnMock.getArgument(0);
+                return List.of(responseUsuario);
+            });
+
+            assertTrue(usuario.getContasRelacionadas().contains(contaUsuario),"Usuario deve conter conta usuário relacionada");
+
+            assertDoesNotThrow(()->{
+                usuarioImplementation.buscarPorIdConta(idContaUsuario);
+            });
+
+        }
+
+
+        @Test
+        @DisplayName("Atualizar Usuario deve alterar valores sem Retornar Erro")
+        public void alterarDadosUsuarioNaoDeveRetornarErro(){
+
+            //Instanciando os objetos
+            Long usuarioId = 1L;
+            Usuario usuarioTeste = new Usuario();
+            ReflectionTestUtils.setField(usuarioTeste,"id",usuarioId);
+            usuarioTeste.setTelefone("(11)12345-1234");
+            usuarioTeste.setNome("João");
+            usuarioTeste.setEmail("joao@email.com");
+
+            when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuarioTeste));
+
+            when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuarioTeste);
+
+            when(usuarioMapper.retornarDadosUsuario(usuarioTeste))
+                    .thenReturn(new UsuarioResponse(usuarioId,usuarioTeste.getNome(),
+                            usuarioTeste.getEmail(), usuarioTeste.getTelefone()));
+
+
+            UsuarioUpdateRequest updateRequest = new UsuarioUpdateRequest("João","joao@email.com","(11)12345-1234");
+            UsuarioResponse response = assertDoesNotThrow(()->usuarioImplementation.atualizarDadosUsuario(usuarioTeste.getId(),updateRequest)
+                    ,"O método deveria atualizar os valores sem retornar nenhuma exceção");
+
+            UsuarioResponse responseEsperada = new UsuarioResponse(1L,"João","joao@email.com","(11)12345-1234");
+            assertEquals(responseEsperada,response,"Ambas as respostas da saida do método devem ser iguais!");
+
+            verify(usuarioRepository).findById(usuarioId);
+            verify(usuarioRepository).save(any(Usuario.class));
+            verify(usuarioMapper).retornarDadosUsuario(usuarioTeste);
+
         }
 
 
@@ -451,6 +569,76 @@ public class UsuarioImplTest {
 
                 assertFalse(usuarioFoiEncontrado,"O usuário não deveria ser encontrado e retornado FALSE no método");
             }
+
+            @Test
+            @DisplayName("Teste Mètodo remover Usuario - Retornar Exception")
+            public void metodoRemoverUsuarioDeveRetornarExceptionDesassociation(){
+                //Instanciando os objetos
+
+                Long usuarioId = 1L;
+                Long categoriaFId = 1L;
+
+                CategoriaFinanceira categoriaTeste = new CategoriaFinanceira();
+                ReflectionTestUtils.setField(categoriaTeste,"id",categoriaFId);
+
+                Usuario usuarioTeste = new Usuario();
+                ReflectionTestUtils.setField(usuarioTeste,"id",usuarioId);
+
+                //associando manualmente
+                usuarioTeste.setCategoriasRelacionadas(new ArrayList<>(List.of(categoriaTeste)));
+
+                //Assertando que estão associados
+
+                assertTrue(usuarioTeste.getCategoriasRelacionadas().contains(categoriaTeste)
+                        ,"O usuário  deve estar associado a categoria Financeira");
+
+
+                //Agora vou fazer as simulações(Mocks)
+                when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuarioTeste));
+
+                doThrow(new DesassociationErrorException("Erro ao realizar a desassociação!")).when(usuariosAssociation)
+                        .desassociarUsuarioComCategoria(usuarioId,categoriaFId);
+
+
+
+                assertThrowsExactly(DesassociationErrorException.class,()->{
+                    usuarioImplementation.deletarUsuario(usuarioId);
+                    assertTrue(usuarioTeste.getCategoriasRelacionadas().contains(categoriaTeste)
+                            ,"O usuário AINDA  deve estar associado a categoria Financeira, pois deu erro no método");
+                });
+
+                verify(usuarioRepository).findById(usuarioId);
+                verify(usuariosAssociation).desassociarUsuarioComCategoria(usuarioId,categoriaFId);
+
+            }
+
+            @Test
+            @DisplayName("Atualizar Usuario quando Dados estão inválidos")
+            public void alterarDadosUsuarioNaoDeveRetornarErro(){
+
+                //Instanciando os objetos
+                Long usuarioId = 1L;
+                Usuario usuarioTeste = new Usuario();
+                ReflectionTestUtils.setField(usuarioTeste,"id",usuarioId);
+                usuarioTeste.setTelefone("(11)12345-1234");
+                usuarioTeste.setNome("João");
+                usuarioTeste.setEmail("joaoemail.com");
+
+                when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuarioTeste));
+
+                when(usuarioRepository.save(usuarioTeste)).thenThrow(DadosInvalidosException.class);
+
+                UsuarioUpdateRequest updateRequest = new UsuarioUpdateRequest("João","joaoemail.com","11 12345-1234");
+                assertThrows(DadosInvalidosException.class,()->{
+                   usuarioImplementation.atualizarDadosUsuario(usuarioId,updateRequest);
+                });
+
+                verify(usuarioRepository).findById(usuarioId);
+                verify(usuarioRepository).save(any(Usuario.class));
+
+            }
+
+
         }
     }
 }
