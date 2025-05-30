@@ -21,7 +21,7 @@ public interface CategoriaFinanceiraRepository extends JpaRepository<CategoriaFi
      * @return uma lista de {@link CategoriaFinanceira} que correspondem ao tipo informado
      */
     @Query("SELECT c FROM CategoriaFinanceira c WHERE c.tiposCategorias = :tipos_categorias")
-    CategoriaFinanceira encontrarPorTipoCategoria(@Param("tipos_categorias") TiposCategorias tipoCategoria);
+    List<CategoriaFinanceira> encontrarPorTipoCategoria(@Param("tipos_categorias") TiposCategorias tipoCategoria);
 
 
     /**

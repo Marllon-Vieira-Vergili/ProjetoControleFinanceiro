@@ -18,6 +18,7 @@ import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.Ca
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -56,16 +57,17 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService{
     @Override
     public CategoriaFinanceiraResponse criarCategoriaFinanceira(CategoriaFinanceiraRequest request) {
 
+        //Verificar se já não existe a mesma categoria criada
+        jaExisteUmaCategoriaIgual(request.tipoCategoria(),request.subtipo());
 
         //Verificar se o tipo categoria é compativel com o subtipo informado
-        tipoCategoriaESubtipoSaoCompativeis(request.tipoCategoria(),request.subtipo());
+        validarCompatibilidadeTipoESubtipo(request.tipoCategoria(),request.subtipo());
 
         //Se achar, será criado a categoria financeira
         CategoriaFinanceira novaCategoria = new CategoriaFinanceira();
 
         novaCategoria.setTiposCategorias(request.tipoCategoria());
         novaCategoria.setSubTipo(request.subtipo());
-
 
         //Salvar a nova categoria criada
         CategoriaFinanceira categoriaSalva = categoriaFinanceiraRepository.save(novaCategoria);
@@ -98,13 +100,14 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService{
     @Override
     public Page<CategoriaFinanceiraResponse> encontrarTodasCategorias(Pageable pageable) {
 
-        Page<CategoriaFinanceira> todosEncontrados = categoriaFinanceiraRepository.findAll(pageable);
+        List<CategoriaFinanceira> todosEncontrados = categoriaFinanceiraRepository.findAll();
+        Page<CategoriaFinanceira> paginasCategoriasCriadas = new PageImpl<>(todosEncontrados);
 
         if(todosEncontrados.isEmpty()){
             throw new CategoriaNaoEncontrada("Não foi encontrado nenhuma categoria financeira na base de dados");
         }
 
-        return todosEncontrados.map(mapper::retornarDadosCategoria);
+        return paginasCategoriasCriadas.map(mapper::retornarDadosCategoria);
     }
 
     @Override
@@ -171,7 +174,6 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService{
         } catch (RuntimeException e) {
             throw new DesassociationErrorException("Erro ao desassociar a categoria de Histórico de Transação");
         }
-
         //Deletar a categoria encontrada
         categoriaFinanceiraRepository.deleteById(categoriaEncontrada.getId());
     }
@@ -192,7 +194,9 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService{
         CategoriaFinanceira categoriaIgual = categoriaFinanceiraRepository
                 .encontrarPorTipoAndSubtipo(tiposCategoria,subTipoCategoria);
 
-        if (categoriaIgual.getTiposCategorias().equals(tiposCategoria) && categoriaIgual.getSubTipo().equals(subTipoCategoria)){
+        if (categoriaIgual != null &&
+                categoriaIgual.getTiposCategorias() == (tiposCategoria)
+                && categoriaIgual.getSubTipo() == (subTipoCategoria)){
             return true;
         }
         return false;

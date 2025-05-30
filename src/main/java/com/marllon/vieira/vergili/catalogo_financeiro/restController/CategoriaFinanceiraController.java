@@ -34,7 +34,7 @@ public class CategoriaFinanceiraController {
 
 
 
-
+/*
     @PostMapping(value = "/criarCategoria/{pagamentoId}/{historicoTransacaoId}/{contaUsuarioId}/{usuarioId}")
     public ResponseEntity<CategoriaFinanceiraResponse> adicionarNovaCategoria
             (@RequestBody CategoriaFinanceiraRequest dadosCategoria,
@@ -68,4 +68,6 @@ public class CategoriaFinanceiraController {
         }
         return ResponseEntity.ok(response);
     }
+
+ */
 }

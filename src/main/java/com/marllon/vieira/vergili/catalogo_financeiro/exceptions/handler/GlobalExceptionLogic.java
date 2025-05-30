@@ -1,5 +1,4 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.exceptions.handler;
-
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.JaExisteException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.*;
 import org.springframework.http.HttpStatus;

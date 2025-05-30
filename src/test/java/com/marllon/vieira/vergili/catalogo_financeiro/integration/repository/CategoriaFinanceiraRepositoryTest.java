@@ -1,6 +1,7 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.integration.repository;
 
 import com.marllon.vieira.vergili.catalogo_financeiro.models.CategoriaFinanceira;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.CategoriaFinanceiraRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -43,7 +44,7 @@ public class CategoriaFinanceiraRepositoryTest{
     @DisplayName("Teste do método no Repositório para encontrar as categorias financeiras pelo tipo categoria")
     public void testeMetodoencontrarPorTipoCategoria(){
         List<CategoriaFinanceira> categoriasEncontradas = categoriaFRepository.encontrarPorTipoCategoria(DESPESA);
-        assertFalse(categoriasEncontradas.isEmpty(),"A lista da categoria é vazia");
+        assertEquals(DESPESA,categoriasEncontradas,"A lista da categoria é vazia");
         for(CategoriaFinanceira categoriaEncontrada: categoriasEncontradas){
             assertEquals(DESPESA,categoriaEncontrada.getTiposCategorias(),"Os tipos encontrados como DESPESA deve ser encontrado");
         }
@@ -53,11 +54,8 @@ public class CategoriaFinanceiraRepositoryTest{
     @Sql(value = "/sql/CategoriaFinanceiraDados.sql")
     @DisplayName("Teste do método no Repositório para encontrar as categorias financeiras pelo subtipo")
     public void testeMetodoencontrarPorSubTipoCategoria(){
-        List<CategoriaFinanceira> categoriasEncontradas = categoriaFRepository.encontrarPorSubtipoCategoria(COMBUSTIVEL);
-        assertFalse(categoriasEncontradas.isEmpty(),"A lista de categoria é vazia");
-        for(CategoriaFinanceira categoriaEncontrada: categoriasEncontradas){
-            assertEquals(COMBUSTIVEL,categoriaEncontrada.getSubTipo(),"Os tipos encontrados como COMBUSTIVEL devem ser encontrados");
-        }
+        CategoriaFinanceira categoriasEncontradas = categoriaFRepository.encontrarCategoriaPeloSubTipo(COMBUSTIVEL);
+        assertTrue(categoriasEncontradas.getSubTipo().isTipoCategoriaDespesa(),"A lista de deveria conter elementos do tipo despesa");
     }
 
 
@@ -65,12 +63,11 @@ public class CategoriaFinanceiraRepositoryTest{
     @Sql("/sql/CategoriaFinanceiraDados.sql")
     @DisplayName("Teste do método no Repositório para encontrar as categorias financeira pelo seu Tipo e Susbitpo")
     public void testeMetodoencontrarPorTipoAndSubtipo(){
-        List<CategoriaFinanceira> encontrados = categoriaFRepository.encontrarPorTipoAndSubtipo(DESPESA,DESPESA_ALUGUEL);
-        assertFalse(encontrados.isEmpty(),"A lista da categoria financeira está vazia");
-        for(CategoriaFinanceira objetosEncontrados: encontrados){
-            assertEquals(DESPESA,objetosEncontrados.getTiposCategorias(),"O objeto não retornou nenhum valor do tipo DESPESA");
-            assertEquals(DESPESA_ALUGUEL,objetosEncontrados.getSubTipo(),"O objeto não retornou nenhum subtipo DESPESA_ALUGUEL");
-        }
+        CategoriaFinanceira encontrado = categoriaFRepository.encontrarPorTipoAndSubtipo(DESPESA,DESPESA_ALUGUEL);
+        assertNotNull(encontrado, "O Méodo deveria ter encontrado");
+            assertEquals(DESPESA,encontrado.getTiposCategorias(),"O objeto não retornou nenhum valor do tipo DESPESA");
+            assertEquals(DESPESA_ALUGUEL,encontrado.getSubTipo(),"O objeto não retornou nenhum subtipo DESPESA_ALUGUEL");
+
     }
 
     @AfterEach

@@ -3,7 +3,9 @@ package com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.I
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.HistoricoTransacaoRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.PagamentosRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.PagamentosResponse;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.AssociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.PagamentoNaoEncontrado;
 import com.marllon.vieira.vergili.catalogo_financeiro.mapper.CategoriaFinanceiraMapper;
 import com.marllon.vieira.vergili.catalogo_financeiro.mapper.PagamentoMapper;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
@@ -14,6 +16,7 @@ import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogic
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.PagamentosAssociation;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.ContaUsuarioService;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.PagamentosService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -61,6 +64,7 @@ public class PagamentosImpl implements PagamentosService {
 
 
     @Override
+    @Transactional
     public PagamentosResponse criarRecebimento(PagamentosRequest request) {
 
         if (request.tipoCategoria() != TiposCategorias.RECEITA){
@@ -103,10 +107,16 @@ public class PagamentosImpl implements PagamentosService {
 
 
         //associando
-        pagamentoAssociation.associarPagamentoATransacao(pagamentoId,historicoTransacaoEncontrado.get().getId());
-        pagamentoAssociation.associarPagamentoComCategoria(pagamentoId, categoriaFinanceiraEncontrada.get().getId());
-        pagamentoAssociation.associarPagamentoComConta(pagamentoId,contaUsuarioEncontrada.get().getId());
-        pagamentoAssociation.associarPagamentoComUsuario(pagamentoId,usuarioEncontrado.get().getId());
+        if (novoRecebimento.getId() != null){
+            try{
+                pagamentoAssociation.associarPagamentoATransacao(pagamentoId,historicoTransacaoEncontrado.get().getId());
+                pagamentoAssociation.associarPagamentoComCategoria(pagamentoId, categoriaFinanceiraEncontrada.get().getId());
+                pagamentoAssociation.associarPagamentoComConta(pagamentoId,contaUsuarioEncontrada.get().getId());
+                pagamentoAssociation.associarPagamentoComUsuario(pagamentoId,usuarioEncontrado.get().getId());
+            } catch (RuntimeException e) {
+                throw new AssociationErrorException("Não foi possível associar Recebimento com: " + e.getCause());
+            }
+        }
 
         //Buscando a conta desejada para atualizar o saldo dela
 
@@ -118,42 +128,92 @@ public class PagamentosImpl implements PagamentosService {
     }
 
     @Override
+    @Transactional
     public PagamentosResponse criarPagamento(PagamentosRequest request) {
 
-        //Verificando se o usuário passará os dados corretos para criação
-        if(!dataEstaCorreta(request.data())){
-            throw new DadosInvalidosException("Por favor, digite uma data válida para o pagamento " +
-                    "entre a partir do dia de hoje, para no máximo 1 mês a frente");
-        }
-        if(!valorEstaCorreto((request.valor()))){
-            throw new DadosInvalidosException("Por favor, digite um valor válido para o pagamento");
+        if (request.tipoCategoria() != TiposCategorias.DESPESA){
+            throw new DadosInvalidosException("Para criar Pagamento, somente o tipo DESPESA é válido");
         }
 
-        //Criando o pagamento
+        if(!dataEstaCorreta(request.data())){
+            throw new DadosInvalidosException("Por favor, digite uma data correta! " +
+                    "entre a partir de hoje, e no máximo para 1 mês a partir de hoje");
+        }
+        if(!valorEstaCorreto(request.valor())){
+            throw new DadosInvalidosException("Por favor, digite um valor correto! ");
+        }
+
         Pagamentos novoPagamento = new Pagamentos();
         novoPagamento.setData(request.data());
         novoPagamento.setValor(request.valor());
         novoPagamento.setDescricao(request.descricao());
         novoPagamento.setTiposCategorias(request.tipoCategoria());
 
-        //Salvando o novo pagamento
+        HistoricoTransacao novoHistorico = new HistoricoTransacao();
+        novoHistorico.setData(request.data());
+        novoHistorico.setValor(request.valor());
+        novoHistorico.setDescricao(request.descricao());
+        novoHistorico.setTiposCategorias(request.tipoCategoria());
+
+        //Salvando o pagamento e o histórico transação para gerar uma id
         pagamentosRepository.save(novoPagamento);
+        historicoTransacaoRepository.save(novoHistorico);
+
+        //Obtendo a id dos valores após serem criados
+        Long pagamentoId = novoPagamento.getId();
+        Long historicoTransacaoId= novoHistorico.getId();
+
+
+        Optional<CategoriaFinanceira> categoriaFinanceiraEncontrada = categoriaFinanceiraRepository.findById(request.idCategoriaFinanceira());
+        Optional<HistoricoTransacao> historicoTransacaoEncontrado = historicoTransacaoRepository.findById(historicoTransacaoId);
+        Optional<Usuario> usuarioEncontrado = usuarioRepository.findById(request.idUsuarioCriado());
+        Optional<ContaUsuario> contaUsuarioEncontrada = contaUsuarioRepository.findById(request.idContaUsuario());
+
+
+        //associando
+        if (novoPagamento.getId() != null){
+            try{
+                pagamentoAssociation.associarPagamentoATransacao(pagamentoId,historicoTransacaoEncontrado.get().getId());
+                pagamentoAssociation.associarPagamentoComCategoria(pagamentoId, categoriaFinanceiraEncontrada.get().getId());
+                pagamentoAssociation.associarPagamentoComConta(pagamentoId,contaUsuarioEncontrada.get().getId());
+                pagamentoAssociation.associarPagamentoComUsuario(pagamentoId,usuarioEncontrado.get().getId());
+            } catch (RuntimeException e) {
+                throw new AssociationErrorException("Não foi possível associar Pagamento com: " + e.getCause());
+            }
+        }
+
+        //Buscando a conta desejada para atualizar o saldo dela
+
+        //Adicionando o valor ao saldo na conta do usuário
+        contaUsuarioEncontrada.ifPresent(contaUsuario ->
+                contaUsuarioService.subtrairSaldo(contaUsuario.getId(), novoPagamento.getValor()));
 
         return mapper.retornarDadosPagamento(novoPagamento);
     }
 
     @Override
-    public Optional<Pagamentos> encontrarPagamentoPorid(Long id) {
-        return Optional.empty();
+    public Optional<PagamentosResponse> encontrarPagamentoOuRecebimentoPorid(Long id) {
+
+        Pagamentos pagamentoOuRecebimentoEncontrado = (pagamentosRepository.findById(id)
+                .orElseThrow(() -> new PagamentoNaoEncontrado("O Pagamento não foi encontrado!")));
+
+        return Optional.ofNullable(mapper.retornarDadosPagamento(pagamentoOuRecebimentoEncontrado));
     }
 
     @Override
     public List<PagamentosResponse> encontrarPagamentoPorData(LocalDate data) {
-        return List.of();
+
+        List<Pagamentos> pagamentosEOuRecebimentosLocalizadosPelaData =
+                pagamentosRepository.encontrarPagamentoPelaData(data);
+
+        return pagamentosEOuRecebimentosLocalizadosPelaData.stream().map(mapper::retornarDadosPagamento)
+                .toList();
     }
 
     @Override
     public List<PagamentosResponse> encontrarPagamentosPorUsuario(Long usuarioId) {
+
+
         return List.of();
     }
 
@@ -163,6 +223,7 @@ public class PagamentosImpl implements PagamentosService {
     }
 
     @Override
+    @Transactional
     public PagamentosResponse atualizarPagamento(Long id, PagamentosRequest request) {
         return null;
     }
@@ -173,6 +234,7 @@ public class PagamentosImpl implements PagamentosService {
     }
 
     @Override
+    @Transactional
     public void deletarPagamento(Long id) {
 
     }

@@ -65,7 +65,7 @@ public class CategoriaFinanceiraIntegrationServiceTest {
     }
 
 
-
+/*
     @Test
     @Sql("/sql/CategoriaFinanceiraDados.sql")
     @DisplayName("Teste do método de criar uma categoriaFinanceira e associando")
@@ -107,4 +107,6 @@ public class CategoriaFinanceiraIntegrationServiceTest {
         jdbc.execute("DELETE FROM usuarios");
 
     }
+
+ */
 }

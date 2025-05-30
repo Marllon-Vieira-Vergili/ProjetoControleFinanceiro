@@ -43,7 +43,7 @@ public interface PagamentosService  {
      * @param id ID do pagamento.
      * @return PagamentosResponse contendo o pagamento encontrado
      */
-    Optional<Pagamentos> encontrarPagamentoPorid(Long id);
+    Optional<PagamentosResponse> encontrarPagamentoOuRecebimentoPorid(Long id);
 
     /**
      * Busca pagamentos por data.
