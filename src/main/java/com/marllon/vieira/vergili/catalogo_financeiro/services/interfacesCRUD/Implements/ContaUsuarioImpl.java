@@ -4,11 +4,12 @@ import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.ContaUsuario.C
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.ContaUsuario.ContaUsuarioRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.ContaUsuarioResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.AssociationErrorException;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.ContaNaoEncontrada;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.TiposContasNaoEncontrado;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.UsuarioNaoEncontrado;
 import com.marllon.vieira.vergili.catalogo_financeiro.mapper.ContaUsuarioMapper;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.ContaUsuario;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.Usuario;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.ContaUsuarioRepository;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.UsuarioRepository;
@@ -17,10 +18,12 @@ import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.Co
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -72,45 +75,138 @@ public class ContaUsuarioImpl implements ContaUsuarioService {
     public Optional<ContaUsuarioResponse> encontrarContaPorId(Long id) {
 
         Optional<ContaUsuario> contaEncontrada = Optional.of(contaUsuarioRepository.findById(id)
-                .orElseThrow(()->new ContaNaoEncontrada(super.toString())));
+                .orElseThrow(()->new ContaNaoEncontrada("Esta conta com a id: " + id + "não foi localizada")));
 
         return Optional.ofNullable(contaUsuarioMapper.retornarDadosContaUsuario(contaEncontrada.get()));
     }
 
     @Override
     public List<ContaUsuarioResponse> encontrarContaPorNome(String nome) {
-        return List.of();
+
+        List<ContaUsuario> contasEncontradas = contaUsuarioRepository.encontrarContaPeloNome(nome);
+
+        if (contasEncontradas.isEmpty()){
+            throw new ContaNaoEncontrada(super.toString());
+        }
+        return contasEncontradas.stream().map(contaUsuarioMapper::retornarDadosContaUsuario).toList();
     }
 
     @Override
     public Page<ContaUsuarioResponse> encontrarTodas(Pageable pageable) {
-        return null;
+
+        List<ContaUsuario> todasContasLocalizadas = contaUsuarioRepository.findAll();
+
+        if(todasContasLocalizadas.isEmpty()){
+            throw new ContaNaoEncontrada("A lista de contas está vazia");
+        }
+        Page<ContaUsuario> paginaContas = new PageImpl<>(todasContasLocalizadas);
+        return paginaContas.map(contaUsuarioMapper::retornarDadosContaUsuario);
     }
 
     @Override
     @Transactional
-    public ContaUsuarioResponse atualizarUmaConta(Long id, ContaUsuarioRequest request) {
-        return null;
+    public ContaUsuarioResponse alterarNomeDeUmaConta(Long id, String nomeNovo) {
+
+        ContaUsuario contaUsuarioLocalizada =
+                contaUsuarioRepository.findById(id).orElseThrow(()
+                        -> new ContaNaoEncontrada("Esta conta com a id: " + id + "não foi localizada"));
+
+            contaUsuarioLocalizada.setNome(nomeNovo);
+
+            contaUsuarioRepository.save(contaUsuarioLocalizada);
+
+        return contaUsuarioMapper.retornarDadosContaUsuario(contaUsuarioLocalizada);
     }
 
     @Override
+    @Transactional
     public void deletarConta(Long id) {
 
+        //Encontrar o usuário pela id
+        ContaUsuario contaUsuarioLocalizada = contaUsuarioRepository.findById(id).orElseThrow(()
+                ->new ContaNaoEncontrada("Esta conta com a id: " + id + "não foi localizada"));
+
+        if(contaUsuarioLocalizada.getUsuarioRelacionado() != null){
+            Usuario usuarioAssociado = contaUsuarioLocalizada.getUsuarioRelacionado();
+            try{
+                contaUsuarioAssociation.desassociarContaDeUsuario(contaUsuarioLocalizada.getId(), usuarioAssociado.getId());
+            } catch (RuntimeException e) {
+                throw new DesassociationErrorException("Erro ao desassociar conta de usuário do usuário. " +
+                        e.getMessage());
+            }
+        }
+
+        if (!contaUsuarioLocalizada.getTransacoesRelacionadas().isEmpty()){
+            List<HistoricoTransacao> transacoesRelacionadas = contaUsuarioLocalizada
+                    .getTransacoesRelacionadas();
+            try{
+                for (HistoricoTransacao transacoesPercorridas: transacoesRelacionadas){
+                    contaUsuarioAssociation.desassociarContaDeHistoricoDeTransacao(contaUsuarioLocalizada.getId(),
+                            transacoesPercorridas.getId());
+                }
+            } catch (RuntimeException e) {
+                throw new DesassociationErrorException("Erro ao desassociar conta de usuário dos históricos de transação. " +
+                        e.getMessage());
+            }
+            contaUsuarioLocalizada.getTransacoesRelacionadas().clear();
+        }
+
+        if (!contaUsuarioLocalizada.getPagamentosRelacionados().isEmpty()){
+            List<Pagamentos> pagamentosRelacionados = contaUsuarioLocalizada.getPagamentosRelacionados();
+            try{
+                for(Pagamentos pagamentosPercorridos: pagamentosRelacionados){
+                    contaUsuarioAssociation.desassociarContaDePagamento(contaUsuarioLocalizada.getId(), pagamentosPercorridos.getId());
+                }
+            } catch (RuntimeException e) {
+                throw new DesassociationErrorException("Erro ao desassociar conta de usuário dos pagamentos. " +
+                        e.getMessage());
+            }
+            contaUsuarioLocalizada.getPagamentosRelacionados().clear();
+        }
+        if (!contaUsuarioLocalizada.getCategoriasRelacionadas().isEmpty()){
+            List<CategoriaFinanceira>categoriasRelacionadas = contaUsuarioLocalizada.getCategoriasRelacionadas();
+
+            try{
+                for(CategoriaFinanceira categoriasPercorridas: categoriasRelacionadas){
+                    contaUsuarioAssociation.desassociarContaDeCategoria(contaUsuarioLocalizada.getId(), categoriasPercorridas.getId());
+                }
+            } catch (RuntimeException e) {
+                throw new DesassociationErrorException("Erro ao desassociar conta de usuário das Categorias financeiras. " +
+                        e.getMessage());
+            }
+            contaUsuarioLocalizada.getCategoriasRelacionadas().clear();
+        }
+
+        //Remover agora a conta de usuário
+        contaUsuarioRepository.delete(contaUsuarioLocalizada);
     }
 
     @Override
     public TiposContas verificarTipoConta(Long contaId) {
 
-        return null;
+        ContaUsuario contaLocalizada = contaUsuarioRepository.findById(contaId)
+                .orElseThrow(()-> new ContaNaoEncontrada("Não foi localizada nenhuma conta com essa id: " + contaId));
+
+        if (contaLocalizada.getTipoConta() != null){
+            return contaLocalizada.getTipoConta();
+        }
+        throw new TiposContasNaoEncontrado("O tipo de conta não foi encontrado. Os Tipos de contas são: " +
+                Arrays.toString(TiposContas.values()));
     }
 
     @Override
     public boolean seSaldoEstiverNegativo(BigDecimal saldo) {
+        if (saldo.compareTo(BigDecimal.ZERO) <= 0){
+            return true;
+        }
         return false;
     }
 
     @Override
     public boolean seSaldoEstiverPositivo(BigDecimal saldo) {
+        if (saldo.compareTo(BigDecimal.ZERO) >= 1){
+            return true;
+        }
         return false;
     }
 
@@ -142,16 +238,27 @@ public class ContaUsuarioImpl implements ContaUsuarioService {
 
     @Override
     public BigDecimal consultarSaldo(Long contaId) {
-        return null;
+
+        ContaUsuario contaLocalizada = contaUsuarioRepository.findById(contaId)
+                .orElseThrow(()-> new ContaNaoEncontrada("Não foi localizada nenhuma conta com essa id: " + contaId));
+
+        return contaLocalizada.getSaldo();
     }
 
-    @Override
-    public boolean tipoContaExiste(TiposContas tipoConta) {
-        return false;
-    }
 
     @Override
-    public boolean jaExisteUmaContaIgual(ContaUsuario contaUsuario) {
+    public boolean jaExisteUmaContaIgual(String nome, TiposContas tipoConta) {
+
+        List<ContaUsuario> contaEncontradaPeloNome =
+                contaUsuarioRepository.encontrarContaPeloNome(nome);
+
+        List<ContaUsuario> contaEncontradaPeloTipo = contaUsuarioRepository.encontrarPeloTipoDeConta(tipoConta.name());
+
+        if(contaEncontradaPeloNome.getFirst().getTipoConta().equals(tipoConta) &&
+                contaEncontradaPeloTipo.equals(contaEncontradaPeloNome)){
+
+            return true;
+        }
         return false;
     }
 }

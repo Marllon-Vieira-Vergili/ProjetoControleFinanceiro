@@ -22,8 +22,7 @@ public interface CategoriaFinanceiraService {
      * @return Retorna um DTO com os dados da categoria criada.
      * @throws DadosInvalidosException se os dados digitados forem inválidos.
      */
-    CategoriaFinanceiraResponse criarCategoriaFinanceira(CategoriaFinanceiraRequest request
-            ,Long pagamentoId,Long historicoTransacaoId, Long contaUsuarioId, Long usuarioId);
+    CategoriaFinanceiraResponse criarCategoriaFinanceira(CategoriaFinanceiraRequest request);
 
     /**
      * Busca uma categoria financeira pelo seu ID.
@@ -41,8 +40,7 @@ public interface CategoriaFinanceiraService {
      * @return Retorna uma lista de categorias financeiras com o subtipo informado.
      * @throws CategoriaNaoEncontrada se não for encontrado categorias pela SubCategoria
      */
-    List<CategoriaFinanceiraResponse> encontrarCategoriasCriadaPeloSubTipo
-    (SubTipoCategoria subTipo);
+    CategoriaFinanceiraResponse encontrarCategoriaCriadaPeloSubtipo(SubTipoCategoria subTipo);
 
     /**
      * Lista todas as categorias financeiras, com suporte a paginação.
@@ -73,30 +71,11 @@ public interface CategoriaFinanceiraService {
 
     // ======================== OPERAÇÕES ESPECÍFICAS ========================
 
-    /**
-     * Verifica se a categoria é do tipo **DESPESA**.
-     *
-     * @return Retorna true se a categoria for do tipo despesa, caso contrário false.
-     */
-    boolean seCategoriaForDespesa();
 
-    /**
-     * Verifica se a categoria é do tipo **RECEITA**.
-     *
-     * @return Retorna true se a categoria for do tipo receita, caso contrário false.
-     */
-    boolean seCategoriaForReceita();
 
 
     // ======================== VALIDAÇÕES ========================
 
-    /**
-     * Verifica se o tipo de categoria fornecido existe no sistema.
-     *
-     * @param tipoCategoria O tipo de categoria a ser validado.
-     * @return Retorna true se o tipo de categoria existir, caso contrário false.
-     */
-    boolean tipoCategoriaExiste(TiposCategorias tipoCategoria);
 
 
     /**
@@ -107,13 +86,13 @@ public interface CategoriaFinanceiraService {
      *
      * @return true se o tipo de categoria e subtipo forem compatíveis, false caso contrário.
      */
-    void tipoCategoriaESubtipoSaoCompativeis(TiposCategorias tipoCategoria,SubTipoCategoria subTipoCategoria);
+    boolean validarCompatibilidadeTipoESubtipo(TiposCategorias tipoCategoria,SubTipoCategoria subTipoCategoria);
 
     /**
      * Verifica se já existe uma categoria com os mesmos dados fornecidos (exceto o ID) no banco de dados.
      *
-     * @param dadosCategoria Objeto com os dados da categoria a ser verificada.
+     * @param tiposCategoria Objeto com os dados da categoria a ser verificada.
      * @return Retorna true se já existir uma categoria igual, caso contrário false.
      */
-    boolean jaExisteUmaCategoriaIgual(CategoriaFinanceira dadosCategoria);
+    boolean jaExisteUmaCategoriaIgual(TiposCategorias tiposCategoria, SubTipoCategoria subTipoCategoria);
 }

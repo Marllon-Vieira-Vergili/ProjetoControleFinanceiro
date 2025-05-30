@@ -3,7 +3,9 @@ package com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.I
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.CategoriaFinanceiraRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.CategoriaFinanceiraResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.AssociationErrorException;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.JaExisteException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.CategoriaNaoEncontrada;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.TiposCategoriasNaoEncontrado;
 import com.marllon.vieira.vergili.catalogo_financeiro.mapper.CategoriaFinanceiraMapper;
@@ -52,17 +54,8 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService{
 
 
     @Override
-    public CategoriaFinanceiraResponse criarCategoriaFinanceira(CategoriaFinanceiraRequest request
-            ,Long pagamentoId,Long historicoTransacaoId, Long contaUsuarioId, Long usuarioId) {
+    public CategoriaFinanceiraResponse criarCategoriaFinanceira(CategoriaFinanceiraRequest request) {
 
-        //Verificando antes de criar a categoria, se os valores pra associar a categoria existe
-        Optional<Pagamentos> pagamentoEncontrado = pagamentosRepository.findById(pagamentoId);
-
-        Optional<HistoricoTransacao> historicoEncontrado = historicoTransacaoRepository.findById(historicoTransacaoId);
-
-        Optional<Usuario> usuario = usuarioRepository.findById(usuarioId);
-
-        Optional<ContaUsuario> contaUsuario = contaUsuarioRepository.findById(contaUsuarioId);
 
         //Verificar se o tipo categoria é compativel com o subtipo informado
         tipoCategoriaESubtipoSaoCompativeis(request.tipoCategoria(),request.subtipo());
@@ -70,19 +63,12 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService{
         //Se achar, será criado a categoria financeira
         CategoriaFinanceira novaCategoria = new CategoriaFinanceira();
 
-            novaCategoria.setTiposCategorias(request.tipoCategoria());
+        novaCategoria.setTiposCategorias(request.tipoCategoria());
+        novaCategoria.setSubTipo(request.subtipo());
 
-            novaCategoria.setSubTipo(request.subtipo());
 
-        //Salvar a nova categoria criada, para gerar um id e depois eu associo pelo valor dele
+        //Salvar a nova categoria criada
         CategoriaFinanceira categoriaSalva = categoriaFinanceiraRepository.save(novaCategoria);
-
-
-        //Assim que essa categoria nova for criada, vai gerar uma Id para associarmos a cada entidade
-        categoriaAssociation.associarCategoriaComConta(categoriaSalva.getId(), contaUsuario.get().getId());
-        categoriaAssociation.associarCategoriaComUsuario(categoriaSalva.getId(), usuario.get().getId());
-        categoriaAssociation.associarCategoriaComPagamento(categoriaSalva.getId(), pagamentoEncontrado.get().getId());
-        categoriaAssociation.associarCategoriaComTransacao(categoriaSalva.getId(), historicoEncontrado.get().getId());
 
         return mapper.retornarDadosCategoria(categoriaSalva);
     }
@@ -96,17 +82,17 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService{
 
 
     @Override
-    public List<CategoriaFinanceiraResponse> encontrarCategoriasCriadaPeloSubTipo
-            (SubTipoCategoria subTipo) {
-        List<CategoriaFinanceira> categoriasEncontradasPeloSubtipo =
-                        categoriaFinanceiraRepository.encontrarPorSubtipoCategoria(subTipo);
-        if (categoriasEncontradasPeloSubtipo.isEmpty()){
+    public CategoriaFinanceiraResponse encontrarCategoriaCriadaPeloSubtipo(SubTipoCategoria subTipo) {
+
+        CategoriaFinanceira categoriaEncontradaPeloSubtipo =
+                        categoriaFinanceiraRepository.encontrarCategoriaPeloSubTipo(subTipo);
+
+        if (categoriaEncontradaPeloSubtipo == null){
             throw new TiposCategoriasNaoEncontrado("Não há nenhuma categoria financeira encontrada" +
                     " com esse subtipo de categoria no banco de dados!");
         }
 
-        return categoriasEncontradasPeloSubtipo.stream().map(mapper
-        ::retornarDadosCategoria).toList();
+        return mapper.retornarDadosCategoria(categoriaEncontradaPeloSubtipo);
     }
 
     @Override
@@ -128,6 +114,10 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService{
 
         CategoriaFinanceira categoriaSerAtualizada = categoriaFinanceiraRepository.findById(idCategoria).orElseThrow(() ->
                 new CategoriaNaoEncontrada("A categoria não foi encontrada com essa id"));
+
+        if (jaExisteUmaCategoriaIgual(tiposCategoria,subTipo)){
+            throw new JaExisteException("Já existe uma Categoria Financeira criada com esses mesmos valores");
+        }
 
             categoriaSerAtualizada.setTiposCategorias(tiposCategoria);
             categoriaSerAtualizada.setSubTipo(subTipo);
@@ -186,50 +176,25 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService{
         categoriaFinanceiraRepository.deleteById(categoriaEncontrada.getId());
     }
 
-    @Override
-    public boolean seCategoriaForDespesa() {
 
-        List<CategoriaFinanceira> categoriaASerConsultada =
-                categoriaFinanceiraRepository.encontrarPorTipoCategoria(TiposCategorias.DESPESA);
-
-        for(CategoriaFinanceira categoriaEncontrada: categoriaASerConsultada){
-            if (categoriaEncontrada.getTiposCategorias().equals(TiposCategorias.DESPESA)){
-                return true;
-            }
-        }
-        return false;
-    }
 
     @Override
-    public boolean seCategoriaForReceita() {
-        List<CategoriaFinanceira> categoriaASerConsultada =
-                categoriaFinanceiraRepository.encontrarPorTipoCategoria(TiposCategorias.RECEITA);
-
-        for(CategoriaFinanceira categoriaEncontrada: categoriaASerConsultada){
-            if (categoriaEncontrada.getTiposCategorias().equals(TiposCategorias.RECEITA)){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean tipoCategoriaExiste(TiposCategorias tipoCategoria) {
-        return Arrays.asList(TiposCategorias.values()).contains(tipoCategoria);
-    }
-
-    @Override
-    public void tipoCategoriaESubtipoSaoCompativeis(TiposCategorias tipoCategoria, SubTipoCategoria subTipoCategoria) {
+    public boolean validarCompatibilidadeTipoESubtipo(TiposCategorias tipoCategoria, SubTipoCategoria subTipoCategoria) {
         if(subTipoCategoria.getTiposCategorias() != tipoCategoria){
-            throw new AssociationErrorException("Tipos de categorias são incompatíveis um com o outro");
+            throw new DadosInvalidosException("Tipos de categorias são incompatíveis um com o outro");
         }
+        return true;
     }
 
     @Override
-    public boolean jaExisteUmaCategoriaIgual(CategoriaFinanceira dadosCategoria) {
+    public boolean jaExisteUmaCategoriaIgual(TiposCategorias tiposCategoria, SubTipoCategoria subTipoCategoria){
 
-        List<CategoriaFinanceira> categoriaIgual = categoriaFinanceiraRepository
-                .encontrarPorTipoAndSubtipo(dadosCategoria.getTiposCategorias(),dadosCategoria.getSubTipo());
-        return !categoriaIgual.isEmpty();
+        CategoriaFinanceira categoriaIgual = categoriaFinanceiraRepository
+                .encontrarPorTipoAndSubtipo(tiposCategoria,subTipoCategoria);
+
+        if (categoriaIgual.getTiposCategorias().equals(tiposCategoria) && categoriaIgual.getSubTipo().equals(subTipoCategoria)){
+            return true;
+        }
+        return false;
     }
 }

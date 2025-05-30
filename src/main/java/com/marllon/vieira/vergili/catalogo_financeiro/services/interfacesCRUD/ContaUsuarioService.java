@@ -55,16 +55,16 @@ public interface ContaUsuarioService {
     /**
      * Atualiza uma conta existente
      * @param id ID da conta a ser atualizada
-     * @param request DTO com dados atualizados
+     * @param nomeNovo com o nome atualizado
      * @return DTO com a conta atualizada
-     * @throws EntityNotFoundException se a conta não for encontrada
+     * @throws ContaNaoEncontrada se a conta não for encontrada
      */
-    ContaUsuarioResponse atualizarUmaConta(Long id, ContaUsuarioRequest request);
+    ContaUsuarioResponse alterarNomeDeUmaConta(Long id, String nomeNovo) ;
 
     /**
      * Remove uma conta pelo ID
      * @param id ID da conta a ser removida
-     * @throws EntityNotFoundException se a conta não for encontrada
+     * @throws ContaNaoEncontrada se a conta não for encontrada
      * @throws DataIntegrityViolationException se a conta possuir dependências
      */
     void deletarConta(Long id);
@@ -126,20 +126,13 @@ public interface ContaUsuarioService {
 
 
     /**
-     * Verifica se o tipo de conta informado pelo usuário existe
-     * @param tipoConta do enum TiposContas
-     * @return true se esse tipo de conta informado existir
-     */
-    boolean tipoContaExiste(TiposContas tipoConta);
-
-    /**
      * Verifica se já existe uma conta com os mesmos dados no banco de dados.
      * Pode considerar nome, tipo de conta, usuário associado e outros campos relevantes.
      *
-     * @param contaUsuario objeto com os dados da conta a ser verificada (exceto o ID).
+     * @param  nome e tipoConta objeto com os dados da conta a ser verificada (exceto o ID).
      * @return true se já existir uma conta com os mesmos dados.
      */
-    boolean jaExisteUmaContaIgual(ContaUsuario contaUsuario);
+    boolean jaExisteUmaContaIgual(String nome, TiposContas tipoConta);
 }
 
 

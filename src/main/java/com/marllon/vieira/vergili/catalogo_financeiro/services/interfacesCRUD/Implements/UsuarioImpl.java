@@ -71,7 +71,7 @@ public class UsuarioImpl implements UsuariosService {
     public Optional<UsuarioResponse> encontrarUsuarioPorId(Long id) {
 
         Optional<Usuario> usuarioEncontrado = Optional.of(usuarioRepository.findById(id).orElseThrow(()
-                -> new UsuarioNaoEncontrado("O usuário não foi encontrado com essa id informada")));
+                -> new UsuarioNaoEncontrado("Esse usuário com a id: " + id + "não foi localizada")));
 
         return Optional.ofNullable(usuarioMapper.retornarDadosUsuario(usuarioEncontrado.get()));
     }
@@ -104,7 +104,7 @@ public class UsuarioImpl implements UsuariosService {
 
         List<Usuario> listaUsuariosEncontrados = usuarioRepository.findAll();
         if (listaUsuariosEncontrados.isEmpty()) {
-            throw new UsuarioNaoEncontrado(super.toString());
+            throw new UsuarioNaoEncontrado("Usuários não foram encontrados!");
         }
         Page<Usuario> paginaUsuarios = new PageImpl<>(listaUsuariosEncontrados);
 
@@ -213,7 +213,8 @@ public class UsuarioImpl implements UsuariosService {
             List<ContaUsuario> contasRelacionadas = usuarioEncontrado.get().getContasRelacionadas();
 
             if(contasRelacionadas.isEmpty()){
-                throw new ContaNaoEncontrada(super.toString());
+                throw new ContaNaoEncontrada("Essa conta com a id: " +
+                        usuarioEncontrado.get().getId() + "não foi localizada");
             }
 
         return contasRelacionadas.stream().map(
@@ -231,7 +232,7 @@ public class UsuarioImpl implements UsuariosService {
 
         //Encontrar o usuário
         Usuario usuarioEncontrado = usuarioRepository.findById(id).orElseThrow(()->
-                new UsuarioNaoEncontrado(super.toString()));
+                new UsuarioNaoEncontrado("Esse usuário com a id: " + id + "não foi localizada"));
 
         //Alterar a senha
         usuarioEncontrado.setSenha(novaSenha);

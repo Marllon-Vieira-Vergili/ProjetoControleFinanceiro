@@ -21,7 +21,8 @@ public interface CategoriaFinanceiraRepository extends JpaRepository<CategoriaFi
      * @return uma lista de {@link CategoriaFinanceira} que correspondem ao tipo informado
      */
     @Query("SELECT c FROM CategoriaFinanceira c WHERE c.tiposCategorias = :tipos_categorias")
-    List<CategoriaFinanceira> encontrarPorTipoCategoria(@Param("tipos_categorias") TiposCategorias tipoCategoria);
+    CategoriaFinanceira encontrarPorTipoCategoria(@Param("tipos_categorias") TiposCategorias tipoCategoria);
+
 
     /**
      * Busca todas as categorias financeiras de acordo com o subtipo.
@@ -31,7 +32,7 @@ public interface CategoriaFinanceiraRepository extends JpaRepository<CategoriaFi
      * @return uma lista de {@link CategoriaFinanceira} que possuem o subtipo informado
      */
     @Query("SELECT c FROM CategoriaFinanceira c WHERE c.subTipo = :subtipo_categoria")
-    List<CategoriaFinanceira> encontrarPorSubtipoCategoria(@Param("subtipo_categoria") SubTipoCategoria subtipoCategoria);
+    CategoriaFinanceira encontrarCategoriaPeloSubTipo(@Param("subtipo_categoria") SubTipoCategoria subtipoCategoria);
 
     /**
      * Busca uma categoria financeira que corresponda exatamente ao tipo e subtipo informados.
@@ -42,6 +43,6 @@ public interface CategoriaFinanceiraRepository extends JpaRepository<CategoriaFi
      * @return uma instância de {@link CategoriaFinanceira} correspondente, ou null se não for encontrada
      */
     @Query("SELECT c FROM CategoriaFinanceira c WHERE c.tiposCategorias = :tipoCategoria AND c.subTipo = :subTipoCategoria")
-    List<CategoriaFinanceira> encontrarPorTipoAndSubtipo(@Param("tipoCategoria") TiposCategorias tipoCategoria,
+    CategoriaFinanceira encontrarPorTipoAndSubtipo(@Param("tipoCategoria") TiposCategorias tipoCategoria,
                                              @Param("subTipoCategoria") SubTipoCategoria subTipoCategoria);
 }

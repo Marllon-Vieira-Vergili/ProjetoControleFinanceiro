@@ -16,18 +16,6 @@ public record CategoriaFinanceiraRequest(@Enumerated(EnumType.STRING)
                                          TiposCategorias tipoCategoria,
                                          @Enumerated(EnumType.STRING)
                                          @NotNull(message = "O campo tipo de categoria não pode ser nulo")
-                                         SubTipoCategoria subtipo,
-
-                                         @NotNull(message = "O campo id da categoria não pode ser nulo")
-                                         Long idCategoriaFinanceira,
-
-                                         @NotNull(message = "O campo id do pagamento criado não pode ser nulo")
-                                         Long idPagamentoRequest,
-
-                                         @NotNull(message = "O campo id da conta do usuário criada não pode ser nulo!")
-                                         Long idContaUsuario,
-
-                                         @NotNull(message = "O campo id do usuário criada não pode ser nulo!")
-                                         Long idUsuario) {
+                                         SubTipoCategoria subtipo) {
 }
 
