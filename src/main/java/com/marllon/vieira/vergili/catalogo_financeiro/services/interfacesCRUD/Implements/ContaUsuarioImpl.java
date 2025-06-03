@@ -4,6 +4,7 @@ import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.ContaUsuario.C
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.ContaUsuario.ContaUsuarioRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.ContaUsuarioResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.AssociationErrorException;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.ContaNaoEncontrada;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.TiposContasNaoEncontrado;
@@ -228,13 +229,18 @@ public class ContaUsuarioImpl implements ContaUsuarioService {
     public void subtrairSaldo(Long idConta, BigDecimal valor) {
 
         Optional<ContaUsuario> contaEncontrada = contaUsuarioRepository.findById(idConta);
-        if(contaEncontrada.isPresent()){
-            ContaUsuario conta = contaEncontrada.get();
-            BigDecimal novoValor = contaEncontrada.get().getSaldo().subtract(valor);
-            contaEncontrada.get().setSaldo(novoValor);
-            contaUsuarioRepository.save(conta);
+
+            if(contaEncontrada.isPresent()){
+                ContaUsuario conta = contaEncontrada.get();
+                if (valor.compareTo(conta.getSaldo()) > 0 && !TiposContas.CONTA_CORRENTE.equals(conta.getTipoConta())){
+                    throw new DadosInvalidosException("Não é possível Realizar o pagamento, pois não possui saldo suficiente");
+                }
+                BigDecimal novoValor = contaEncontrada.get().getSaldo().subtract(valor);
+                contaEncontrada.get().setSaldo(novoValor);
+                contaUsuarioRepository.save(conta);
+            }
         }
-    }
+
 
     @Override
     public BigDecimal consultarSaldo(Long contaId) {

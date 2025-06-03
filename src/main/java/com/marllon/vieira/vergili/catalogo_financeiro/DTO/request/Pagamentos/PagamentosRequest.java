@@ -1,4 +1,4 @@
-package com.marllon.vieira.vergili.catalogo_financeiro.DTO.request;
+package com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.Pagamentos;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;

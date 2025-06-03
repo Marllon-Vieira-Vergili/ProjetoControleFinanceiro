@@ -1,11 +1,12 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD;
 
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.PagamentosRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.Pagamentos.PagamentosRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.PagamentosResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.JaExisteException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.PagamentoNaoEncontrado;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.SubTipoNaoEncontrado;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.Pagamentos;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +20,10 @@ import java.util.Optional;
 public interface PagamentosService  {
 
     // ======================== OPERAÇÕES CRUD BÁSICAS ========================
+
+    //Método para criar uma transação financeira e um histórico junto
+    Pagamentos criarTransacao(BigDecimal valor, LocalDate data, String descricao,
+                              TiposCategorias tiposCategoria, SubTipoCategoria subTipo);
 
     /**
      * Cria uma nova receita(recebimento).
@@ -51,7 +56,7 @@ public interface PagamentosService  {
      * @param data Data de criação.
      * @return Lista de pagamentos.
      */
-    List<PagamentosResponse> encontrarPagamentoPorData(LocalDate data);
+    List<PagamentosResponse> encontrarPagamentoOuRecebimentoPorData(LocalDate data);
 
     /**
      * Busca pagamentos por categoria.
@@ -75,16 +80,18 @@ public interface PagamentosService  {
      * @param tipoCategoria Tipo da categoria.
      * @return Lista de pagamentos.
      */
-    List<PagamentosResponse> encontrarPagamentosPorTipo(TiposCategorias tipoCategoria); // ou usar enum
+    List<PagamentosResponse> encontrarPagamentoOuRecebimentoPorTipo(TiposCategorias tipoCategoria);
+
 
     /**
      * Atualiza um pagamento.
      *
-     * @param request Dados atualizados, id para passar o id do pagamento .
+     *
      * @return Pagamento atualizado.
      * @throws PagamentoNaoEncontrado caso o pagamento não exista.
      */
-    PagamentosResponse atualizarPagamento(Long id, PagamentosRequest request);
+    PagamentosResponse atualizarPagamentoOuRecebimento(Long id, BigDecimal valor, LocalDate data, String descricao,
+                                                       TiposCategorias tiposCategoria, SubTipoCategoria subTipo);
 
     /**
      * Busca todos os pagamentos com paginação.
@@ -113,23 +120,6 @@ public interface PagamentosService  {
      */
     BigDecimal consultarValorPagamento(Long contaId);
 
-    /**
-     * Verifica se o pagamento é uma despesa.
-     *
-     *
-     * @return true se for despesa.
-     * @throws PagamentoNaoEncontrado caso o pagamento não exista.
-     */
-    boolean sePagamentoForDespesa();
-
-    /**
-     * Verifica se o pagamento é uma receita.
-     *
-     *
-     * @return true se for receita.
-     * @throws PagamentoNaoEncontrado caso o pagamento não exista.
-     */
-    boolean sePagamentoForReceita();
 
 
     // ======================== MÉTODOS DE VALIDAÇÕES ========================
@@ -137,11 +127,12 @@ public interface PagamentosService  {
     /**
      * Verifica se já existe um pagamento com os mesmos dados.
      *
-     * @param pagamento Pagamento a verificar.
      * @return true se já existir.
      * @throws JaExisteException caso já exista.
      */
-    boolean jaExisteUmPagamentoIgual(PagamentosRequest pagamento);
+    boolean jaExisteUmPagamentoIgual(BigDecimal valor,LocalDate data,
+                                     String descricao,TiposCategorias tipoCategoria,
+                                     SubTipoCategoria subTipoCategoria);
 
     /**
      *

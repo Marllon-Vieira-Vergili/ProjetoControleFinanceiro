@@ -1,35 +1,38 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.Implements;
 
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.HistoricoTransacaoRequest;
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.PagamentosRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.Pagamentos.PagamentosRequest;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.PagamentosResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.AssociationErrorException;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.PagamentoNaoEncontrado;
-import com.marllon.vieira.vergili.catalogo_financeiro.mapper.CategoriaFinanceiraMapper;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DesassociationErrorException;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.JaExisteException;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.mapper.PagamentoMapper;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.CategoriaFinanceiraAssociation;
+import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.HistoricoTransacaoAssociation;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.PagamentosAssociation;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.ContaUsuarioService;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.PagamentosService;
 import jakarta.transaction.Transactional;
+import jakarta.xml.bind.JAXBException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.CannotCreateTransactionException;
 
-import javax.swing.text.html.Option;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.MonthDay;
-import java.time.chrono.ChronoLocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias.DESPESA;
 
 @Service
 public class PagamentosImpl implements PagamentosService {
@@ -57,6 +60,9 @@ public class PagamentosImpl implements PagamentosService {
     private PagamentosAssociation pagamentoAssociation;
 
     @Autowired
+    private HistoricoTransacaoAssociation historicoTransacaoAssociation;
+
+    @Autowired
     private PagamentoMapper mapper;
 
     @Autowired
@@ -65,130 +71,144 @@ public class PagamentosImpl implements PagamentosService {
 
     @Override
     @Transactional
-    public PagamentosResponse criarRecebimento(PagamentosRequest request) {
-
-        if (request.tipoCategoria() != TiposCategorias.RECEITA){
-            throw new DadosInvalidosException("Para criar Recebimento, somente o tipo RECEITA é válido");
-        }
-
-        if(!dataEstaCorreta(request.data())){
+    public Pagamentos criarTransacao(BigDecimal valor, LocalDate data, String descricao,
+                                     TiposCategorias tiposCategoria, SubTipoCategoria subTipo) {
+        if (!dataEstaCorreta(data)) {
             throw new DadosInvalidosException("Por favor, digite uma data correta! " +
                     "entre a partir de hoje, e no máximo para 1 mês a partir de hoje");
         }
-        if(!valorEstaCorreto(request.valor())){
+        if (!valorEstaCorreto(valor)) {
             throw new DadosInvalidosException("Por favor, digite um valor correto! ");
         }
 
-        Pagamentos novoRecebimento = new Pagamentos();
-        novoRecebimento.setData(request.data());
-        novoRecebimento.setValor(request.valor());
-        novoRecebimento.setDescricao(request.descricao());
-        novoRecebimento.setTiposCategorias(request.tipoCategoria());
+        if (tiposCategoria != DESPESA && tiposCategoria != TiposCategorias.RECEITA) {
+            throw new TiposCategoriasNaoEncontrado("Não foi encontrado o tipo de categoria corretamente");
+        }
+
+        if (jaExisteUmPagamentoIgual(valor, data, descricao, tiposCategoria, subTipo)) {
+            throw new JaExisteException("Já existe uma transação criada com os mesmos valores");
+        }
+
+        Pagamentos novaTransacao = new Pagamentos();
+        novaTransacao.setData(data);
+        novaTransacao.setValor(valor);
+        novaTransacao.setDescricao(descricao);
+        novaTransacao.setTiposCategorias(tiposCategoria);
 
         HistoricoTransacao novoHistorico = new HistoricoTransacao();
-        novoHistorico.setData(request.data());
-        novoHistorico.setValor(request.valor());
-        novoHistorico.setDescricao(request.descricao());
-        novoHistorico.setTiposCategorias(request.tipoCategoria());
+        novoHistorico.setData(data);
+        novoHistorico.setValor(valor);
+        novoHistorico.setDescricao(descricao);
+        novoHistorico.setTiposCategorias(tiposCategoria);
 
         //Salvando o pagamento e o histórico transação para gerar uma id
-        pagamentosRepository.save(novoRecebimento);
+        pagamentosRepository.save(novaTransacao);
         historicoTransacaoRepository.save(novoHistorico);
 
-        //Obtendo a id dos valores após serem criados
-        Long pagamentoId = novoRecebimento.getId();
-        Long historicoTransacaoId= novoHistorico.getId();
+        //Encontrando a categoria financeira já criada pelo subtipocategoria informado
+        CategoriaFinanceira categoriaEncontrada =
+                Optional.ofNullable(categoriaFinanceiraRepository.encontrarCategoriaPeloSubTipo(subTipo)).orElseThrow(()
+                        -> new CategoriaNaoEncontrada("Não foi encontrada nenhuma categoria Financeira criada com o Subtipo informado"));
 
+        //Associando
+        pagamentoAssociation.associarPagamentoATransacao(novaTransacao.getId(), novoHistorico.getId());
+        pagamentoAssociation.associarPagamentoComCategoria(novaTransacao.getId(), categoriaEncontrada.getId());
+        historicoTransacaoAssociation.associarTransacaoComCategoria(novoHistorico.getId(), categoriaEncontrada.getId());
 
-        Optional<CategoriaFinanceira> categoriaFinanceiraEncontrada = categoriaFinanceiraRepository.findById(request.idCategoriaFinanceira());
-        Optional<HistoricoTransacao> historicoTransacaoEncontrado = historicoTransacaoRepository.findById(novoHistorico.getId());
+        return novaTransacao;
+    }
+
+    @Override
+    @Transactional
+    public PagamentosResponse criarRecebimento(PagamentosRequest request) {
+
+        if (request.tipoCategoria() != TiposCategorias.RECEITA) {
+            throw new DadosInvalidosException("Para criar Recebimento, somente o tipo RECEITA é válido");
+        }
+
+        //Criando os valores
+        Pagamentos recebimentoETransacaoCriado =
+                criarTransacao(request.valor(),
+                        request.data(),
+                        request.descricao(),
+                        request.tipoCategoria(),
+                        request.subTipoCategoria());
+
         Optional<Usuario> usuarioEncontrado = usuarioRepository.findById(request.idUsuarioCriado());
         Optional<ContaUsuario> contaUsuarioEncontrada = contaUsuarioRepository.findById(request.idContaUsuario());
 
-
-        //associando
-        if (novoRecebimento.getId() != null){
-            try{
-                pagamentoAssociation.associarPagamentoATransacao(pagamentoId,historicoTransacaoEncontrado.get().getId());
-                pagamentoAssociation.associarPagamentoComCategoria(pagamentoId, categoriaFinanceiraEncontrada.get().getId());
-                pagamentoAssociation.associarPagamentoComConta(pagamentoId,contaUsuarioEncontrada.get().getId());
-                pagamentoAssociation.associarPagamentoComUsuario(pagamentoId,usuarioEncontrado.get().getId());
+        if (contaUsuarioEncontrada.isPresent() && !contaUsuarioEncontrada.get()
+                .getPagamentosRelacionados().contains(recebimentoETransacaoCriado)) {
+            try {
+                pagamentoAssociation.associarPagamentoComConta(recebimentoETransacaoCriado.getId(),
+                        contaUsuarioEncontrada.get().getId());
             } catch (RuntimeException e) {
-                throw new AssociationErrorException("Não foi possível associar Recebimento com: " + e.getCause());
+                throw new AssociationErrorException("Não foi possível associar esse Recebimento a essa conta de usuário" + e.getCause());
+            }
+        }
+        if (usuarioEncontrado.isPresent() && !usuarioEncontrado.get().getPagamentosRelacionados()
+                .contains(recebimentoETransacaoCriado)) {
+            try {
+                pagamentoAssociation.associarPagamentoComUsuario(recebimentoETransacaoCriado.getId(), usuarioEncontrado.get().getId());
+            } catch (RuntimeException e) {
+                throw new AssociationErrorException("Não foi possível associar esse Recebimento a esse usuário" + e.getCause());
             }
         }
 
-        //Buscando a conta desejada para atualizar o saldo dela
 
+        //Buscando a conta desejada para atualizar o saldo dela
         //Adicionando o valor ao saldo na conta do usuário
         contaUsuarioEncontrada.ifPresent(contaUsuario ->
-                contaUsuarioService.adicionarSaldo(contaUsuario.getId(), novoRecebimento.getValor()));
+                contaUsuarioService.adicionarSaldo(contaUsuario.getId(), recebimentoETransacaoCriado.getValor()));
 
-        return mapper.retornarDadosPagamento(novoRecebimento);
+        return mapper.retornarDadosPagamento(recebimentoETransacaoCriado);
+
     }
 
     @Override
     @Transactional
     public PagamentosResponse criarPagamento(PagamentosRequest request) {
 
-        if (request.tipoCategoria() != TiposCategorias.DESPESA){
+        if (request.tipoCategoria() != DESPESA) {
             throw new DadosInvalidosException("Para criar Pagamento, somente o tipo DESPESA é válido");
         }
 
-        if(!dataEstaCorreta(request.data())){
-            throw new DadosInvalidosException("Por favor, digite uma data correta! " +
-                    "entre a partir de hoje, e no máximo para 1 mês a partir de hoje");
-        }
-        if(!valorEstaCorreto(request.valor())){
-            throw new DadosInvalidosException("Por favor, digite um valor correto! ");
-        }
+        //Criando os valores
+        Pagamentos pagamentoETransacaoCriado =
+                criarTransacao(request.valor(),
+                        request.data(),
+                        request.descricao(),
+                        request.tipoCategoria(),
+                        request.subTipoCategoria());
 
-        Pagamentos novoPagamento = new Pagamentos();
-        novoPagamento.setData(request.data());
-        novoPagamento.setValor(request.valor());
-        novoPagamento.setDescricao(request.descricao());
-        novoPagamento.setTiposCategorias(request.tipoCategoria());
-
-        HistoricoTransacao novoHistorico = new HistoricoTransacao();
-        novoHistorico.setData(request.data());
-        novoHistorico.setValor(request.valor());
-        novoHistorico.setDescricao(request.descricao());
-        novoHistorico.setTiposCategorias(request.tipoCategoria());
-
-        //Salvando o pagamento e o histórico transação para gerar uma id
-        pagamentosRepository.save(novoPagamento);
-        historicoTransacaoRepository.save(novoHistorico);
-
-        //Obtendo a id dos valores após serem criados
-        Long pagamentoId = novoPagamento.getId();
-        Long historicoTransacaoId= novoHistorico.getId();
-
-
-        Optional<CategoriaFinanceira> categoriaFinanceiraEncontrada = categoriaFinanceiraRepository.findById(request.idCategoriaFinanceira());
-        Optional<HistoricoTransacao> historicoTransacaoEncontrado = historicoTransacaoRepository.findById(historicoTransacaoId);
         Optional<Usuario> usuarioEncontrado = usuarioRepository.findById(request.idUsuarioCriado());
         Optional<ContaUsuario> contaUsuarioEncontrada = contaUsuarioRepository.findById(request.idContaUsuario());
 
-
-        //associando
-        if (novoPagamento.getId() != null){
-            try{
-                pagamentoAssociation.associarPagamentoATransacao(pagamentoId,historicoTransacaoEncontrado.get().getId());
-                pagamentoAssociation.associarPagamentoComCategoria(pagamentoId, categoriaFinanceiraEncontrada.get().getId());
-                pagamentoAssociation.associarPagamentoComConta(pagamentoId,contaUsuarioEncontrada.get().getId());
-                pagamentoAssociation.associarPagamentoComUsuario(pagamentoId,usuarioEncontrado.get().getId());
+        if (contaUsuarioEncontrada.isPresent() && !contaUsuarioEncontrada.get()
+                .getPagamentosRelacionados().contains(pagamentoETransacaoCriado)) {
+            try {
+                pagamentoAssociation.associarPagamentoComConta(pagamentoETransacaoCriado.getId(),
+                        contaUsuarioEncontrada.get().getId());
             } catch (RuntimeException e) {
-                throw new AssociationErrorException("Não foi possível associar Pagamento com: " + e.getCause());
+                throw new AssociationErrorException("Não foi possível associar esse Pagamento a essa conta de usuário" + e.getCause());
+            }
+        }
+        if (usuarioEncontrado.isPresent() && !usuarioEncontrado.get().getPagamentosRelacionados()
+                .contains(pagamentoETransacaoCriado)) {
+            try {
+                pagamentoAssociation.associarPagamentoComUsuario(pagamentoETransacaoCriado.getId(), usuarioEncontrado.get().getId());
+            } catch (RuntimeException e) {
+                throw new AssociationErrorException("Não foi possível associar esse Pagamento a esse usuário" + e.getCause());
             }
         }
 
-        //Buscando a conta desejada para atualizar o saldo dela
 
+        //Buscando a conta desejada para atualizar o saldo dela
         //Adicionando o valor ao saldo na conta do usuário
         contaUsuarioEncontrada.ifPresent(contaUsuario ->
-                contaUsuarioService.subtrairSaldo(contaUsuario.getId(), novoPagamento.getValor()));
+                contaUsuarioService.subtrairSaldo(contaUsuario.getId(), pagamentoETransacaoCriado.getValor()));
 
-        return mapper.retornarDadosPagamento(novoPagamento);
+        return mapper.retornarDadosPagamento(pagamentoETransacaoCriado);
     }
 
     @Override
@@ -201,10 +221,14 @@ public class PagamentosImpl implements PagamentosService {
     }
 
     @Override
-    public List<PagamentosResponse> encontrarPagamentoPorData(LocalDate data) {
+    public List<PagamentosResponse> encontrarPagamentoOuRecebimentoPorData(LocalDate data) {
 
         List<Pagamentos> pagamentosEOuRecebimentosLocalizadosPelaData =
                 pagamentosRepository.encontrarPagamentoPelaData(data);
+
+        if (pagamentosEOuRecebimentosLocalizadosPelaData.isEmpty()) {
+            throw new PagamentoNaoEncontrado("Não há nenhum pagamento ou recebimento na base de dados localizado nesta data");
+        }
 
         return pagamentosEOuRecebimentosLocalizadosPelaData.stream().map(mapper::retornarDadosPagamento)
                 .toList();
@@ -213,49 +237,152 @@ public class PagamentosImpl implements PagamentosService {
     @Override
     public List<PagamentosResponse> encontrarPagamentosPorUsuario(Long usuarioId) {
 
+        Usuario usuarioLocalizado = usuarioRepository.findById(usuarioId).orElseThrow(()
+                -> new UsuarioNaoEncontrado("Este Usuário não foi localizado "));
 
-        return List.of();
+        List<Pagamentos> pagamentosDoUsuario = usuarioLocalizado.getPagamentosRelacionados();
+
+        if (pagamentosDoUsuario.isEmpty()) {
+            throw new PagamentoNaoEncontrado("Não há nenhum pagamento ou recebimento localizado deste Usuário");
+        }
+
+        return pagamentosDoUsuario.stream().map(mapper::retornarDadosPagamento).toList();
     }
 
     @Override
-    public List<PagamentosResponse> encontrarPagamentosPorTipo(TiposCategorias tipoCategoria) {
-        return List.of();
+    public List<PagamentosResponse> encontrarPagamentoOuRecebimentoPorTipo(TiposCategorias tipoCategoria) {
+
+        return pagamentosRepository.findAll().stream().filter(pagamentos ->
+                        pagamentos.getTiposCategorias() == tipoCategoria)
+                .map(mapper::retornarDadosPagamento).collect(Collectors.toList());
     }
+
 
     @Override
     @Transactional
-    public PagamentosResponse atualizarPagamento(Long id, PagamentosRequest request) {
-        return null;
+    public PagamentosResponse atualizarPagamentoOuRecebimento(Long id, BigDecimal valor, LocalDate data, String descricao,
+                                                 TiposCategorias tiposCategoria, SubTipoCategoria subTipo) {
+
+        if (!dataEstaCorreta(data)) {
+            throw new DadosInvalidosException("Por favor, digite uma data correta! " +
+                    "entre a partir de hoje, e no máximo para 1 mês a partir de hoje");
+        }
+        if (!valorEstaCorreto(valor)) {
+            throw new DadosInvalidosException("Por favor, digite um valor correto! ");
+        }
+
+        if (tiposCategoria != DESPESA && tiposCategoria != TiposCategorias.RECEITA) {
+            throw new TiposCategoriasNaoEncontrado("Não foi encontrado o tipo de categoria corretamente");
+        }
+
+        if (jaExisteUmPagamentoIgual(valor, data, descricao, tiposCategoria, subTipo)) {
+            throw new JaExisteException("Já existe uma transação criada com os mesmos valores");
+        }
+
+        Pagamentos pagamentoOuRecebimentoLocalizado = pagamentosRepository.findById(id).orElseThrow();
+
+        pagamentoOuRecebimentoLocalizado.setTiposCategorias(tiposCategoria);
+        pagamentoOuRecebimentoLocalizado.setData(data);
+        pagamentoOuRecebimentoLocalizado.setValor(valor);
+        pagamentoOuRecebimentoLocalizado.setDescricao(descricao);
+
+        List<HistoricoTransacao> historicoDeTransacaoDesseObjeto = pagamentoOuRecebimentoLocalizado.getTransacoesRelacionadas();
+
+       if (!historicoDeTransacaoDesseObjeto.isEmpty()){
+
+           for (HistoricoTransacao historicoLocalizado: historicoDeTransacaoDesseObjeto){
+               historicoLocalizado.setValor(valor);
+               historicoLocalizado.setDescricao(descricao);
+               historicoLocalizado.setData(data);
+               historicoLocalizado.setTiposCategorias(tiposCategoria);
+               historicoTransacaoRepository.save(historicoLocalizado);
+           }
+       }
+
+       pagamentosRepository.save(pagamentoOuRecebimentoLocalizado);
+
+       return mapper.retornarDadosPagamento(pagamentoOuRecebimentoLocalizado);
     }
 
     @Override
     public Page<PagamentosResponse> encontrarTodosPagamentos(Pageable pageable) {
-        return null;
+
+        List<Pagamentos> todosPagamentos = pagamentosRepository.findAll();
+
+        if (todosPagamentos.isEmpty()){
+            throw new PagamentoNaoEncontrado("Nenhum pagamento foi encontrado no banco de dados");
+        }
+
+        Page<Pagamentos> pagamentosPage = new PageImpl<>(todosPagamentos);
+
+        return pagamentosPage.map(mapper::retornarDadosPagamento);
     }
 
     @Override
     @Transactional
     public void deletarPagamento(Long id) {
 
+        Pagamentos pagamentoOuRecebimentoLocalizado = pagamentosRepository.findById(id).orElseThrow();
+
+        if (pagamentoOuRecebimentoLocalizado.getUsuarioRelacionado() != null){
+            Usuario usuarioRelacionado = pagamentoOuRecebimentoLocalizado.getUsuarioRelacionado();
+            try{
+                pagamentoAssociation.desassociarPagamentoUsuario(pagamentoOuRecebimentoLocalizado.getId(), usuarioRelacionado.getId());
+            } catch (RuntimeException e) {
+                throw new DesassociationErrorException("Não foi possível desassociar pagamento de usuário. " + e.getCause());
+            }
+        }
+        if (pagamentoOuRecebimentoLocalizado.getContaRelacionada() != null){
+            ContaUsuario contaRelacionada = pagamentoOuRecebimentoLocalizado.getContaRelacionada();
+            try{
+                pagamentoAssociation.desassociarPagamentoConta(pagamentoOuRecebimentoLocalizado.getId(), contaRelacionada.getId());
+            } catch (RuntimeException e) {
+                throw new DesassociationErrorException("Não foi possível desassociar pagamento de conta de usuário. " + e.getCause());
+            }
+        }
+        if (pagamentoOuRecebimentoLocalizado.getCategoriaRelacionada() != null){
+            CategoriaFinanceira categoriaFinanceiraRelacionada = pagamentoOuRecebimentoLocalizado.getCategoriaRelacionada();
+            try{
+                pagamentoAssociation.desassociarPagamentoCategoria(pagamentoOuRecebimentoLocalizado.getId(), categoriaFinanceiraRelacionada.getId());
+            } catch (RuntimeException e) {
+                throw new DesassociationErrorException("Não foi possível desassociar pagamento de categoria financeira. " + e.getCause());
+            }
+        }
+        List<HistoricoTransacao> historicoTransacaoRelacionado = pagamentoOuRecebimentoLocalizado.getTransacoesRelacionadas();
+        if (pagamentoOuRecebimentoLocalizado.getTransacoesRelacionadas()!= null){
+            for (HistoricoTransacao transacao: historicoTransacaoRelacionado){
+                try{
+                    pagamentoAssociation.desassociarPagamentoDeTransacao(pagamentoOuRecebimentoLocalizado.getId(), transacao.getId());
+                } catch (RuntimeException e) {
+                    throw new DesassociationErrorException("Não foi possível desassociar pagamento de histórico de transação. " + e.getCause());
+                }
+                transacao.getPagamentosRelacionados().clear();
+            }
+        }
+        pagamentosRepository.delete(pagamentoOuRecebimentoLocalizado);
     }
 
     @Override
     public BigDecimal consultarValorPagamento(Long contaId) {
-        return null;
+
+        ContaUsuario contaLocalizada = contaUsuarioRepository.findById(contaId).orElseThrow(()->
+                new ContaNaoEncontrada("Não foi encontrada nenhuma conta de usuário com essa id: " + contaId));
+
+        return contaLocalizada.getSaldo();
     }
 
-    @Override
-    public boolean sePagamentoForDespesa() {
-        return false;
-    }
 
     @Override
-    public boolean sePagamentoForReceita() {
-        return false;
-    }
+    public boolean jaExisteUmPagamentoIgual(BigDecimal valor,LocalDate data,
+                                            String descricao,TiposCategorias tipoCategoria,
+                                            SubTipoCategoria subTipoCategoria) {
 
-    @Override
-    public boolean jaExisteUmPagamentoIgual(PagamentosRequest pagamento) {
+        boolean pagamentoLocalizado = pagamentosRepository.
+                existTheSameData(valor,data,descricao,tipoCategoria);
+
+        if (subTipoCategoria.tiposCategorias == tipoCategoria && pagamentoLocalizado){
+            return true;
+        }
         return false;
     }
 

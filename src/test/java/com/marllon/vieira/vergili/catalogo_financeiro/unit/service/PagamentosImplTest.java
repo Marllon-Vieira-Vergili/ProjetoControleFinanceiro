@@ -1,16 +1,15 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.unit.service;
 
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.PagamentosRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.Pagamentos.PagamentosRequest;
+import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.CategoriaFinanceiraResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.PagamentosResponse;
 import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.custom.DadosInvalidosException;
 import com.marllon.vieira.vergili.catalogo_financeiro.mapper.PagamentoMapper;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
-import com.marllon.vieira.vergili.catalogo_financeiro.repository.ContaUsuarioRepository;
-import com.marllon.vieira.vergili.catalogo_financeiro.repository.HistoricoTransacaoRepository;
-import com.marllon.vieira.vergili.catalogo_financeiro.repository.PagamentosRepository;
-import com.marllon.vieira.vergili.catalogo_financeiro.repository.UsuarioRepository;
+import com.marllon.vieira.vergili.catalogo_financeiro.repository.*;
+import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.HistoricoTransacaoAssociation;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.PagamentosAssociation;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.ContaUsuarioService;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.Implements.PagamentosImpl;
@@ -19,13 +18,19 @@ import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
+import java.sql.Ref;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -51,14 +56,18 @@ public class PagamentosImplTest {
     @Mock
     private UsuarioRepository usuarioRepository;
 
-    @Mock
-    private HistoricoTransacaoRepository historicoRepository;
 
     @Mock
     private PagamentosAssociation pagamentosAssociation;
 
     @Mock
+    private HistoricoTransacaoAssociation historicoTransacaoAssociation;
+
+    @Mock
     private ContaUsuarioService contaUsuarioService;
+
+    @Mock
+    private CategoriaFinanceiraRepository categoriaFinanceiraRepository;
 
     @Mock
     private PagamentoMapper pagamentoMapper;
@@ -68,332 +77,487 @@ public class PagamentosImplTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    @Test
-    @DisplayName("Teste do método de criar Recebimento, deve retornar Exception se usuário não digitar dataCorreta")
-    @Order(1)
-    public void deveRetornarExceptionSeUsuarioNaoDigitarDataValidaAoCriarRecebimento() {
-        Long categoriaFinanceiraId = 1L;
-        Long usuarioId = 1L;
-        Long contaUsuarioId = 1L;
-        //Criando um Recebimento para teste
-        BigDecimal valor = BigDecimal.valueOf(100);
-        LocalDate dataErrada = LocalDate.of(2000, 1, 1);
-        Pagamentos novoRecebimento = new Pagamentos();
-        novoRecebimento.setData(dataErrada);
-        novoRecebimento.setValor(valor);
-        novoRecebimento.setTiposCategorias(TiposCategorias.RECEITA);
 
-        novoRecebimento.setDescricao("teste");
+    @Nested
+    @DisplayName("Métodos De Pagamentos/Recebimentos - Cenário de Sucesso")
+    public class CenariosDeSucesso {
 
-        PagamentosRequest request = new PagamentosRequest(valor, dataErrada, "teste",
-                TiposCategorias.RECEITA, SubTipoCategoria.DIVIDENDOS, categoriaFinanceiraId, usuarioId, contaUsuarioId);
+        @Test
+        @DisplayName("Método criar Transação deve realizar criação e Histórico transação também")
+        public void metodoCriarTransacaoDeveFuncionar() {
 
-        assertFalse(pagamentosService.dataEstaCorreta(dataErrada));
+            CategoriaFinanceira categoriaTeste = new CategoriaFinanceira();
+            categoriaTeste.setTiposCategorias(TiposCategorias.RECEITA);
+            categoriaTeste.setSubTipo(SubTipoCategoria.SALARIO);
+            ReflectionTestUtils.setField(categoriaTeste, "id", 1L);
 
-        assertThrows(DadosInvalidosException.class, () -> {
-            pagamentosService.criarRecebimento(request);
-        });
+            BigDecimal valor = BigDecimal.valueOf(1000);
+            LocalDate data = LocalDate.now();
+            String descricao = "teste";
+            TiposCategorias tiposCategoria = TiposCategorias.RECEITA;
+            SubTipoCategoria subTipo = SubTipoCategoria.SALARIO;
 
+
+            when(pagamentosRepository.save(any(Pagamentos.class))).thenAnswer(invocationOnMock -> {
+                Pagamentos p = invocationOnMock.getArgument(0);
+                ReflectionTestUtils.setField(p, "id", 1L);
+                return p;
+            });
+            when(historicoTransacaoRepository.save(any(HistoricoTransacao.class))).thenAnswer(invocationOnMock -> {
+                HistoricoTransacao ht = invocationOnMock.getArgument(0);
+                ReflectionTestUtils.setField(ht, "id", 1L);
+                return ht;
+            });
+
+            when(categoriaFinanceiraRepository.encontrarCategoriaPeloSubTipo(SubTipoCategoria.SALARIO)).thenReturn(categoriaTeste);
+
+            doNothing().when(pagamentosAssociation).associarPagamentoATransacao(anyLong(), anyLong());
+            doNothing().when(pagamentosAssociation).associarPagamentoComCategoria(anyLong(), anyLong());
+            doNothing().when(historicoTransacaoAssociation).associarTransacaoComCategoria(anyLong(), anyLong());
+
+
+
+            assertDoesNotThrow(() -> {
+                pagamentosService.criarTransacao(valor, data,
+                        descricao, tiposCategoria, subTipo);
+                //assertEquals(respostaEsperada, response);
+            });
+
+            verify(pagamentosRepository).save(any(Pagamentos.class));
+            verify(historicoTransacaoRepository).save(any(HistoricoTransacao.class));
+            verify(pagamentosAssociation).associarPagamentoATransacao(anyLong(), anyLong());
+            verify(pagamentosAssociation).associarPagamentoComCategoria(anyLong(), anyLong());
+            verify(historicoTransacaoAssociation).associarTransacaoComCategoria(anyLong(), anyLong());
+            verify(categoriaFinanceiraRepository).encontrarCategoriaPeloSubTipo(subTipo);
+
+        }
+
+        @Test
+        @DisplayName("Método de criar Recebimento deve Funcionar")
+        public void metodoCriarRecebimentoDeValor(){
+
+            Long contaId = 2L;
+            Long usuarioId = 3L;
+            Long transacaoId = 4L;
+            Long categoriaId = 5l;
+
+            CategoriaFinanceira categoria = new CategoriaFinanceira();
+            categoria.setTiposCategorias(TiposCategorias.RECEITA);
+            categoria.setSubTipo(SubTipoCategoria.SALARIO);
+            ReflectionTestUtils.setField(categoria,"id",1L);
+
+            ContaUsuario contaMock = new ContaUsuario();
+            contaMock.setPagamentosRelacionados(new ArrayList<>());
+            contaMock.setSaldo(BigDecimal.valueOf(1000));
+            ReflectionTestUtils.setField(contaMock,"id",contaId);
+
+            Usuario usuarioMock = new Usuario();
+            usuarioMock.setPagamentosRelacionados(new ArrayList<>());
+            ReflectionTestUtils.setField(usuarioMock,"id",usuarioId);
+
+
+            BigDecimal valor = BigDecimal.valueOf(1000);
+            LocalDate data = LocalDate.now();
+            String descricao = "teste";
+            TiposCategorias tiposCategoria = TiposCategorias.RECEITA;
+            SubTipoCategoria subTipo = SubTipoCategoria.SALARIO;
+
+            when(categoriaFinanceiraRepository.encontrarCategoriaPeloSubTipo(SubTipoCategoria.SALARIO)).thenReturn(categoria);
+
+            when(contaUsuarioRepository.findById(contaId)).thenReturn(Optional.of(contaMock));
+            when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuarioMock));
+
+            when(pagamentosRepository.save(any(Pagamentos.class))).thenAnswer(invocationOnMock -> {
+                Pagamentos rec = invocationOnMock.getArgument(0);
+                ReflectionTestUtils.setField(rec,"id",1L);
+                return rec;
+            });
+
+            when(historicoTransacaoRepository.save(any(HistoricoTransacao.class))).thenAnswer(invocationOnMock -> {
+                HistoricoTransacao ht = invocationOnMock.getArgument(0);
+                ReflectionTestUtils.setField(ht,"id",1L);
+                return ht;
+            });
+
+            doNothing().when(pagamentosAssociation).associarPagamentoComConta(anyLong(),anyLong());
+            doNothing().when(pagamentosAssociation).associarPagamentoComUsuario(anyLong(),anyLong());
+            doNothing().when(pagamentosAssociation).associarPagamentoComCategoria(anyLong(),anyLong());
+            doNothing().when(pagamentosAssociation).associarPagamentoATransacao(anyLong(),anyLong());
+
+            doNothing().when(contaUsuarioService).adicionarSaldo(contaId,valor);
+
+            PagamentosResponse responseEsperada = new PagamentosResponse(1L,valor,data,descricao,tiposCategoria,subTipo);
+            when(pagamentoMapper.retornarDadosPagamento(any(Pagamentos.class))).thenReturn(responseEsperada);
+
+            PagamentosRequest request = new PagamentosRequest(valor,data,descricao,tiposCategoria,subTipo,categoriaId,usuarioId,contaId);
+            assertDoesNotThrow(()->{
+                PagamentosResponse respostaMetodo = pagamentosService.criarRecebimento(request);
+                assertEquals(responseEsperada,respostaMetodo,"A resposta de criação do valor do método deveria ser igual a resposta esperada");
+            });
+
+            //assertEquals(BigDecimal.valueOf(2000),contaMock.getSaldo(),"O saldo deveria estar somado 1000+1000=2000");
+
+
+            verify(categoriaFinanceiraRepository).encontrarCategoriaPeloSubTipo(SubTipoCategoria.SALARIO);
+            verify(pagamentosAssociation).associarPagamentoComConta(1L,contaId);
+            verify(contaUsuarioService).adicionarSaldo(contaId,valor);
+            verify(pagamentosAssociation).associarPagamentoComUsuario(anyLong(),anyLong());
+            verify(pagamentosAssociation).associarPagamentoComCategoria(anyLong(),anyLong());
+            verify(pagamentosAssociation).associarPagamentoATransacao(anyLong(),anyLong());
+        }
+
+        @Test
+        @DisplayName("Método de criar Pagamento deve Funcionar")
+        public void metodoCriarPagamentoDeValor(){
+
+            Long contaId = 2L;
+            Long usuarioId = 3L;
+            Long transacaoId = 4L;
+            Long categoriaFinanceiraId = 5L;
+
+            CategoriaFinanceira categoria = new CategoriaFinanceira();
+            categoria.setTiposCategorias(TiposCategorias.DESPESA);
+            categoria.setSubTipo(SubTipoCategoria.CONTA_INTERNET);
+            ReflectionTestUtils.setField(categoria,"id",categoriaFinanceiraId);
+
+            ContaUsuario contaMock = new ContaUsuario();
+            contaMock.setPagamentosRelacionados(new ArrayList<>());
+            contaMock.setSaldo(BigDecimal.valueOf(1000));
+            ReflectionTestUtils.setField(contaMock,"id",contaId);
+
+            Usuario usuarioMock = new Usuario();
+            usuarioMock.setPagamentosRelacionados(new ArrayList<>());
+            ReflectionTestUtils.setField(usuarioMock,"id",usuarioId);
+
+
+            BigDecimal valor = BigDecimal.valueOf(1000);
+            LocalDate data = LocalDate.now();
+            String descricao = "teste";
+            TiposCategorias tiposCategoria = TiposCategorias.DESPESA;
+            SubTipoCategoria subTipo = SubTipoCategoria.CONTA_INTERNET;
+
+            when(categoriaFinanceiraRepository.encontrarCategoriaPeloSubTipo(SubTipoCategoria.CONTA_INTERNET)).thenReturn(categoria);
+
+            when(contaUsuarioRepository.findById(contaId)).thenReturn(Optional.of(contaMock));
+            when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuarioMock));
+
+            when(pagamentosRepository.save(any(Pagamentos.class))).thenAnswer(invocationOnMock -> {
+                Pagamentos rec = invocationOnMock.getArgument(0);
+                ReflectionTestUtils.setField(rec,"id",1L);
+                return rec;
+            });
+
+            when(historicoTransacaoRepository.save(any(HistoricoTransacao.class))).thenAnswer(invocationOnMock -> {
+                HistoricoTransacao ht = invocationOnMock.getArgument(0);
+                ReflectionTestUtils.setField(ht,"id",1L);
+                return ht;
+            });
+
+            doNothing().when(pagamentosAssociation).associarPagamentoComConta(anyLong(),anyLong());
+            doNothing().when(pagamentosAssociation).associarPagamentoComUsuario(anyLong(),anyLong());
+            doNothing().when(pagamentosAssociation).associarPagamentoComCategoria(anyLong(),anyLong());
+            doNothing().when(pagamentosAssociation).associarPagamentoATransacao(anyLong(),anyLong());
+
+            doNothing().when(contaUsuarioService).subtrairSaldo(contaId,valor);
+
+            PagamentosResponse responseEsperada = new PagamentosResponse(1L,valor,data,descricao,tiposCategoria,subTipo);
+            when(pagamentoMapper.retornarDadosPagamento(any(Pagamentos.class))).thenReturn(responseEsperada);
+
+            PagamentosRequest request = new PagamentosRequest(valor,data,descricao,tiposCategoria,subTipo, categoriaFinanceiraId, usuarioId,contaId);
+            assertDoesNotThrow(()->{
+                PagamentosResponse respostaMetodo = pagamentosService.criarPagamento(request);
+                assertEquals(responseEsperada,respostaMetodo,"A resposta de criação do valor do método deveria ser igual a resposta esperada");
+            });
+
+            //assertEquals(BigDecimal.valueOf(2000),contaMock.getSaldo(),"O saldo deveria estar somado 1000+1000=2000");
+
+
+            verify(categoriaFinanceiraRepository).encontrarCategoriaPeloSubTipo(SubTipoCategoria.CONTA_INTERNET);
+            verify(pagamentosAssociation).associarPagamentoComConta(anyLong(),anyLong());
+            verify(contaUsuarioService).subtrairSaldo(contaId,valor);
+            verify(pagamentosAssociation).associarPagamentoComUsuario(anyLong(),anyLong());
+            verify(pagamentosAssociation).associarPagamentoComCategoria(anyLong(),anyLong());
+            verify(pagamentosAssociation).associarPagamentoATransacao(anyLong(),anyLong());
+        }
+
+        @Test
+        @DisplayName("Metodo encontrar pela Id deve localizar")
+        public void deveLocalizarTransacaoSejaPagamentoOuRecebimentoPelaId(){
+
+            Pagamentos pagamentoTeste = new Pagamentos();
+            ReflectionTestUtils.setField(pagamentoTeste,"id",1L);
+
+            when(pagamentosRepository.findById(anyLong())).thenReturn(Optional.of(pagamentoTeste));
+
+            when(pagamentoMapper.retornarDadosPagamento(any(Pagamentos.class))).thenReturn(null);
+
+            assertDoesNotThrow(()->{
+                pagamentosService.encontrarPagamentoOuRecebimentoPorid(1L);
+            });
+
+            verify(pagamentosRepository).findById(anyLong());
+            verify(pagamentoMapper).retornarDadosPagamento(any(Pagamentos.class));
+        }
+
+        @Test
+        @DisplayName("Metodo encontrar pela data deve localizar os pagamentos/recebimentos")
+        public void deveLocalizarTransacaoSejaPagamentoOuRecebimentoPelaData(){
+
+            Pagamentos pagamentoTeste = new Pagamentos();
+            pagamentoTeste.setData(LocalDate.now());
+            ReflectionTestUtils.setField(pagamentoTeste,"id",1L);
+
+            when(pagamentosRepository.encontrarPagamentoPelaData(LocalDate.now())).thenReturn(List.of(pagamentoTeste));
+
+            when(pagamentoMapper.retornarDadosPagamento(any(Pagamentos.class))).thenReturn(null);
+
+            assertDoesNotThrow(()->{
+                pagamentosService.encontrarPagamentoOuRecebimentoPorData(LocalDate.now());
+            });
+
+            verify(pagamentosRepository).encontrarPagamentoPelaData(LocalDate.now());
+            verify(pagamentoMapper).retornarDadosPagamento(any(Pagamentos.class));
+        }
+
+        @Test
+        @DisplayName("Encontrar pagamentos pelo nome de um usuário")
+        public void deveEncontrarPagamentosPeloNomeDeUmUsuario(){
+
+            Pagamentos pagamento1 = new Pagamentos();
+            Usuario usuario = new Usuario();
+            ReflectionTestUtils.setField(pagamento1,"id",1L);
+            ReflectionTestUtils.setField(usuario,"id",1L);
+
+            Pagamentos pagamento2 = new Pagamentos();
+            ReflectionTestUtils.setField(pagamento1,"id",2L);
+
+            List<Pagamentos> lista = new ArrayList<>(List.of(pagamento1,pagamento2));
+
+
+
+            pagamento1.setUsuarioRelacionado(usuario);
+            pagamento2.setUsuarioRelacionado(usuario);
+
+            usuario.setPagamentosRelacionados(new ArrayList<>(lista));
+
+            when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
+
+            when(pagamentoMapper.retornarDadosPagamento(pagamento1)).thenAnswer(invocationOnMock -> {
+                return new PagamentosResponse(1L, BigDecimal.TEN,
+                        LocalDate.now(),
+                        "teste", TiposCategorias.RECEITA, SubTipoCategoria.SALARIO);
+            });
+
+            when(pagamentoMapper.retornarDadosPagamento(pagamento2)).thenAnswer(invocationOnMock -> {
+                return new PagamentosResponse(2L, BigDecimal.ONE,
+                        LocalDate.now().minusDays(1),
+                        "teste2", TiposCategorias.DESPESA, SubTipoCategoria.DESPESA_ALUGUEL);
+            });
+
+
+            assertDoesNotThrow(()->{
+                pagamentosService.encontrarPagamentosPorUsuario(usuario.getId());
+            });
+
+            verify(usuarioRepository).findById(1L);
+            verify(pagamentoMapper).retornarDadosPagamento(pagamento1);
+            verify(pagamentoMapper).retornarDadosPagamento(pagamento2);
+        }
+
+        @Test
+        @DisplayName("Metodo encontrar todos os pagamentos e recebumentos deve retornar a lista de todas")
+        public void metodoEncontrarTodosPagamentosOuRecebimentosDeveRetornarPageable(){
+
+            Long idPagamento1 = 1L;
+            Pagamentos pagamentos1 = new Pagamentos();
+            ReflectionTestUtils.setField(pagamentos1,"id",idPagamento1);
+
+            Long idRecebimento2 = 2L;
+            Pagamentos recebimento2 = new Pagamentos();
+            ReflectionTestUtils.setField(recebimento2,"id",idRecebimento2);
+
+            List<Pagamentos> pagamentosEncontrados = new ArrayList<>(List.of(pagamentos1,recebimento2));
+
+            when(pagamentosRepository.findAll()).thenReturn(pagamentosEncontrados);
+
+            Page<Pagamentos> paginaContas = new PageImpl<>(pagamentosEncontrados);
+
+            assertDoesNotThrow(() ->{
+                pagamentosService.encontrarTodosPagamentos(paginaContas.getPageable());
+            },"O método não deveria retornar nenhuma exceção de erro");
+
+            assertFalse(paginaContas.isEmpty(),"Paginas contas deveria possuir 2 elementos");
+            verify(pagamentosRepository).findAll();
+        }
+
+        @Test
+        @DisplayName("Método remover Pagamento ou Recebimento com sucesso")
+        public void removerPagamentoOuRecebimentoComSucesso(){
+
+            //Instanciando os valores e associando
+            Long usuarioId = 1L;
+            Long categoriaFinanId = 1L;
+            Long contaUserId = 1L;
+            Long historicoTransacaoId = 1L;
+            Long pagamentoId = 1L;
+
+            Usuario usuarioTeste = new Usuario();
+            ReflectionTestUtils.setField(usuarioTeste,"id",usuarioId);
+
+            ContaUsuario contaTeste = new ContaUsuario();
+            ReflectionTestUtils.setField(contaTeste,"id",contaUserId);
+
+            CategoriaFinanceira categoriaTeste = new CategoriaFinanceira();
+            ReflectionTestUtils.setField(categoriaTeste,"id",categoriaFinanId);
+
+            Pagamentos pagamentoTeste = new Pagamentos();
+            ReflectionTestUtils.setField(pagamentoTeste,"id",pagamentoId);
+
+            HistoricoTransacao historicoTeste = new HistoricoTransacao();
+            ReflectionTestUtils.setField(historicoTeste,"id",historicoTransacaoId);
+
+            //Associando os valores
+            pagamentoTeste.setUsuarioRelacionado(usuarioTeste);
+            pagamentoTeste.setTransacoesRelacionadas(new ArrayList<>(List.of(historicoTeste)));
+            pagamentoTeste.setContaRelacionada(contaTeste);
+            pagamentoTeste.setCategoriaRelacionada(categoriaTeste);
+
+            //Assertando que estão associados...
+            assertEquals(usuarioTeste,pagamentoTeste.getUsuarioRelacionado(),"O pagamento deveria estar associado ao usuário");
+            assertTrue(pagamentoTeste.getTransacoesRelacionadas().contains(historicoTeste),"O pagamento deveria estar com a transação associada");
+            assertEquals(categoriaTeste,pagamentoTeste.getCategoriaRelacionada(),"O pagamento deveria estar com a categoria financeira associada");
+
+            //Agora simulando os resultados
+            when(pagamentosRepository.findById(pagamentoId)).thenReturn(Optional.of(pagamentoTeste));
+
+            doNothing().when(pagamentosAssociation).desassociarPagamentoUsuario(pagamentoId,usuarioId);
+            doNothing().when(pagamentosAssociation).desassociarPagamentoConta(pagamentoId,contaUserId);
+            doNothing().when(pagamentosAssociation).desassociarPagamentoCategoria(pagamentoId,categoriaFinanId);
+            doNothing().when(pagamentosAssociation).desassociarPagamentoDeTransacao(pagamentoId,historicoTransacaoId);
+
+            assertDoesNotThrow(()-> pagamentosService.deletarPagamento(pagamentoId)
+                    ,"O método deveria remover a conta normalmente");
+
+
+
+            //Verificar se chamou os mocks
+            verify(pagamentosRepository).findById(pagamentoId);
+            verify(pagamentosAssociation).desassociarPagamentoUsuario(pagamentoId,usuarioId);
+            verify(pagamentosAssociation).desassociarPagamentoConta(pagamentoId,contaUserId);
+            verify(pagamentosAssociation).desassociarPagamentoCategoria(pagamentoId,categoriaFinanId);
+            verify(pagamentosAssociation).desassociarPagamentoDeTransacao(pagamentoId,historicoTransacaoId);
+            verify(pagamentosRepository).delete(pagamentoTeste);
+        }
+
+        @Test
+        @DisplayName("Deve encontrar o pagamento Ou Recebimento pelo Tipo de Categoria fornecido")
+        public void deveEncontrarOPagamentoOuRecebimentoPeloTipoCategoria(){
+
+            Pagamentos pagamento1 = new Pagamentos();
+            pagamento1.setTiposCategorias(TiposCategorias.RECEITA);
+            ReflectionTestUtils.setField(pagamento1,"id",1L);
+
+            Pagamentos pagamento2 = new Pagamentos();
+            pagamento2.setTiposCategorias(TiposCategorias.RECEITA);
+            ReflectionTestUtils.setField(pagamento1,"id",2L);
+
+            List<Pagamentos> listaPagamentos = new ArrayList<>(List.of(pagamento1,pagamento2));
+            Page<Pagamentos> paginaPagamentos = new PageImpl<>(listaPagamentos);
+
+            when(pagamentosRepository.findAll()).thenReturn(listaPagamentos);
+
+            when(pagamentoMapper.retornarDadosPagamento(any(Pagamentos.class))).thenAnswer(invocationOnMock -> {
+               return new PagamentosResponse(null, null, null, null, null, null);
+            });
+
+            assertDoesNotThrow(()->{
+                pagamentosService.encontrarPagamentoOuRecebimentoPorTipo(TiposCategorias.RECEITA);
+            });
+
+            verify(pagamentosRepository).findAll();
+            verify(pagamentoMapper,times(2)).retornarDadosPagamento(any(Pagamentos.class));
+        }
+
+        @Test
+        @DisplayName("Deve atualizar o pagamento ou recebimento sem retornar erro")
+        public void deveAtualizarPagamentoOuRecebimentoSemRetornarErro(){
+
+            Long pagamentoId = 1L;
+            Pagamentos pagamento = new Pagamentos();
+
+        }
     }
 
-    @Test
-    @DisplayName("Teste do método de criar Recebimento, deve retornar Exception se usuário não digitar nenhum valor certo")
-    @Order(2)
-    public void deveRetornarExceptionSeUsuarioNaoDigitarAlgumValorValidoAoCriarRecebimento() {
-        //Criando um Recebimento para teste
-        Long categoriaFinanceiraId = 1L;
-        Long contaUsuarioId = 1L;
-        Long usuarioId = 1L;
-        LocalDate dataValida = LocalDate.now().plusDays(1);
-        BigDecimal valorIncorreto = BigDecimal.valueOf(0);
-        Pagamentos novoPagamento = new Pagamentos();
-        novoPagamento.setData(LocalDate.now().plusDays(1));
-        novoPagamento.setValor(valorIncorreto);
-        novoPagamento.setDescricao("teste");
-
-        //Pulando a primeira verificação do If
-        assertTrue(pagamentosService.dataEstaCorreta(dataValida));
-
-        PagamentosRequest request = new PagamentosRequest(valorIncorreto,
-                dataValida, "teste",
-                TiposCategorias.RECEITA, SubTipoCategoria.DIVIDENDOS, categoriaFinanceiraId, usuarioId, contaUsuarioId);
 
 
-        assertFalse(pagamentosService.valorEstaCorreto(valorIncorreto));
 
-        assertThrows(DadosInvalidosException.class, () -> {
-            pagamentosService.criarRecebimento(request);
-        });
-    }
+    @Nested
+    @DisplayName("Métodos De Pagamentos/Recebimentos - Cenário de Erros")
+    public class CenariosDeErros {
 
 
-    @Test
-    @DisplayName("Teste do método de criar Recebimento, já associado a suas respectivas entidades")
-    @Order(4)
-    public void deveCriarRecebimentoJaAssociadoASeusRespectivosRelacionamentos() {
-        //Criando um Recebimento para teste
-        Long recebimentoId = 1L;
+        @Test
+        @DisplayName("Metodo criar Transação - Erro se data estiver incorreta")
+        public void dataIncorretaNaoPodeDeixarCriarTransacao(){
 
-        Long categoriaId = 1L;
-        CategoriaFinanceira categoriaSemNada = new CategoriaFinanceira();
-        ReflectionTestUtils.setField(categoriaSemNada, "id", categoriaId);
+            BigDecimal valor = BigDecimal.valueOf(1000);
+            LocalDate data = LocalDate.of(2003,1,1);
+            String descricao = "teste";
+            TiposCategorias tiposCategoria = TiposCategorias.DESPESA;
+            SubTipoCategoria subTipo = SubTipoCategoria.CONTA_INTERNET;
 
-        Long contaUsuarioId = 1L;
-        ContaUsuario contaSemNada = new ContaUsuario();
-        ReflectionTestUtils.setField(contaSemNada, "id", contaUsuarioId);
+            assertThrowsExactly(DadosInvalidosException.class,()->{
+                pagamentosService.criarTransacao(valor,data,descricao,tiposCategoria,subTipo);
+            });
+        }
 
-        Long usuarioId = 1L;
-        Usuario usuarioSemNada = new Usuario();
-        ReflectionTestUtils.setField(usuarioSemNada, "id", usuarioId);
+        @Test
+        @DisplayName("Metodo criar Transação - Erro se valor monetário estiver incorreto")
+        public void valorMonetarioIncorretoNaoPodeDeixarCriarTransacao(){
 
-    //    Long historicoTransacaoId = 1L;
-      //  HistoricoTransacao historicoSemNada = new HistoricoTransacao();
-       // ReflectionTestUtils.setField(historicoSemNada,"id",historicoTransacaoId);
+            BigDecimal valor = BigDecimal.valueOf(0);
+            LocalDate data = LocalDate.now();
+            String descricao = "teste";
+            TiposCategorias tiposCategoria = TiposCategorias.DESPESA;
+            SubTipoCategoria subTipo = SubTipoCategoria.CONTA_INTERNET;
 
-        Pagamentos recebimentoCriadoTeste = new Pagamentos();
-        recebimentoCriadoTeste.setTiposCategorias(TiposCategorias.RECEITA);
-        recebimentoCriadoTeste.setData(LocalDate.now().plusDays(1));
-        recebimentoCriadoTeste.setValor(BigDecimal.valueOf(100));
-        recebimentoCriadoTeste.setDescricao("teste");
-        ReflectionTestUtils.setField(recebimentoCriadoTeste,"id",recebimentoId);
-        recebimentoCriadoTeste.setCategoriaRelacionada(new CategoriaFinanceira(TiposCategorias.RECEITA, SubTipoCategoria.DIVIDENDOS));
+            assertThrowsExactly(DadosInvalidosException.class,()->{
+                pagamentosService.criarTransacao(valor,data,descricao,tiposCategoria,subTipo);
+            });
+        }
 
-        assertTrue(pagamentosService.dataEstaCorreta(recebimentoCriadoTeste.getData()));
-        assertTrue(pagamentosService.valorEstaCorreto(recebimentoCriadoTeste.getValor()));
+        @Test
+        @DisplayName("Metodo criar Recebimento - Erro se valor estiver como DESPESA")
+        public void valorIncorretoNaoPodeDeixarCriarRecebimento(){
 
-        when(pagamentosRepository.save(any(Pagamentos.class))).thenAnswer(
-                invocationOnMock -> {
-                    Pagamentos recebimento = invocationOnMock.getArgument(0);
-                    ReflectionTestUtils.setField(recebimento,"id",recebimentoId);
-                    return recebimento;
-                });
+            BigDecimal valor = BigDecimal.valueOf(100);
+            LocalDate data = LocalDate.now();
+            String descricao = "teste";
+            TiposCategorias tiposCategoria = TiposCategorias.DESPESA;
+            SubTipoCategoria subTipo = SubTipoCategoria.CONTA_INTERNET;
 
-        PagamentosResponse responseEsperada = new PagamentosResponse(recebimentoId
-                , recebimentoCriadoTeste.getValor()
-                , recebimentoCriadoTeste.getData(),
-                recebimentoCriadoTeste.getDescricao(),
-                recebimentoCriadoTeste.getTiposCategorias(),
-                recebimentoCriadoTeste.getCategoriaRelacionada().getSubTipo()
-                , contaUsuarioId
-                , usuarioId);
+            PagamentosRequest request = new PagamentosRequest
+                    (valor,data,descricao,tiposCategoria,subTipo,1L,2L,3L);
+            assertThrowsExactly(DadosInvalidosException.class,()->{
+                pagamentosService.criarRecebimento(request);
+            });
+        }
 
+        @Test
+        @DisplayName("Metodo criar Pagamento - Erro se valor estiver como RECEITA")
+        public void valorIncorretoNaoPodeDeixarCriarPagamento(){
 
-        PagamentosRequest request = new PagamentosRequest(recebimentoCriadoTeste.getValor(),
-                recebimentoCriadoTeste.getData()
-                ,recebimentoCriadoTeste.getDescricao()
-                ,recebimentoCriadoTeste.getTiposCategorias()
-                ,recebimentoCriadoTeste.getCategoriaRelacionada().getSubTipo()
-                , categoriaId,usuarioId,contaUsuarioId);
+            BigDecimal valor = BigDecimal.valueOf(100);
+            LocalDate data = LocalDate.now();
+            String descricao = "teste";
+            TiposCategorias tiposCategoria = TiposCategorias.RECEITA;
+            SubTipoCategoria subTipo = SubTipoCategoria.SALARIO;
 
-        pagamentosService.criarRecebimento(request);
-
-
-       //doNothing().when(pagamentosAssociation).associarPagamentoATransacao(recebimentoId, historicoTransacaoId);
-        doNothing().when(pagamentosAssociation).associarPagamentoComUsuario(recebimentoId, usuarioId);
-        doNothing().when(pagamentosAssociation).associarPagamentoComCategoria(recebimentoId, categoriaId);
-        doNothing().when(pagamentosAssociation).associarPagamentoComConta(recebimentoId, contaUsuarioId);
-
-        when(pagamentoMapper.retornarDadosPagamento(recebimentoCriadoTeste)).thenReturn(responseEsperada);
-
-
-        verify(pagamentosRepository).save(any());
-        verify(pagamentoMapper).retornarDadosPagamento(recebimentoCriadoTeste);
-       //verify(pagamentosAssociation).associarPagamentoATransacao(recebimentoId, historicoTransacaoId);
-        verify(pagamentosAssociation).associarPagamentoComUsuario(recebimentoId, usuarioId);
-        verify(pagamentosAssociation).associarPagamentoComCategoria(recebimentoId, categoriaId);
-        verify(pagamentosAssociation).associarPagamentoComConta(recebimentoId, contaUsuarioId);
-    }
-
-    @Test
-    @Order(5)
-    @DisplayName("Criar recebimento deve atualizar o saldo da conta associada corretamente")
-    public void criarRecebimentoDeveAtualizarSaldoDaConta() {
-        Long idRecebimento = 1L;
-        Pagamentos recebimentoTeste = new Pagamentos();
-        recebimentoTeste.setValor(BigDecimal.valueOf(1000));
-        recebimentoTeste.setData(LocalDate.now());
-        recebimentoTeste.setDescricao("teste");
-        recebimentoTeste.setTiposCategorias(TiposCategorias.RECEITA);
-        recebimentoTeste.setCategoriaRelacionada(new CategoriaFinanceira(TiposCategorias.RECEITA,SubTipoCategoria.HERANCA));
-        ReflectionTestUtils.setField(recebimentoTeste,"id",idRecebimento);
-
-        Long idCategoriaFinanceira = 1L;
-        CategoriaFinanceira categoriaFinanceiraTudoNulo = new CategoriaFinanceira();
-        ReflectionTestUtils.setField(categoriaFinanceiraTudoNulo,"id",idCategoriaFinanceira);
-
-        Long idContaUsuario = 1L;
-        ContaUsuario contaUsuarioTudoNulo = new ContaUsuario();
-        contaUsuarioTudoNulo.setSaldo(BigDecimal.valueOf(1000));
-        ReflectionTestUtils.setField(contaUsuarioTudoNulo,"id",idContaUsuario);
-
-        Long idUsuarioCriado = 1L;
-        Usuario usuarioTudoNulo = new Usuario();
-        ReflectionTestUtils.setField(usuarioTudoNulo,"id",idUsuarioCriado);
-
-        assertTrue(pagamentosService.dataEstaCorreta(recebimentoTeste.getData()));
-        assertTrue(pagamentosService.valorEstaCorreto(recebimentoTeste.getValor()));
-
-
-        //Simulando agora que vou adicionar o valor a conta encontrada
-        when(contaUsuarioRepository.findById(idContaUsuario)).thenReturn(Optional.of(contaUsuarioTudoNulo));
-
-        //Simulando primeiro quando ele for criar o objeto no banco
-        when(pagamentosRepository.save(any(Pagamentos.class))).thenAnswer(
-                invocationOnMock -> {
-                    Pagamentos recebimento = invocationOnMock.getArgument(0);
-                    ReflectionTestUtils.setField(recebimento,"id",idRecebimento);
-                    return recebimento;
-                });
-
-        PagamentosRequest request = new PagamentosRequest(recebimentoTeste.getValor(),
-                recebimentoTeste.getData(),
-                recebimentoTeste.getDescricao(),
-                recebimentoTeste.getTiposCategorias(),
-                recebimentoTeste.getCategoriaRelacionada().getSubTipo(),
-                idCategoriaFinanceira,idUsuarioCriado,idContaUsuario);
-
-        //só depois criar o pagamento
-        pagamentosService.criarRecebimento(request);
-
-        assertNotEquals(BigDecimal.valueOf(2000), recebimentoTeste.getValor());
-
-
-        verify(pagamentosRepository).save(recebimentoTeste);
-        verify(contaUsuarioRepository).findById(idContaUsuario);
-        verify(contaUsuarioService).adicionarSaldo(idContaUsuario, BigDecimal.valueOf(1000));
-
-    }
-
-
-    @Test
-    @Order(6)
-    @DisplayName("Teste do método criar pagamento deve retornar exceção se data estiver incorreta")
-    public void seDataEstiverErradaDeveRetornarExceptionAoCriarPagamento(){
-        Long idPagamento = 1L;
-        Pagamentos pagamentoComValorNaDataErrado = new Pagamentos();
-        ReflectionTestUtils.setField(pagamentoComValorNaDataErrado,"id",idPagamento);
-        LocalDate dataErrada = LocalDate.of(2004,8,16);
-        pagamentoComValorNaDataErrado.setData(dataErrada);
-        pagamentoComValorNaDataErrado.setValor(BigDecimal.valueOf(100));
-        pagamentoComValorNaDataErrado.setDescricao("teste");
-        pagamentoComValorNaDataErrado.setTiposCategorias(TiposCategorias.DESPESA);
-        pagamentoComValorNaDataErrado.setCategoriaRelacionada(new CategoriaFinanceira(TiposCategorias.DESPESA,SubTipoCategoria.ALIMENTACAO));
-
-        Long idUsuario = 1L;
-        Usuario usuarioSemValor = new Usuario();
-        ReflectionTestUtils.setField(usuarioSemValor,"id",idUsuario);
-
-        Long idContaUsuario = 1L;
-        ContaUsuario contaUsuarioSemValor = new ContaUsuario();
-        ReflectionTestUtils.setField(contaUsuarioSemValor,"id",idContaUsuario);
-
-        Long idCategoriaFinanceira = 1L;
-        CategoriaFinanceira categoriaFinanceiraSemValor = new CategoriaFinanceira();
-        ReflectionTestUtils.setField(categoriaFinanceiraSemValor,"id",idCategoriaFinanceira);
-
-        PagamentosRequest request = new PagamentosRequest(pagamentoComValorNaDataErrado.getValor(),
-                pagamentoComValorNaDataErrado.getData(),
-                pagamentoComValorNaDataErrado.getDescricao(),
-                pagamentoComValorNaDataErrado.getTiposCategorias(),
-                pagamentoComValorNaDataErrado.getCategoriaRelacionada().getSubTipo(),
-                idCategoriaFinanceira, idUsuario,idContaUsuario);
-
-        when(pagamentosRepository.save(any(Pagamentos.class))).thenReturn(pagamentoComValorNaDataErrado);
-
-        assertThrows(DadosInvalidosException.class,(()->{
-            pagamentosService.criarPagamento(request);
-        }));
-
-    }
-
-    @Test
-    @Order(7)
-    @DisplayName("Teste do método criar pagamento deve retornar exceção se valor estiver incorreto")
-    public void seValorPagamentoEstiverErradoDeveRetornarExcecaoDadosInvalidosException(){
-        Long pagamentoId = 1L;
-        Pagamentos pagamentoCriadoValorMonetarioErrado = new Pagamentos();
-        ReflectionTestUtils.setField(pagamentoCriadoValorMonetarioErrado,"id",pagamentoId);
-        pagamentoCriadoValorMonetarioErrado.setValor(BigDecimal.valueOf(0));
-        pagamentoCriadoValorMonetarioErrado.setData(LocalDate.now().plusDays(1));
-        pagamentoCriadoValorMonetarioErrado.setDescricao("teste");
-        pagamentoCriadoValorMonetarioErrado.setTiposCategorias(TiposCategorias.DESPESA);
-        pagamentoCriadoValorMonetarioErrado.setCategoriaRelacionada(new CategoriaFinanceira(TiposCategorias.DESPESA,SubTipoCategoria.CARTAO_CREDITO));
-
-        Long categoriaFinanceiraId = 1L;
-        CategoriaFinanceira categoriaFinanceiraSemValor = new CategoriaFinanceira();
-        ReflectionTestUtils.setField(categoriaFinanceiraSemValor,"id",categoriaFinanceiraId);
-
-        Long usuarioId = 1L;
-        Usuario usuarioSemValor = new Usuario();
-        ReflectionTestUtils.setField(usuarioSemValor,"id",usuarioId);
-
-        Long contaUsuarioId = 1L;
-        ContaUsuario contaUsuarioSemValor = new ContaUsuario();
-        ReflectionTestUtils.setField(contaUsuarioSemValor,"id",contaUsuarioId);
-
-        PagamentosRequest request = new PagamentosRequest(pagamentoCriadoValorMonetarioErrado.getValor(),
-                pagamentoCriadoValorMonetarioErrado.getData(),
-                pagamentoCriadoValorMonetarioErrado.getDescricao(),
-                pagamentoCriadoValorMonetarioErrado.getTiposCategorias(),
-                pagamentoCriadoValorMonetarioErrado.getCategoriaRelacionada().getSubTipo(),
-                categoriaFinanceiraId,usuarioId,contaUsuarioId);
-
-        when(pagamentosRepository.save(any(Pagamentos.class))).thenAnswer(
-                invocationOnMock -> {
-                    Pagamentos pagamento = invocationOnMock.getArgument(0);
-                    ReflectionTestUtils.setField(pagamento,"id",pagamentoId);
-                    return pagamento;
-                });
-
-        assertThrows(DadosInvalidosException.class,()->{
-            pagamentosService.criarPagamento(request);
-        });
-    }
-    @Test
-    @Order(8)
-    @DisplayName("Teste do método criar Pagamento ja associado")
-    public void verificarSePagamentoCriadoFunciona(){
-
-        Long pagamentoId = 1L;
-        Pagamentos pagamentoCriado = new Pagamentos();
-        ReflectionTestUtils.setField(pagamentoCriado,"id",pagamentoId);
-        pagamentoCriado.setData(LocalDate.now().plusDays(1));
-        pagamentoCriado.setValor(BigDecimal.valueOf(100));
-        pagamentoCriado.setDescricao("teste");
-        pagamentoCriado.setTiposCategorias(TiposCategorias.DESPESA);
-        pagamentoCriado.setCategoriaRelacionada(new CategoriaFinanceira(TiposCategorias.DESPESA,SubTipoCategoria.EMPRESTIMOS));
-
-        PagamentosRequest request = new PagamentosRequest(pagamentoCriado.getValor(),
-                pagamentoCriado.getData(),
-                pagamentoCriado.getDescricao(),
-                pagamentoCriado.getTiposCategorias(),
-                SubTipoCategoria.EMPRESTIMOS,
-                1L,1L,1L);
-        pagamentosService.criarPagamento(request);
-        
-        when(pagamentosRepository.save(any(Pagamentos.class))).thenAnswer(
-                invocationOnMock -> {
-                    Pagamentos pagamento = invocationOnMock.getArgument(0);
-                    ReflectionTestUtils.setField(pagamento,"id",pagamentoId);
-                    return pagamento;
-                });
-
-        Long contaUsuarioId = 1L;
-        ContaUsuario contaSemDados = new ContaUsuario();
-        ReflectionTestUtils.setField(contaSemDados,"id",contaUsuarioId);
-
-        Long usuarioId = 1L;
-        Usuario usuarioSemdados = new Usuario();
-        ReflectionTestUtils.setField(usuarioSemdados,"id",usuarioId);
-
-        PagamentosResponse respostaEsperada = new PagamentosResponse(pagamentoId,
-                pagamentoCriado.getValor(),
-                pagamentoCriado.getData(),
-                pagamentoCriado.getDescricao(),
-                pagamentoCriado.getTiposCategorias(),
-                pagamentoCriado.getCategoriaRelacionada().getSubTipo(),
-                contaUsuarioId,usuarioId);
-
-
+            PagamentosRequest request = new PagamentosRequest
+                    (valor,data,descricao,tiposCategoria,subTipo,1L,2L,3L);
+            assertThrowsExactly(DadosInvalidosException.class,()->{
+                pagamentosService.criarPagamento(request);
+            });
+        }
     }
 }

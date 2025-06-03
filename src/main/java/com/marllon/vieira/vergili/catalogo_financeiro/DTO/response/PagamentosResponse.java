@@ -21,7 +21,5 @@ public record PagamentosResponse(@NotNull
                                  LocalDate data,
                                  String descricao,
                                  TiposCategorias categoria,
-                                 SubTipoCategoria subTipoCategoria,
-                                 Long contaAssociada,
-                                 Long usuarioAssociado) {
+                                 SubTipoCategoria subTipoCategoria) {
 }
