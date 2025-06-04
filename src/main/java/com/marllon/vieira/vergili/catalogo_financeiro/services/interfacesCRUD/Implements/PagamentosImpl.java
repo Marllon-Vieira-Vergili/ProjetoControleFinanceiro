@@ -11,6 +11,7 @@ import com.marllon.vieira.vergili.catalogo_financeiro.mapper.PagamentoMapper;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposContas;
 import com.marllon.vieira.vergili.catalogo_financeiro.repository.*;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.CategoriaFinanceiraAssociation;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogical.HistoricoTransacaoAssociation;
@@ -18,13 +19,11 @@ import com.marllon.vieira.vergili.catalogo_financeiro.services.AssociationsLogic
 import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.ContaUsuarioService;
 import com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD.PagamentosService;
 import jakarta.transaction.Transactional;
-import jakarta.xml.bind.JAXBException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.CannotCreateTransactionException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -85,10 +84,6 @@ public class PagamentosImpl implements PagamentosService {
             throw new TiposCategoriasNaoEncontrado("Não foi encontrado o tipo de categoria corretamente");
         }
 
-        if (jaExisteUmPagamentoIgual(valor, data, descricao, tiposCategoria, subTipo)) {
-            throw new JaExisteException("Já existe uma transação criada com os mesmos valores");
-        }
-
         Pagamentos novaTransacao = new Pagamentos();
         novaTransacao.setData(data);
         novaTransacao.setValor(valor);
@@ -126,6 +121,11 @@ public class PagamentosImpl implements PagamentosService {
             throw new DadosInvalidosException("Para criar Recebimento, somente o tipo RECEITA é válido");
         }
 
+        if (jaExisteUmPagamentoIgual(request.valor(), request.data(), request.descricao(), request.tipoCategoria(),
+                request.subTipoCategoria())) {
+            throw new JaExisteException("Já existe um recebimento criado idêntico");
+        }
+
         //Criando os valores
         Pagamentos recebimentoETransacaoCriado =
                 criarTransacao(request.valor(),
@@ -155,7 +155,6 @@ public class PagamentosImpl implements PagamentosService {
             }
         }
 
-
         //Buscando a conta desejada para atualizar o saldo dela
         //Adicionando o valor ao saldo na conta do usuário
         contaUsuarioEncontrada.ifPresent(contaUsuario ->
@@ -173,6 +172,11 @@ public class PagamentosImpl implements PagamentosService {
             throw new DadosInvalidosException("Para criar Pagamento, somente o tipo DESPESA é válido");
         }
 
+        if (jaExisteUmPagamentoIgual(request.valor(), request.data(), request.descricao(), request.tipoCategoria(),
+                request.subTipoCategoria())) {
+            throw new JaExisteException("Já existe um pagamento criado idêntico");
+        }
+
         //Criando os valores
         Pagamentos pagamentoETransacaoCriado =
                 criarTransacao(request.valor(),
@@ -180,6 +184,8 @@ public class PagamentosImpl implements PagamentosService {
                         request.descricao(),
                         request.tipoCategoria(),
                         request.subTipoCategoria());
+
+
 
         Optional<Usuario> usuarioEncontrado = usuarioRepository.findById(request.idUsuarioCriado());
         Optional<ContaUsuario> contaUsuarioEncontrada = contaUsuarioRepository.findById(request.idContaUsuario());
@@ -202,11 +208,19 @@ public class PagamentosImpl implements PagamentosService {
             }
         }
 
-
         //Buscando a conta desejada para atualizar o saldo dela
-        //Adicionando o valor ao saldo na conta do usuário
-        contaUsuarioEncontrada.ifPresent(contaUsuario ->
-                contaUsuarioService.subtrairSaldo(contaUsuario.getId(), pagamentoETransacaoCriado.getValor()));
+        if (contaUsuarioEncontrada.isPresent()){
+            BigDecimal saldoConta = consultarSaldoDaConta(contaUsuarioEncontrada.get().getId());
+            if (request.valor().compareTo(saldoConta) > 0){
+                if (!contaUsuarioEncontrada.get().getTipoConta().equals(TiposContas.CONTA_CORRENTE)){
+                    throw new DadosInvalidosException("O saldo não é suficiente para que seja realizado essa operação. " +
+                            "O ùnico tipo de Conta que aceita saldo negativo é: " + TiposContas.CONTA_CORRENTE);
+                }
+            }
+            //Subtraindo o valor ao saldo na conta do usuário
+            contaUsuarioEncontrada.ifPresent(contaUsuario ->
+                    contaUsuarioService.subtrairSaldo(contaUsuario.getId(), pagamentoETransacaoCriado.getValor()));
+        }
 
         return mapper.retornarDadosPagamento(pagamentoETransacaoCriado);
     }
@@ -363,7 +377,7 @@ public class PagamentosImpl implements PagamentosService {
     }
 
     @Override
-    public BigDecimal consultarValorPagamento(Long contaId) {
+    public BigDecimal consultarSaldoDaConta(Long contaId) {
 
         ContaUsuario contaLocalizada = contaUsuarioRepository.findById(contaId).orElseThrow(()->
                 new ContaNaoEncontrada("Não foi encontrada nenhuma conta de usuário com essa id: " + contaId));

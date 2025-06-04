@@ -118,7 +118,7 @@ public interface PagamentosService  {
      * @param contaId ID da conta.
      * @return Valor total dos pagamentos.
      */
-    BigDecimal consultarValorPagamento(Long contaId);
+    BigDecimal consultarSaldoDaConta(Long contaId);
 
 
 
@@ -138,7 +138,7 @@ public interface PagamentosService  {
      *
      * @return true se a data informada pelo usuário está em um prazo do dia atual
      */
-    boolean dataEstaCorreta(LocalDate data);
+     boolean dataEstaCorreta(LocalDate data);
 
     /**
      *

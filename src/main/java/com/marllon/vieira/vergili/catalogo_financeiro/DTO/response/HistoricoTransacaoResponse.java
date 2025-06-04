@@ -1,5 +1,6 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.DTO.response;
 
+import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import jakarta.validation.constraints.NotNull;
 
@@ -20,5 +21,6 @@ public record HistoricoTransacaoResponse(@NotNull
                                          BigDecimal valor,
                                          LocalDate data,
                                          String descricao,
-                                         TiposCategorias categoria) {
+                                         TiposCategorias categoria,
+                                         SubTipoCategoria subTipoCategoria) {
 }

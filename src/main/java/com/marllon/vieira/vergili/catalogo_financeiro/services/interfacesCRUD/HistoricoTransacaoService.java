@@ -28,7 +28,7 @@ public interface HistoricoTransacaoService {
      * @return transação encontrada, se existir.
      * @throws HistoricoTransacaoNaoEncontrado se não for encontrada a transação.
      */
-    Optional<HistoricoTransacao> encontrarTransacaoPorid(Long id);
+    Optional<HistoricoTransacaoResponse> encontrarTransacaoPorid(Long id);
 
     /**
      * Retorna uma lista de transações realizadas em uma data específica.
@@ -36,14 +36,14 @@ public interface HistoricoTransacaoService {
      * @param data data desejada.
      * @return lista de transações encontradas.
      * @throws HistoricoTransacaoNaoEncontrado se não for encontrada nenhuma transação na data especificada.
-     * @throws DateTimeException se o usuário retornar uma data incompatível
+     * @throws DateTimeException               se o usuário retornar uma data incompatível
      */
     List<HistoricoTransacaoResponse> encontrarTransacaoPorData(LocalDate data);
 
 
-
     /**
      * Lista todas as transações paginadas.
+     *
      * @param pageable objeto de paginação.
      * @return página de transações.
      */
@@ -54,7 +54,7 @@ public interface HistoricoTransacaoService {
      *
      * @param usuarioId ID do usuário.
      * @return Lista de objetos {@link HistoricoTransacaoResponse} pertencentes ao usuário.
-     * @throws UsuarioNaoEncontrado se o usuário com o ID fornecido não existir.
+     * @throws UsuarioNaoEncontrado            se o usuário com o ID fornecido não existir.
      * @throws HistoricoTransacaoNaoEncontrado se o usuário não possuir históricos de transação.
      */
     List<HistoricoTransacaoResponse> encontrarHistoricoTransacaoPorUsuario(Long usuarioId);
@@ -64,7 +64,7 @@ public interface HistoricoTransacaoService {
      *
      * @param tiposCategoria Tipo da transação (ex: "RECEITA" ou "DESPESA").
      * @return Lista de objetos {@link HistoricoTransacaoResponse} que correspondem ao tipo especificado.
-     * @throws TiposCategoriasNaoEncontrado se o tipo fornecido não for válido.
+     * @throws TiposCategoriasNaoEncontrado    se o tipo fornecido não for válido.
      * @throws HistoricoTransacaoNaoEncontrado se não houver históricos para o tipo especificado.
      */
     List<HistoricoTransacaoResponse> encontrarHistoricoTransacaoPorTipo(TiposCategorias tiposCategoria);
@@ -74,36 +74,18 @@ public interface HistoricoTransacaoService {
      *
      * @param categoriaId ID da categoria financeira.
      * @return Lista de objetos {@link HistoricoTransacaoResponse} vinculados à categoria.
-     * @throws CategoriaNaoEncontrada se a categoria com o ID fornecido não existir.
+     * @throws CategoriaNaoEncontrada          se a categoria com o ID fornecido não existir.
      * @throws HistoricoTransacaoNaoEncontrado se não houver nenhum histórico associado à categoria.
      */
     List<HistoricoTransacaoResponse> encontrarHistoricoTransacaoPorCategoria(Long categoriaId);
 
 
-
     // ======================== OPERAÇÕES ESPECÍFICAS ========================
 
-    /**
-     * Consulta o valor total das transações vinculadas a uma determinada conta.
-     *
-     * @param contaId identificador da conta.
-     * @return somatório da transação.
-     */
-    BigDecimal consultarValorTotalTransacoes(Long contaId);
 
 
 
     // ======================== VALIDAÇÕES ========================
 
 
-
-
-
-    /**
-     * Verifica se já existe uma transação idêntica vinculada a uma conta.
-     *
-     * @param historicoTransacao historico a ser verificado.
-     * @return true se houver duplicidade, false caso contrário.
-     */
-    boolean jaExisteUmaTransacaoIgual(HistoricoTransacaoRequest historicoTransacao);
 }

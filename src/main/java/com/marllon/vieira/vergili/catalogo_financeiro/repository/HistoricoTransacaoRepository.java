@@ -56,5 +56,7 @@ public interface HistoricoTransacaoRepository extends JpaRepository<HistoricoTra
     List<HistoricoTransacao> encontrarTransacoesPeloValor(@Param("valorTransacao") BigDecimal valorTransacao);
 
 
+
+
 }
 
