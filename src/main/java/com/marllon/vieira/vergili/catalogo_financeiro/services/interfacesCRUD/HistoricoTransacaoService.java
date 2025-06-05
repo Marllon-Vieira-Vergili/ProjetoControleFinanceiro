@@ -1,12 +1,14 @@
 package com.marllon.vieira.vergili.catalogo_financeiro.services.interfacesCRUD;
-import com.marllon.vieira.vergili.catalogo_financeiro.DTO.request.HistoricoTransacaoRequest;
+
 import com.marllon.vieira.vergili.catalogo_financeiro.DTO.response.HistoricoTransacaoResponse;
-import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.*;
-import com.marllon.vieira.vergili.catalogo_financeiro.models.HistoricoTransacao;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.CategoriaNaoEncontrada;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.HistoricoTransacaoNaoEncontrado;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.TiposCategoriasNaoEncontrado;
+import com.marllon.vieira.vergili.catalogo_financeiro.exceptions.entitiesExc.UsuarioNaoEncontrado;
 import com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import java.math.BigDecimal;
+
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.List;

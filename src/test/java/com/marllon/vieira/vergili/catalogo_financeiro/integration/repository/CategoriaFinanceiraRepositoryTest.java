@@ -15,7 +15,8 @@ import org.springframework.test.context.jdbc.Sql;
 
 import java.util.List;
 
-import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria.*;
+import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria.COMBUSTIVEL;
+import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.SubTipoCategoria.DESPESA_ALUGUEL;
 import static com.marllon.vieira.vergili.catalogo_financeiro.models.enums.TiposCategorias.DESPESA;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -38,24 +39,22 @@ public class CategoriaFinanceiraRepositoryTest{
     private JdbcTemplate jdbc;
 
 
-
     @Test
     @Sql("/sql/CategoriaFinanceiraDados.sql")
     @DisplayName("Teste do método no Repositório para encontrar as categorias financeiras pelo tipo categoria")
     public void testeMetodoencontrarPorTipoCategoria(){
         List<CategoriaFinanceira> categoriasEncontradas = categoriaFRepository.encontrarPorTipoCategoria(DESPESA);
-        assertEquals(DESPESA,categoriasEncontradas,"A lista da categoria é vazia");
-        for(CategoriaFinanceira categoriaEncontrada: categoriasEncontradas){
-            assertEquals(DESPESA,categoriaEncontrada.getTiposCategorias(),"Os tipos encontrados como DESPESA deve ser encontrado");
-        }
+        assertEquals(DESPESA,categoriasEncontradas.getFirst().getTiposCategorias()
+                ,"Os tipos encontrados como DESPESA deve ser encontrado");
     }
 
     @Test
     @Sql(value = "/sql/CategoriaFinanceiraDados.sql")
     @DisplayName("Teste do método no Repositório para encontrar as categorias financeiras pelo subtipo")
     public void testeMetodoencontrarPorSubTipoCategoria(){
-        CategoriaFinanceira categoriasEncontradas = categoriaFRepository.encontrarCategoriaPeloSubTipo(COMBUSTIVEL);
-        assertTrue(categoriasEncontradas.getSubTipo().isTipoCategoriaDespesa(),"A lista de deveria conter elementos do tipo despesa");
+        CategoriaFinanceira categoriaEncontrada = categoriaFRepository.encontrarCategoriaPeloSubTipo(COMBUSTIVEL);
+        assertTrue(categoriaEncontrada.getSubTipo().isTipoCategoriaDespesa()
+                ,"A lista de deveria conter elementos do tipo despesa");
     }
 
 
@@ -75,7 +74,7 @@ public class CategoriaFinanceiraRepositoryTest{
     public void afterTests(){
         jdbc.execute("DELETE from categoria_das_contas");
 
-        jdbc.execute("ALTER TABLE categoria_das_contas ALTER COLUMN ID RESTART WITH 1");
+        //jdbc.execute("ALTER TABLE categoria_das_contas ALTER COLUMN ID RESTART WITH 1");
     }
 
 }

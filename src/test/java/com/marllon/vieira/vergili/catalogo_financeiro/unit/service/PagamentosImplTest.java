@@ -717,7 +717,6 @@ public class PagamentosImplTest {
                 verify(pagamentosRepository, times(2)).existTheSameData(valor, data, descricao, tiposCategorias);
             }
 
-
         }
     }
 }

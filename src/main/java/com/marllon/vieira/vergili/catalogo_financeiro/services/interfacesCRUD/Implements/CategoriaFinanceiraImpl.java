@@ -57,13 +57,13 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService{
     @Override
     public CategoriaFinanceiraResponse criarCategoriaFinanceira(CategoriaFinanceiraRequest request) {
 
-        //Verificar se já não existe a mesma categoria criada
-        jaExisteUmaCategoriaIgual(request.tipoCategoria(),request.subtipo());
-
         //Verificar se o tipo categoria é compativel com o subtipo informado
         validarCompatibilidadeTipoESubtipo(request.tipoCategoria(),request.subtipo());
 
-        //Se achar, será criado a categoria financeira
+        //Verificar se já não existe a mesma categoria criada
+        jaExisteUmaCategoriaIgual(request.tipoCategoria(),request.subtipo());
+
+        //Se não achar, será criado a categoria financeira
         CategoriaFinanceira novaCategoria = new CategoriaFinanceira();
 
         novaCategoria.setTiposCategorias(request.tipoCategoria());
@@ -194,11 +194,6 @@ public class CategoriaFinanceiraImpl implements CategoriaFinanceiraService{
         CategoriaFinanceira categoriaIgual = categoriaFinanceiraRepository
                 .encontrarPorTipoAndSubtipo(tiposCategoria,subTipoCategoria);
 
-        if (categoriaIgual != null &&
-                categoriaIgual.getTiposCategorias() == (tiposCategoria)
-                && categoriaIgual.getSubTipo() == (subTipoCategoria)){
-            return true;
-        }
-        return false;
+        return categoriaIgual != null;
     }
 }

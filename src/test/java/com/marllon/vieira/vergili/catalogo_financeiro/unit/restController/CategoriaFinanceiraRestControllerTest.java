@@ -67,25 +67,40 @@ public class CategoriaFinanceiraRestControllerTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    @Test
-    @Order(1)
-    @DisplayName("Deve encontrar a categoria pela sua id")
-    public void deveBuscarCategoriaPorId() throws Exception {
-        //Arrange - simular o comportamento do service
-        Long id = 1L;
-        CategoriaFinanceiraResponse responseEsperada =
-                new CategoriaFinanceiraResponse(id, TiposCategorias.DESPESA,SubTipoCategoria.ALIMENTACAO);
+    @Nested
+    @DisplayName("Teste dos Endpoints - Cenários de Sucesso")
+    public class CenariosDeSucessoEndpointsCategoriaFinanceira {
 
-        //Mockando
-        when(categoriaService.encontrarCategoriaPorId(id)).thenReturn(Optional.of(responseEsperada));
+        @Test
+        @Order(1)
+        @DisplayName("Deve encontrar a categoria pela sua id")
+        public void deveBuscarCategoriaPorId() throws Exception {
+            //Arrange - simular o comportamento do service
+            Long id = 1L;
+            CategoriaFinanceiraResponse responseEsperada =
+                    new CategoriaFinanceiraResponse(id, TiposCategorias.DESPESA,SubTipoCategoria.ALIMENTACAO);
 
-        //Act + Assert
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/categoria/mostrarTipoCategoriaPeloId/{id}",id))
-                .andExpect(status().isFound()) //Para retornar status 302(Found)
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.tipoCategoria").value("DESPESA"))
-                .andExpect(jsonPath("$.subTipo").value("ALIMENTACAO"));
+            //Mockando
+            when(categoriaService.encontrarCategoriaPorId(id)).thenReturn(Optional.of(responseEsperada));
+
+            //Act + Assert
+            mockMvc.perform(MockMvcRequestBuilders.get("/api/categoria/mostrarTipoCategoriaPeloId/{id}",id))
+                    .andExpect(status().isFound()) //Para retornar status 302(Found)
+                    .andExpect(jsonPath("$.id").value(1L))
+                    .andExpect(jsonPath("$.tipoCategoria").value("DESPESA"))
+                    .andExpect(jsonPath("$.subTipo").value("ALIMENTACAO"));
+        }
+
     }
+
+    @Nested
+    @DisplayName("Teste dos Endpoints - Cenários de Erros")
+    public class CenariosDeErrosEndpointsCategoriaFinanceira{
+
+
+    }
+
+
 
     @Test
     @Order(2)
